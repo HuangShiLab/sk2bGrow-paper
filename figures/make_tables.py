@@ -92,7 +92,44 @@ def table3():
           'positives); both methods scored zero.')
 
 
+# --- Table 5: which Pilea gate actually suppresses the estimate -------------
+def table5():
+    """Pilea's gates-off run still reports the three gated statistics per genome,
+    so re-applying each default threshold to that output is an exact ablation and
+    needs no extra Pilea runs."""
+    f = DATA / 'pilea_gate_statistics.tsv'
+    if not f.exists():
+        print('  (skipping table5: pilea_gate_statistics.tsv absent)'); return
+    d = pd.read_csv(f, sep='\t')
+    GATES = [('min-cove (-x 5)', 'coverage', 5.0),
+             ('min-frac (-z 0.75)', 'fraction', 0.75),
+             ('min-cont (-c 0.25)', 'containment', 0.25)]
+    for label, col, thr in GATES:
+        d[label] = d[col] >= thr
+    d['all gates'] = np.logical_and.reduce([d[l] for l, _, _ in GATES])
+
+    rows = []
+    for (ds, depth), g in d.groupby(['dataset', 'depth']):
+        rec = {'dataset': ds, 'depth': depth, 'n': len(g),
+               'median k-mer coverage': g['coverage'].median()}
+        rec.update({l: 100 * g[l].mean() for l, _, _ in GATES})
+        rec['reported by defaults'] = 100 * g['all gates'].mean()
+        rows.append(rec)
+    t = pd.DataFrame(rows).sort_values(['dataset', 'depth'])
+    fail = d[~d['all gates']]
+    sole = {l: int(((~fail[l]) & np.logical_and.reduce(
+                [fail[o] for o, _, _ in GATES if o != l])).sum()) for l, _, _ in GATES}
+    write('table5_pilea_gate_ablation', t,
+          'Table 5. Which of Pilea\'s quality gates suppresses the estimate',
+          'Percentages are the share of genome-estimates passing that gate alone; '
+          '"reported by defaults" is the share passing all three. Of the '
+          f'{len(fail)} estimates the defaults discard, the sole cause is '
+          + ', '.join(f'{l} for {n}' for l, n in sole.items()) + '. '
+          'A 150 bp read yields 120 31-mers, so the k-mer-coverage threshold of 5 '
+          'corresponds to about 6.6x read coverage.')
+
+
 if __name__ == '__main__':
     print('generating tables ->', OUT)
-    table1(); table2(); table3()
+    table1(); table2(); table3(); table5()
     print('done')

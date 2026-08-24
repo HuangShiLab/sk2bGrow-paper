@@ -36,8 +36,15 @@ def save(fig, name):
     print(f'  wrote {name}.png / .pdf')
 
 
-# --- Fig 1: accuracy against measured growth rate, across coverage -----------
+# --- Fig 1: method overview -------------------------------------------------
 def fig1():
+    """Schematic plus three real panels from one 2x sample; see overview.py."""
+    import overview
+    save(overview.build(ROOT), 'fig1_overview')
+
+
+# --- Fig 2: accuracy against measured growth rate, across coverage -----------
+def fig2():
     """Pilea's two arms are identical wherever both are defined, so they are one
     series here; marker fill encodes whether its shipped gates would report."""
     fig, ax = plt.subplots(figsize=(5.4, 3.4))
@@ -90,11 +97,11 @@ def fig1():
              'Pilea at its shipped defaults\nreturns no estimate below 10×; at 0.5× with gates off it '
              'returns PTR = 1.0 for every sample, so\nneither has a defined correlation there.',
              fontsize=7, color=MUTED, va='top')
-    save(fig, 'fig1_accuracy_vs_coverage')
+    save(fig, 'fig2_accuracy_vs_coverage')
 
 
-# --- Fig 2: is the magnitude right, not just the ranking? --------------------
-def fig2():
+# --- Fig 3: is the magnitude right, not just the ranking? --------------------
+def fig3():
     covs = [1.0, 10.0]
     fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.5), sharex=True, sharey=True)
     for ax, c in zip(axes, covs):
@@ -123,11 +130,11 @@ def fig2():
              'the ranking\nis correct — which a correlation coefficient hides. The predicted value '
              'is not independent: Zheng\nderived C from this same sequencing by marker-frequency analysis.',
              fontsize=7, color=MUTED, va='top')
-    save(fig, 'fig2_magnitude')
+    save(fig, 'fig3_magnitude')
 
 
-# --- Fig 3: the negative control --------------------------------------------
-def fig3():
+# --- Fig 4: the negative control --------------------------------------------
+def fig4():
     """Pilea's two arms coincide wherever both are defined, so they are drawn as
     one series (as in fig 1) rather than as a phantom extra legend key."""
     from matplotlib.lines import Line2D
@@ -160,11 +167,11 @@ def fig3():
              'within 0.11 of zero at\nevery coverage. Pilea reports only at 10× under its own gates; the '
              'curve shown has them disabled.',
              fontsize=7, color=MUTED, va='top')
-    save(fig, 'fig3_negative_control')
+    save(fig, 'fig4_negative_control')
 
 
-# --- Fig 4: what is responsible — sketch or estimator? ----------------------
-def fig4():
+# --- Fig 5: what is responsible — sketch or estimator? ----------------------
+def fig5():
     """Dot plot, not bars: every value sits in 0.45-0.98, so a zero-based bar
     chart wastes half the panel. A dot plot legitimately takes a truncated axis
     where a bar chart may not."""
@@ -215,17 +222,17 @@ def fig4():
              'anchors vs FracMinHash).\nUnder a sorted-regression estimator the deterministic anchors '
              'are behind FracMinHash at 1× — 0.61 vs 0.89.',
              fontsize=7, color=MUTED, va='top')
-    save(fig, 'fig4_attribution')
+    save(fig, 'fig5_attribution')
 
 
 
-# --- Fig 5: multi-strain simulation — accuracy, recall and cost -------------
-def fig5():
+# --- Fig 6: multi-strain simulation — accuracy, recall and cost -------------
+def fig6():
     """Three panels because three different things matter and they trade off:
     how often a method answers, how right it is, and what it costs."""
     f = ROOT / 'data' / 'sim_results.tsv'
     if not f.exists():
-        print('  (skipping fig5: sim_results.tsv absent)'); return
+        print('  (skipping fig6: sim_results.tsv absent)'); return
     d = pd.read_csv(f, sep='\t')
     SIM = {'sk2bGrow': ARM_COLOR['A'],
            'Pilea (defaults)': ARM_COLOR['C_default'],
@@ -264,10 +271,10 @@ def fig5():
              'shipped defaults earns a flattering RMSE by answering only\n22% of cases, the easiest '
              'ones. sk2bGrow answers every case but is the slowest of the three.',
              fontsize=7, color=MUTED, va='top')
-    save(fig, 'fig5_simulation')
+    save(fig, 'fig6_simulation')
 
 
 if __name__ == '__main__':
     print('regenerating figures ->', OUT)
-    fig1(); fig2(); fig3(); fig4(); fig5()
+    fig1(); fig2(); fig3(); fig4(); fig5(); fig6()
     print('done')
