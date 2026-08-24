@@ -1,5 +1,3 @@
 __pycache__/
 *.py[cod]
 .DS_Store
-# figures are regenerable, but committed so reviewers need not run anything;
-# delete this line if you would rather keep the repo source-only.

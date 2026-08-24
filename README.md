@@ -38,10 +38,34 @@ and the subsampling read counts. `data/results_raw.tsv` carries one row per
 
 | figure | claim |
 |---|---|
+| `fig5_simulation` | multi-strain communities: recall, accuracy and cost — **read the three panels together** |
 | `fig1_accuracy_vs_coverage` | sk2bGrow is at or above Pilea at every coverage; the margin is in the 1–2× band |
 | `fig2_magnitude` | **both tools are biased at 1×, in opposite directions** — see below |
 | `fig3_negative_control` | the sorted-regression estimator invents a gradient on a non-growing culture |
 | `fig4_attribution` | the estimator, not the deterministic sketch, carries the gain |
+
+## Multi-strain simulation (Pilea's Fig-3 design, laptop scale)
+
+16 reference genomes (including *E. coli* K-12, *E. coli* O157:H7 and *Shigella
+dysenteriae* as a deliberate shared-anchor stress test), 4/8/16 strains per
+sample at 1/2/4/8x, V-shaped profiles, log2PTR ~ U[0,2], 2 replicates.
+
+| method | recall | RMSE | bias | sec | peak RSS |
+|---|---:|---:|---:|---:|---:|
+| sk2bGrow | **1.000** | **0.168** | −0.070 | 22.4 | **188 MB** |
+| Pilea (defaults) | 0.224 | 0.083 | −0.045 | **2.8** | 223 MB |
+| Pilea (gates off) | 0.997 | 0.265 | +0.168 | 17.7 | 222 MB |
+
+Neither tool reported a genome that was not in the sample (spurious = 0).
+
+**Recall and RMSE have to be read together.** Pilea at its shipped defaults has
+the best RMSE in this table, but it earns it by answering only 22% of cases —
+the high-coverage ones. At matched recall (gates off) its RMSE is 0.265 against
+sk2bGrow's 0.168. Quoting either RMSE alone misrepresents the comparison.
+
+**sk2bGrow is the slowest of the three**, and gets relatively slower as coverage
+rises (6.8 s at 1x, 45 s at 8x) because the anchor scan is linear in read count
+while Pilea's sketch lookup is not. Memory is modestly lower.
 
 ## Two things not to overclaim
 

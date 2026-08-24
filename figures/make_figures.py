@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
 sys.path.insert(0, str(Path(__file__).parent))
 from style import ARM_COLOR, ARM_LABEL, ARM_ORDER, INK, INK2, MUTED, GRID as GRIDC, apply, grid
@@ -75,6 +76,10 @@ def fig1():
             color=MUTED, va='center', ha='left')
     ax.set_xscale('log')
     ax.set_xticks(covs); ax.set_xticklabels([f'{c:g}×' for c in covs])
+    ax.xaxis.set_minor_locator(mticker.NullLocator())
+    ax.xaxis.set_minor_formatter(mticker.NullFormatter())
+    ax.xaxis.set_minor_locator(mticker.NullLocator())
+    ax.xaxis.set_minor_formatter(mticker.NullFormatter())
     ax.set_xlabel('subsampled coverage')
     ax.set_ylabel('Pearson r vs measured growth rate')
     ax.set_ylim(0.3, 1.02); ax.set_xlim(0.42, 13)
@@ -213,7 +218,56 @@ def fig4():
     save(fig, 'fig4_attribution')
 
 
+
+# --- Fig 5: multi-strain simulation — accuracy, recall and cost -------------
+def fig5():
+    """Three panels because three different things matter and they trade off:
+    how often a method answers, how right it is, and what it costs."""
+    f = ROOT / 'data' / 'sim_results.tsv'
+    if not f.exists():
+        print('  (skipping fig5: sim_results.tsv absent)'); return
+    d = pd.read_csv(f, sep='\t')
+    SIM = {'sk2bGrow': ARM_COLOR['A'],
+           'Pilea (defaults)': ARM_COLOR['C_default'],
+           'Pilea (gates off)': ARM_COLOR['C_relaxed']}
+    covs = sorted(d['coverage'].unique())
+    fig, axes = plt.subplots(1, 3, figsize=(10.4, 3.2))
+
+    for ax, (col, lab, lo) in zip(axes, [
+            ('recall', 'strains reported (recall)', 0),
+            ('rmse', 'RMSE of log₂(PTR)', 0),
+            ('seconds', 'wall-clock seconds', 0)]):
+        grid(ax)
+        for arm, colr in SIM.items():
+            s = d[d['arm'] == arm].groupby('coverage')[col].mean().reindex(covs)
+            # A lone finite point draws no line, so mark points explicitly too —
+            # otherwise Pilea-at-defaults vanishes from the RMSE panel entirely.
+            ax.plot(s.index, s.values, '-', color=colr, zorder=3)
+            ok = s.dropna()
+            ax.plot(ok.index, ok.values, 'o', color=colr, label=arm,
+                    markeredgecolor='white', markeredgewidth=0.8, zorder=4)
+        ax.set_xscale('log'); ax.set_xticks(covs)
+        ax.set_xticklabels([f'{c:g}×' for c in covs])
+        ax.xaxis.set_minor_locator(mticker.NullLocator())   # kill "3 x 10^0"
+        ax.xaxis.set_minor_formatter(mticker.NullFormatter())
+        ax.set_xlabel('coverage per strain')
+        ax.set_ylabel(lab)
+        ax.set_ylim(bottom=lo)
+    axes[0].set_ylim(-0.05, 1.08)
+    axes[0].legend(loc='lower right')
+    axes[0].set_title('answers at all', loc='left', color=INK)
+    axes[1].set_title('when it answers, how right', loc='left', color=INK)
+    axes[2].set_title('what it costs', loc='left', color=INK)
+    fig.text(0.0, -0.08,
+             'Multi-strain communities: 16 reference genomes, 4/8/16 strains per sample, V-shaped '
+             'profiles, log₂PTR ~ U[0,2].\nRecall and RMSE must be read together — Pilea at its '
+             'shipped defaults earns a flattering RMSE by answering only\n22% of cases, the easiest '
+             'ones. sk2bGrow answers every case but is the slowest of the three.',
+             fontsize=7, color=MUTED, va='top')
+    save(fig, 'fig5_simulation')
+
+
 if __name__ == '__main__':
     print('regenerating figures ->', OUT)
-    fig1(); fig2(); fig3(); fig4()
+    fig1(); fig2(); fig3(); fig4(); fig5()
     print('done')

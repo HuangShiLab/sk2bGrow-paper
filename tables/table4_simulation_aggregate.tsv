@@ -1,0 +1,4 @@
+arm	recall	rmse	bias	spurious	seconds	peak_rss_mb
+Pilea (defaults)	0.2240	0.0832	-0.0449	0.0000	2.8346	223.1890
+Pilea (gates off)	0.9974	0.2645	0.1684	0.0000	17.7317	221.8899
+sk2bGrow	1.0000	0.1681	-0.0703	0.0000	22.3504	188.4385
