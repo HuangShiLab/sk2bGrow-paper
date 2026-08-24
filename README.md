@@ -83,3 +83,4 @@ setting, which is where PTR estimation is actually hard.
 and never cycled, so a figure that drops an arm does not repaint the survivors.
 The palette is validated for colour-vision deficiency (worst adjacent pair
 ΔE 9.1 protan, 22.9 normal vision).
+# sk2bGrow-paper
