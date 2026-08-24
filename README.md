@@ -6,10 +6,17 @@ lives in the separate [`sk2bGrow`](../sk2bGrow) repository.
 ## Layout
 
 ```
-data/       committed benchmark outputs (small TSVs) — the figures' only input
-figures/    make_figures.py, style.py
-figures/out/ generated PNG + PDF (regenerable; safe to delete)
+*.docx        the two source design documents (algorithm report, architecture)
+manuscript/   outline; the manuscript itself lives here
+data/         committed benchmark outputs (small TSVs) — the only input to figures & tables
+figures/      make_figures.py, make_tables.py, style.py
+figures/out/  generated PNG + PDF (regenerable; safe to delete)
+tables/       generated markdown + TSV (regenerable)
 ```
+
+The two Chinese-language design documents are kept here rather than in the code
+repository: they are the provenance of the method and belong with the
+manuscript, not with the installable tool.
 
 ## Regenerating
 
