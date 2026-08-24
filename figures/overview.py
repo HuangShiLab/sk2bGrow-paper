@@ -18,7 +18,9 @@ from style import ARM_COLOR, INK, INK2, MUTED, grid
 
 BLUE, ORANGE = ARM_COLOR['A'], ARM_COLOR['B']
 GLEN = 4_641_652          # NC_000913.3
-EX = 'M1_2x'
+EX = 'M1_2x'              # medium M1 at 2x: below Pilea's gate, and a sample
+                          # where the random-effects escalation actually fires
+MEDIUM, DEPTH = 'M1', 2.0
 TOP = 'CjeI'              # densest enzyme; the one panel b/c follow
 
 
@@ -122,7 +124,7 @@ def panel_b(ax, w, pe):
     ax.text(-0.24, 1.14, 'b', transform=ax.transAxes, fontsize=11, fontweight='bold', color=INK, va='top')
 
 
-def panel_c(ax, w):
+def panel_c(ax, w, ransac):
     """The same windows with the coordinate thrown away — the rank-regression
     skeleton iRep and Pilea are restricted to."""
     grid(ax, axis='both')
@@ -142,12 +144,18 @@ def panel_c(ax, w):
             label=f'minus 1 window: {b2 * keep.sum():.2f}')
     ax.legend(loc='upper left', title='log₂(PTR) =', title_fontsize=6.8, fontsize=6.8,
               handletextpad=0.5, labelspacing=0.25, borderpad=0.2, alignment='left')
+    # The point of this panel is sensitivity, not that the answer is worse: with
+    # RANSAC outlier rejection the same estimator lands at `ransac`. State it, so
+    # the naive 2.51 cannot be read as "what Pilea would report".
+    if np.isfinite(ransac):
+        ax.text(0.98, 0.20, f'with RANSAC: {ransac:.2f}', transform=ax.transAxes,
+                fontsize=6.8, color=ORANGE, ha='right', va='bottom')
     ax.set_xlabel('window rank'); ax.set_ylabel('log₂ window rate')
     ax.set_title('coordinates discarded: rank regression', fontsize=8.6, color=INK, pad=4)
     ax.text(-0.24, 1.14, 'c', transform=ax.transAxes, fontsize=11, fontweight='bold', color=INK, va='top')
 
 
-def panel_d(ax, pe, out):
+def panel_d(ax, pe, out, truth):
     """Forest plot: 16 independent measurement channels, then fusion."""
     pe = pe.sort_values('n_anchors').reset_index(drop=True)
     y = np.arange(len(pe))
@@ -156,6 +164,8 @@ def panel_d(ax, pe, out):
 
     ax.axvspan(lo, hi, color=BLUE, alpha=0.18, lw=0, zorder=1)
     ax.axvline(fused, color=BLUE, lw=1.8, zorder=2)
+    if np.isfinite(truth):
+        ax.axvline(truth, color=INK2, lw=1.1, ls=(0, (4, 3)), zorder=3)
     ax.errorbar(pe.log2_ptr, y, xerr=1.96 * pe.se, fmt='o', ms=3.6, lw=0, elinewidth=1.1,
                 color=INK2, ecolor=MUTED, zorder=4)
     ax.set_yticks(y); ax.set_yticklabels(pe.enzyme, fontsize=6.4)
@@ -165,7 +175,8 @@ def panel_d(ax, pe, out):
     ax.grid(True, axis='x', zorder=0); ax.set_axisbelow(True)
     ax.text(0.0, -0.235, f'fused {fused:.2f}  [{lo:.2f}, {hi:.2f}]', transform=ax.transAxes,
             fontsize=7.0, color=BLUE, ha='left', va='center')
-    ax.text(0.0, -0.325, f'I² = {float(out["enzyme_i2"].iloc[0]):.2f}, random effects',
+    ax.text(0.0, -0.325, f'I² = {float(out["enzyme_i2"].iloc[0]):.2f}, random effects'
+            + (f';  - - -  measured {truth:.2f}' if np.isfinite(truth) else ''),
             transform=ax.transAxes, fontsize=6.6, color=INK2, ha='left', va='center')
     ax.set_title('16 enzymes = 16 strata', fontsize=8.6, color=INK, pad=4)
     ax.text(-0.46, 1.14, 'd', transform=ax.transAxes, fontsize=11, fontweight='bold', color=INK, va='top')
@@ -176,12 +187,18 @@ def build(root):
     w = pd.read_csv(root / 'data' / f'exemplar_{EX}_windows.rates.tsv', sep='\t')
     pe = pd.read_csv(root / 'data' / f'exemplar_{EX}_per_enzyme.tsv', sep='\t')
     out = pd.read_csv(root / 'data' / f'exemplar_{EX}_output.tsv', sep='\t')
+    # reference value and the RANSAC-protected comparator, both already committed
+    gt = pd.read_csv(root / 'data' / 'growth_rates.tsv', sep='\t').set_index('medium')
+    truth = float(gt.loc[MEDIUM, 'pred_log2ptr'])
+    res = pd.read_csv(root / 'data' / 'results_raw.tsv', sep='\t')
+    b = res[(res.arm == 'B') & (res.medium == MEDIUM) & (res['cov'] == DEPTH)]
+    ransac = float(b['log2ptr'].iloc[0]) if len(b) else np.nan
 
     fig = plt.figure(figsize=(7.2, 4.8))
     gs = fig.add_gridspec(2, 3, height_ratios=[0.60, 1.0], hspace=0.46, wspace=0.42,
                           left=0.085, right=0.985, top=0.975, bottom=0.135)
     panel_a(fig.add_subplot(gs[0, :]))
     panel_b(fig.add_subplot(gs[1, 0]), w, pe)
-    panel_c(fig.add_subplot(gs[1, 1]), w)
-    panel_d(fig.add_subplot(gs[1, 2]), pe, out)
+    panel_c(fig.add_subplot(gs[1, 1]), w, ransac)
+    panel_d(fig.add_subplot(gs[1, 2]), pe, out, truth)
     return fig

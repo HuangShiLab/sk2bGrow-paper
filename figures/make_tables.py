@@ -129,7 +129,58 @@ def table5():
           'corresponds to about 6.6x read coverage.')
 
 
+# --- Table 6: single-enzyme accuracy, and the ranking the sweep uses --------
+def table6():
+    """Every sk2bGrow run writes an independent V-shape fit per enzyme before
+    fusion, so the single-enzyme benchmark is a re-read of runs already done.
+
+    Caveat stated in the note: these fits share an origin estimated from all 16
+    enzymes pooled, so the column answers "how informative is this enzyme given a
+    good origin", not "how would a panel of only this enzyme behave". Table 7
+    tests the latter directly."""
+    f = DATA / 'per_enzyme_zheng.tsv'
+    if not f.exists():
+        print('  (skipping table6: per_enzyme_zheng.tsv absent)'); return
+    d = pd.read_csv(f, sep='\t')
+    grow, ctl = d[d.medium != 'RUN_OUT'], d[d.medium == 'RUN_OUT']
+    depths = sorted(d.depth.unique())
+
+    rows = []
+    for e in sorted(d.enzyme.unique()):
+        se = d[d.enzyme == e]
+        rec = {'enzyme': e, 'anchors': int(se.na.median()),
+               'windows': int(se.nw.median()), 'fit_rate': se.ok.mean()}
+        for dp in depths:
+            g = grow[(grow.enzyme == e) & (grow.depth == dp) & np.isfinite(grow.log2ptr)]
+            rec[f'r@{dp:g}x'] = stats.pearsonr(g.growth_rate, g.log2ptr)[0] if len(g) > 2 else np.nan
+            rec[f'rmse@{dp:g}x'] = float(np.sqrt(np.mean((g.log2ptr - g.pred) ** 2))) if len(g) > 2 else np.nan
+        c = ctl[ctl.enzyme == e]
+        rec['ctl_bias'] = float(np.nanmean(np.abs(c.log2ptr))) if len(c) else np.nan
+        low = [dp for dp in depths if dp <= 2]
+        rec['r_low'] = float(np.nanmean([rec[f'r@{dp:g}x'] for dp in low]))
+        rec['rmse_low'] = float(np.nanmean([rec[f'rmse@{dp:g}x'] for dp in low]))
+        rows.append(rec)
+    t = pd.DataFrame(rows)
+    # low-depth accuracy is what the panel is for; the control bias and the
+    # magnitude error are penalties, not tie-breakers on correlation alone
+    t['score'] = t.r_low - 0.25 * t.rmse_low - 0.25 * t.ctl_bias
+    t = t.sort_values('score', ascending=False).reset_index(drop=True)
+    t.insert(0, 'rank', t.index + 1)
+    cols = ['rank', 'enzyme', 'anchors', 'windows', 'fit_rate'] + \
+           [f'r@{dp:g}x' for dp in depths] + ['r_low', 'rmse_low', 'ctl_bias', 'score']
+    write('table6_enzyme_ranking', t[cols],
+          'Table 6. Single-enzyme PTR accuracy on the E. coli panel',
+          'Each enzyme fitted alone, before fusion; r is against measured growth rate '
+          'across 16 media. r_low and rmse_low average the 0.5/1/2x depths; ctl_bias is '
+          'mean |log2PTR| on the run-out control, which should be 0. The ranking tracks '
+          'anchor yield almost exactly: the top six are the six enzymes with more than '
+          '2,500 anchors, the bottom four have fewer than 450 and are anti-correlated at '
+          '0.5x. These fits share an origin estimated from all 16 enzymes pooled, so the '
+          'table measures how informative an enzyme is given a good origin, not how a '
+          'panel of that enzyme alone would behave -- Table 7 tests that directly.')
+
+
 if __name__ == '__main__':
     print('generating tables ->', OUT)
-    table1(); table2(); table3(); table5()
+    table1(); table2(); table3(); table5(); table6()
     print('done')

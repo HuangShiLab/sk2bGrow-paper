@@ -277,8 +277,9 @@ reading noise as a gradient.
 **Coverage titration.** The first 600,000 R1 reads per run were downloaded
 (≈19× of the 4.64 Mb genome); SRA preserves flowcell order, which is random with
 respect to genome position. Each sample was then truncated to nominal
-**0.5×, 1×, 2×, 5× and 10×** (n = ⌈cov·L/150⌉ reads). One medium (M6) had
-insufficient reads at 10×, so n = 15 there and 16 elsewhere.
+**0.5×, 1×, 2×, 5× and 10×** (n = ⌈cov·L/150⌉ reads). One medium (M13) is
+missing at 10× — its download finished after the subsampling pass had already
+measured the file — so n = 15 at 10× and 16 at every other depth.
 
 This titration is a **deviation from Pilea, which ran full depth only**. It is
 the axis the paper is about: PTR at metagenomic per-strain depth, not at isolate
@@ -307,8 +308,8 @@ and reverse-complemented with probability 0.5. No sequencing error is added —
 which favours the exact-match k-mer method, not ours.
 
 **Grid.** {4, 8, 16} strains × {1, 2, 4, 8}× per-strain coverage × 2
-replicates = 24 cells, 223 genome-level estimates. Strains are sampled without
-replacement per cell.
+replicates = 24 cells and 224 genome-level truth values (Pilea's gates-off arm
+returned 223 of them). Strains are sampled without replacement per cell.
 
 **Deviations from Pilea's grid**, all in the direction of a smaller experiment:
 Pilea used 120 genomes, up to 32 strains, up to 32× and 400 samples. The

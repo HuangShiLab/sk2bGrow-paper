@@ -274,7 +274,55 @@ def fig6():
     save(fig, 'fig6_simulation')
 
 
+# --- Fig 7: how many enzymes does the panel actually need? ------------------
+def fig7():
+    """Accuracy and cost against panel size. Depth is an *ordered* variable, so
+    it gets a single-hue sequential ramp, not categorical colours."""
+    f = ROOT / 'data' / 'panel_sweep.tsv'
+    if not f.exists():
+        print('  (skipping fig7: panel_sweep.tsv absent)'); return
+    d = pd.read_csv(f, sep='\t')
+    depths = sorted(d['depth'].unique())
+    ramp = plt.get_cmap('Blues')(np.linspace(0.38, 0.95, len(depths)))
+
+    fig, axes = plt.subplots(1, 3, figsize=(7.4, 2.7))
+    for ax in axes:
+        grid(ax, axis='both')
+
+    for (ax, col, lab) in ((axes[0], 'r', 'Pearson r vs growth rate'),
+                           (axes[1], 'rmse', 'RMSE vs predicted log₂PTR')):
+        for c, dp in zip(ramp, depths):
+            s_ = d[d['depth'] == dp].sort_values('k')
+            ax.plot(s_['k'], s_[col], '-o', color=c, ms=4, label=f'{dp:g}×')
+        ax.set_xlabel('enzymes in panel'); ax.set_ylabel(lab)
+        ax.set_xticks(sorted(d['k'].unique()))
+    axes[0].legend(title='depth', title_fontsize=7, ncol=2, loc='lower right',
+                   handletextpad=0.4, columnspacing=1.0, labelspacing=0.25)
+
+    # cost: one curve, depth-averaged, plus the Pilea reference where measured
+    ax = axes[2]
+    cost = d.groupby('k').agg(sec=('seconds', 'mean'), rss=('rss_mb', 'mean')).reset_index()
+    ax.plot(cost['k'], cost['sec'], '-o', color=ARM_COLOR['A'], ms=4, label='sk2bGrow')
+    if 'pilea_seconds' in d.columns and np.isfinite(d['pilea_seconds']).any():
+        ps = float(np.nanmean(d['pilea_seconds']))
+        ax.axhline(ps, color=ARM_COLOR['C_default'], lw=1.6, ls=(0, (5, 3)))
+        ax.text(cost['k'].max(), ps, ' Pilea', color=ARM_COLOR['C_default'], fontsize=7.5,
+                va='center', ha='left')
+    for _, r_ in cost.iterrows():
+        ax.annotate(f"{r_['rss']:.0f} MB", (r_['k'], r_['sec']), textcoords='offset points',
+                    xytext=(0, -12), ha='center', fontsize=6.2, color=MUTED)
+    ax.set_xlabel('enzymes in panel'); ax.set_ylabel('wall clock per sample (s)')
+    ax.set_xticks(sorted(d['k'].unique())); ax.set_ylim(bottom=0)
+    ax.legend(loc='upper left', handletextpad=0.4)
+
+    for ax, letter in zip(axes, 'abc'):
+        ax.text(-0.26, 1.12, letter, transform=ax.transAxes, fontsize=11,
+                fontweight='bold', color=INK, va='top')
+    fig.subplots_adjust(left=0.085, right=0.985, top=0.9, bottom=0.19, wspace=0.42)
+    save(fig, 'fig7_panel_size')
+
+
 if __name__ == '__main__':
     print('regenerating figures ->', OUT)
-    fig1(); fig2(); fig3(); fig4(); fig5(); fig6()
+    fig1(); fig2(); fig3(); fig4(); fig5(); fig6(); fig7()
     print('done')
