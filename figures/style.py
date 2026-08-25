@@ -14,14 +14,28 @@ ARM_COLOR = {
     'B':         '#eb6834',   # slot 2  sk2bGrow, Pilea-parity estimator
     'C_default': '#1baf7a',   # slot 3  Pilea, defaults
     'C_relaxed': '#eda100',   # slot 4  Pilea, gates off
+    'E':         '#1baf7a',   # FracMinHash sketch + our estimator -- shares the
+                              # green of the other FracMinHash arms on purpose:
+                              # in the 2x2 the colour encodes the *sketch*, and
+                              # the panel encodes the estimator.
 }
 ARM_LABEL = {
     'A':         'sk2bGrow',
     'B':         'sk2bGrow (Pilea-parity estimator)',
     'C_default': 'Pilea (defaults)',
     'C_relaxed': 'Pilea (gates off)',
+    'E':         'FracMinHash sketch + coordinate fit',
 }
-ARM_ORDER = ['A', 'B', 'C_default', 'C_relaxed']
+ARM_ORDER = ['A', 'B', 'C_default', 'C_relaxed', 'E']
+
+#: The attribution 2x2: (estimator, sketch) -> arm id.
+ATTRIBUTION = {
+    ('coordinate V-fit', '2bRAD anchors'): 'A',
+    ('coordinate V-fit', 'FracMinHash'): 'E',
+    ('rank regression', '2bRAD anchors'): 'B',
+    ('rank regression', 'FracMinHash'): 'C_relaxed',
+}
+SKETCH_COLOR = {'2bRAD anchors': '#2a78d6', 'FracMinHash': '#1baf7a'}
 
 INK, INK2, MUTED = '#1a1a1a', '#4a4a4a', '#8a8a8a'
 GRID, SURFACE = '#e6e6e6', '#fcfcfb'

@@ -18,7 +18,14 @@ def write(name, df, title, note=''):
     df.to_csv(OUT / f'{name}.tsv', sep='\t', index=False, float_format='%.4f')
     # tabulate applies a scalar floatfmt to integer columns too, which turns a
     # count like 17055 into 17055.000. Give it one format per column instead.
-    fmts = ['.0f' if pd.api.types.is_integer_dtype(df[c]) else '.3f' for c in df.columns]
+    def fmt(c):
+        if pd.api.types.is_integer_dtype(df[c]):
+            return '.0f'
+        # coverage columns hold 0.5 -- one decimal reads as a depth, three
+        # reads as a measurement it is not
+        return '.1f' if c in ('coverage', 'cov', 'depth_x') else '.3f'
+
+    fmts = [fmt(c) for c in df.columns]
     with open(OUT / f'{name}.md', 'w') as fh:
         fh.write(f'**{title}**\n\n{df.to_markdown(index=False, floatfmt=fmts)}\n')
         if note:
@@ -44,28 +51,36 @@ def table1():
 def table2():
     res = pd.read_csv(DATA / 'results_raw.tsv', sep='\t')
     grow = res[res['medium'] != 'RUN_OUT']
-    ARM = {'A': 'sk2bGrow', 'B': 'sk2bGrow (Pilea-parity estimator)',
-           'C_default': 'Pilea (defaults)', 'C_relaxed': 'Pilea (gates off)'}
+    # Ordered so the rows read as the 2x2 of Methods S4: both estimators on
+    # both sketches, then Pilea at its shipped gates.
+    ARM = {'A': 'sk2bGrow: anchors + V-fit',
+           'E': 'FracMinHash + V-fit',
+           'B': 'anchors + rank regression',
+           'C_relaxed': 'Pilea gates off: FracMinHash + rank',
+           'C_default': 'Pilea (defaults)'}
     rows = []
     for cov in sorted(grow['cov'].unique()):
         for arm, lab in ARM.items():
             s = grow[(grow['cov'] == cov) & (grow['arm'] == arm)].dropna(subset=['log2ptr'])
             if len(s) < 3 or s['log2ptr'].nunique() < 2:
                 rows.append(dict(coverage=cov, method=lab, n=len(s), pearson_r=np.nan,
-                                 rmse_vs_predicted=np.nan, slope=np.nan))
+                                 rmse_vs_predicted=np.nan, bias=np.nan, slope=np.nan))
                 continue
             ok = s.dropna(subset=['pred_log2ptr'])
             rows.append(dict(
                 coverage=cov, method=lab, n=len(s),
                 pearson_r=stats.pearsonr(s['growth_rate'], s['log2ptr'])[0],
                 rmse_vs_predicted=float(np.sqrt(((ok['log2ptr'] - ok['pred_log2ptr']) ** 2).mean())),
+                bias=float((ok['log2ptr'] - ok['pred_log2ptr']).mean()),
                 slope=float(np.polyfit(s['growth_rate'], s['log2ptr'], 1)[0])))
     write('table2_ecoli_accuracy', pd.DataFrame(rows),
           'Table 2. Accuracy on the Zheng et al. E. coli dataset, by coverage',
           'Pearson r is against independently measured growth rate. RMSE is against '
           'the lambda*C-derived prediction, which is NOT independent (derived from the '
           'same reads by marker-frequency analysis). Blank rows: the method returned '
-          'no estimate, or a constant.')
+          'no estimate, or a constant. The first four methods are the 2x2 of sketch '
+          '(2bRAD anchors vs FracMinHash) by estimator (coordinate V-fit vs sorted-rank '
+          'regression), all run on the same subsampled reads.')
 
 
 # --- Table 3: multi-strain simulation, accuracy + cost ----------------------

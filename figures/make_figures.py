@@ -15,10 +15,11 @@ import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import matplotlib.patheffects as pe
 
 sys.path.insert(0, str(Path(__file__).parent))
-from style import (ARM_COLOR, ARM_LABEL, ARM_ORDER, INK, INK2, MUTED,
-                   GRID as GRIDC, SURFACE, apply, grid)
+from style import (ARM_COLOR, ARM_LABEL, ARM_ORDER, ATTRIBUTION, INK, INK2, MUTED,
+                   SKETCH_COLOR, GRID as GRIDC, SURFACE, apply, grid)
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'figures' / 'out'
@@ -28,6 +29,9 @@ apply()
 res = pd.read_csv(ROOT / 'data' / 'results_raw.tsv', sep='\t')
 grow = res[res['medium'] != 'RUN_OUT'].copy()
 ctl = res[res['medium'] == 'RUN_OUT'].copy()
+
+
+NL = chr(10)
 
 
 def save(fig, name):
@@ -175,58 +179,80 @@ def fig4():
 
 # --- Fig 5: what is responsible — sketch or estimator? ----------------------
 def fig5():
-    """Dot plot, not bars: every value sits in 0.45-0.98, so a zero-based bar
-    chart wastes half the panel. A dot plot legitimately takes a truncated axis
-    where a bar chart may not."""
-    from matplotlib.lines import Line2D
-    fig, ax = plt.subplots(figsize=(6.0, 3.4))
-    grid(ax, axis='x')
-    covs = [0.5, 1.0, 2.0, 5.0]
-    series = [('A', 'anchors + coordinate fit'),
-              ('B', 'anchors + sorted regression'),
-              ('C_relaxed', 'FracMinHash sketch + Pilea')]
-    for row, c in enumerate(covs):
-        vals = {}
-        for arm, _ in series:
-            s_ = grow[(grow['cov'] == c) & (grow['arm'] == arm)].dropna(subset=['log2ptr'])
-            if len(s_) >= 3 and s_['log2ptr'].nunique() > 1:
-                vals[arm] = stats.pearsonr(s_['growth_rate'], s_['log2ptr'])[0]
-        if len(vals) > 1:
-            ax.plot([min(vals.values()), max(vals.values())], [row, row],
-                    color=GRIDC, lw=3, solid_capstyle='round', zorder=2)
-        # Alternate label side when two dots crowd, so numbers never overlap.
-        placed = []
-        for arm, _ in series:
-            if arm not in vals:
-                continue
-            v = vals[arm]
-            ax.plot([v], [row], 'o', ms=9, color=ARM_COLOR[arm],
-                    markeredgecolor='white', markeredgewidth=1.2, zorder=3)
-            below = any(abs(v - q) < 0.045 for q in placed)
-            ax.text(v, row + (0.30 if below else -0.22), f'{v:.2f}', ha='center',
-                    va='top' if below else 'bottom', fontsize=7, color=INK2)
-            placed.append(v)
-    ax.set_yticks(range(len(covs)))
-    ax.set_yticklabels([f'{c:g}×' for c in covs])
-    ax.set_xlim(0.38, 1.04)
-    ax.set_ylim(len(covs) - 0.5, -0.5)
-    ax.set_xlabel('Pearson r vs measured growth rate')
-    ax.set_ylabel('subsampled coverage')
-    ax.set_title('The estimator, not the sketch, carries the gain', loc='left', color=INK)
-    # explicit proxies: a series absent from the first row still needs a key
-    ax.legend(handles=[Line2D([], [], marker='o', ls='', ms=8, color=ARM_COLOR[a],
-                              markeredgecolor='white', markeredgewidth=1.2, label=l)
-                       for a, l in series],
-              loc='upper center', bbox_to_anchor=(0.5, -0.28), ncol=3,
-              columnspacing=1.2, handletextpad=0.4)
-    fig.text(0.0, -0.30,
-             'Holding the sketch fixed and swapping the estimator (the two anchor rows) moves accuracy '
-             'far more\nthan holding the estimator fixed and swapping the sketch (sorted regression, '
-             'anchors vs FracMinHash).\nUnder a sorted-regression estimator the deterministic anchors '
-             'are behind FracMinHash at 1× — 0.61 vs 0.89.',
-             fontsize=7, color=MUTED, va='top')
-    save(fig, 'fig5_attribution')
+    """The full 2x2. One panel per estimator, one line per sketch, so the
+    interaction is the difference between the two panels rather than something
+    the reader has to compute.
 
+    Colour encodes the *sketch* and is identical across panels: the same entity
+    keeps the same hue, and the panel carries the estimator.
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.2), sharey=True)
+    covs = sorted(grow['cov'].unique())
+    ESTIMATORS = [('coordinate V-fit', 'coordinate V-fit (ours)'),
+                  ('rank regression', 'rank regression (iRep / Pilea)')]
+
+    def r_at(arm, c):
+        s_ = grow[(grow['cov'] == c) & (grow['arm'] == arm)].dropna(subset=['log2ptr'])
+        if len(s_) < 3 or s_['log2ptr'].nunique() < 2:
+            return np.nan
+        return stats.pearsonr(s_['growth_rate'], s_['log2ptr'])[0]
+
+    for ax, (est, title) in zip(axes, ESTIMATORS):
+        grid(ax, axis='both')
+        drawn = {}
+        for sketch, colour in SKETCH_COLOR.items():
+            arm = ATTRIBUTION[(est, sketch)]
+            ys = [r_at(arm, c) for c in covs]
+            ok = [(c, y) for c, y in zip(covs, ys) if np.isfinite(y)]
+            if not ok:
+                continue
+            drawn[sketch] = dict(ok)
+            ax.plot([c for c, _ in ok], [y for _, y in ok], 'o-', color=colour,
+                    ms=5, markeredgecolor='white', markeredgewidth=1.0, label=sketch)
+        # Contrast of the green against the surface is under 3:1, so each series
+        # carries a visible label rather than relying on hue alone. Both curves
+        # converge at high coverage, so the labels go where the two are furthest
+        # apart -- otherwise they collide exactly where the lines do.
+        shared = [c for c in covs if all(c in d for d in drawn.values())]
+        if shared and len(drawn) == 2:
+            d1, d2 = drawn.values()
+            cx = max(shared, key=lambda c: abs(d1[c] - d2[c]))
+            first = cx == covs[0]
+            nxt = [c for c in covs if c > cx]
+            for sketch, d in drawn.items():
+                # Sit the label on the side the curve is leaving, so a rising
+                # series never has its own line drawn through its name.
+                rising = bool(nxt) and d.get(nxt[0], d[cx]) > d[cx]
+                ax.annotate(sketch, (cx, d[cx]), textcoords='offset points',
+                            xytext=(3 if first else 0, -15 if rising else 9),
+                            ha='left' if first else 'center',
+                            fontsize=7, color=SKETCH_COLOR[sketch],
+                            path_effects=[pe.withStroke(linewidth=2.5,
+                                                        foreground=SURFACE)])
+        ax.set_xscale('log')
+        ax.set_xticks(covs); ax.set_xticklabels([f'{c:g}×' for c in covs])
+        ax.xaxis.set_minor_locator(mticker.NullLocator())
+        ax.xaxis.set_minor_formatter(mticker.NullFormatter())
+        ax.set_xlabel('subsampled coverage')
+        ax.set_title(title, fontsize=9, color=INK, pad=6)
+    axes[0].set_ylabel('Pearson r vs measured growth rate')
+    axes[0].set_ylim(0.1, 1.04)
+
+    at1 = {k: r_at(v, 1.0) for k, v in ATTRIBUTION.items()}
+    gain = {sk: at1[('coordinate V-fit', sk)] - at1[('rank regression', sk)]
+            for sk in SKETCH_COLOR}
+    inter = gain['2bRAD anchors'] - gain['FracMinHash']
+    cap = (
+        f"The two factors are not additive. At 1x the coordinate fit is worth "
+        f"{gain['2bRAD anchors']:+.2f} r on 2bRAD anchors but only "
+        f"{gain['FracMinHash']:+.2f} on a FracMinHash sketch" + NL +
+        f'(interaction {inter:+.2f}). The sketch effect changes sign with the estimator: anchors are '
+        'ahead under the coordinate fit and' + NL +
+        'behind under rank regression. Neither component carries the result on its own.'
+    ).replace('1x', '1\u00d7')
+    fig.text(0.0, -0.02, cap, fontsize=7, color=MUTED, va='top')
+    fig.subplots_adjust(left=0.095, right=0.985, top=0.88, bottom=0.17, wspace=0.09)
+    save(fig, 'fig5_attribution')
 
 
 # --- Fig 6: multi-strain simulation — accuracy, recall and cost -------------

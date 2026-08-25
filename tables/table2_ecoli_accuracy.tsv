@@ -1,21 +1,26 @@
-coverage	method	n	pearson_r	rmse_vs_predicted	slope
-0.5000	sk2bGrow	16	0.9132	0.3041	0.6152
-0.5000	sk2bGrow (Pilea-parity estimator)	16	0.1645	1.1879	0.0577
-0.5000	Pilea (defaults)	0			
-0.5000	Pilea (gates off)	16			
-1.0000	sk2bGrow	16	0.9809	0.1568	0.7791
-1.0000	sk2bGrow (Pilea-parity estimator)	16	0.6828	1.0266	0.1230
-1.0000	Pilea (defaults)	0			
-1.0000	Pilea (gates off)	16	0.8885	0.3971	0.5501
-2.0000	sk2bGrow	16	0.9815	0.1278	0.8402
-2.0000	sk2bGrow (Pilea-parity estimator)	16	0.7556	0.6672	0.2906
-2.0000	Pilea (defaults)	0			
-2.0000	Pilea (gates off)	16	0.9471	0.2592	0.7548
-5.0000	sk2bGrow	16	0.9788	0.0387	0.9197
-5.0000	sk2bGrow (Pilea-parity estimator)	16	0.9137	0.3456	0.6097
-5.0000	Pilea (defaults)	0			
-5.0000	Pilea (gates off)	16	0.9535	0.1031	0.9088
-10.0000	sk2bGrow	16	0.9684	0.0625	0.9506
-10.0000	sk2bGrow (Pilea-parity estimator)	16	0.9129	0.2300	0.7600
-10.0000	Pilea (defaults)	16	0.9712	0.0767	0.8409
-10.0000	Pilea (gates off)	16	0.9712	0.0767	0.8409
+coverage	method	n	pearson_r	rmse_vs_predicted	bias	slope
+0.5000	sk2bGrow: anchors + V-fit	16	0.9132	0.3041	-0.2520	0.6152
+0.5000	FracMinHash + V-fit	16	0.7237	0.3823	-0.2754	0.5645
+0.5000	anchors + rank regression	16	0.1645	1.1879	1.1193	0.0577
+0.5000	Pilea gates off: FracMinHash + rank	16				
+0.5000	Pilea (defaults)	0				
+1.0000	sk2bGrow: anchors + V-fit	16	0.9809	0.1568	-0.1302	0.7791
+1.0000	FracMinHash + V-fit	16	0.9395	0.2132	-0.1531	0.9296
+1.0000	anchors + rank regression	16	0.6828	1.0266	0.9676	0.1230
+1.0000	Pilea gates off: FracMinHash + rank	16	0.8885	0.3971	0.3541	0.5501
+1.0000	Pilea (defaults)	0				
+2.0000	sk2bGrow: anchors + V-fit	16	0.9815	0.1278	-0.0783	0.8402
+2.0000	FracMinHash + V-fit	16	0.9838	0.0928	-0.0394	0.8747
+2.0000	anchors + rank regression	16	0.7556	0.6672	0.6083	0.2906
+2.0000	Pilea gates off: FracMinHash + rank	16	0.9471	0.2592	0.2413	0.7548
+2.0000	Pilea (defaults)	0				
+5.0000	sk2bGrow: anchors + V-fit	16	0.9788	0.0387	0.0013	0.9197
+5.0000	FracMinHash + V-fit	16	0.9766	0.0506	0.0308	0.9498
+5.0000	anchors + rank regression	16	0.9137	0.3456	0.3151	0.6097
+5.0000	Pilea gates off: FracMinHash + rank	16	0.9535	0.1031	0.0242	0.9088
+5.0000	Pilea (defaults)	0				
+10.0000	sk2bGrow: anchors + V-fit	16	0.9684	0.0625	0.0310	0.9506
+10.0000	FracMinHash + V-fit	16	0.9423	0.1490	0.0964	1.0176
+10.0000	anchors + rank regression	16	0.9129	0.2300	0.2034	0.7600
+10.0000	Pilea gates off: FracMinHash + rank	16	0.9712	0.0767	-0.0478	0.8409
+10.0000	Pilea (defaults)	16	0.9712	0.0767	-0.0478	0.8409

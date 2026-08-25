@@ -75,8 +75,33 @@ K-12 / O157:H7 / *Shigella* as a shared-anchor stress test), 4/8/16 strains ×
 - ❌ Scale to Pilea's full grid (32 strains, 32×, 400 samples) — needs a cluster.
 
 ### 4. Attribution — sketch or estimator? — **Fig 5** ✅ `fig5_attribution`
-Holding the estimator fixed, anchors are *behind* FracMinHash at 1×. The gain is
-the coordinate-aware fit, not the deterministic sketch.
+The full 2 × 2 (both sketches × both estimators) on the same subsampled reads.
+Pearson r against measured growth rate:
+
+| coverage | anchors + V-fit | FracMinHash + V-fit | anchors + rank | FracMinHash + rank (Pilea) |
+|---|---|---|---|---|
+| 0.5× | **0.913** | 0.724 | 0.164 | — (degenerate) |
+| 1× | **0.981** | 0.940 | 0.683 | 0.889 |
+| 2× | 0.982 | **0.984** | 0.756 | 0.947 |
+| 5× | **0.979** | 0.977 | 0.914 | 0.954 |
+| 10× | 0.968 | 0.942 | 0.913 | **0.971** |
+
+- ✅ **The two factors interact; neither carries the result alone.** At 1× the
+  coordinate fit is worth +0.30 r on anchors but only +0.05 on a FracMinHash
+  sketch (interaction +0.25), and the *sketch* effect changes sign with the
+  estimator: anchors are +0.04 ahead under the V-fit and −0.21 behind under rank
+  regression. The earlier three-arm reading — "the gain is the estimator, not the
+  sketch" — was an artefact of the missing cell.
+- ✅ **On magnitude the estimator is the dominant factor.** RMSE at 1×: 0.157
+  (A) and 0.213 (E) under the V-fit, against 1.027 (B) and 0.397 (C) under rank
+  regression. Rank regression is biased upward on anchors by +0.97 log₂ units.
+- ✅ **At 0.5× only the combination survives** (r = 0.913): the V-fit on a
+  FracMinHash sketch drops to 0.724 and Pilea's own arm is fully degenerate.
+  Deterministic anchors are what keeps windows populated at that depth; the
+  coordinate fit is what turns them into an unbiased slope.
+- Arm E is built by rewriting Pilea's sketch into sk2bGrow's count-table format
+  and running the *unmodified* estimator, so the only difference from arm A is
+  which loci are counted (Methods §4).
 
 ### 5. How many enzymes are needed? — **Fig 7 / Table 7** ✅
 Rank all 16 by standalone accuracy (each `per_enzyme.tsv` is already an

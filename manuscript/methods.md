@@ -374,11 +374,30 @@ output is fully degenerate — measured coverage exactly 1.000 and log₂PTR exa
 1× and 5×, however, the gates-off estimator is informative (r = 0.89, 0.95, 0.95
 against λ) and is nevertheless suppressed.
 
-**Attribution arm.** To separate "deterministic anchors" from "coordinate-aware
-estimator", a third arm runs sk2bGrow's own anchors through Pilea's windowing
-and estimator (25 kb fixed-bp windows, sorted-rank regression with RANSAC). Any
-difference between this arm and full sk2bGrow is attributable to the estimator;
-any difference between this arm and Pilea is attributable to the sketch.
+**Attribution arms.** sk2bGrow differs from Pilea in two places at once — what
+is counted (deterministic 2bRAD anchors vs a FracMinHash sketch) and how the
+gradient is fitted (a coordinate V-fit vs sorted-rank regression). Comparing the
+two end-to-end pipelines cannot say which change is responsible, so the two
+factors are crossed into a full 2 × 2 and all four cells are run on the same
+subsampled reads:
+
+| | coordinate V-fit | sorted-rank regression |
+|---|---|---|
+| **2bRAD anchors** | sk2bGrow (arm A) | arm B |
+| **FracMinHash** | arm E | Pilea, gates off (arm C) |
+
+Arm B takes sk2bGrow's anchor counts and estimates from them exactly as Pilea
+does (25 kb fixed-bp windows, sorted-rank regression with RANSAC). Arm E is the
+transpose: Pilea's own sketch output is rewritten into sk2bGrow's count-table
+format — one row per hashed locus, with its genome coordinate — and then passed
+through the unmodified sk2bGrow estimator, so it receives the same zero-truncated
+mixture, the same GC and outlier handling, the same per-enzyme inverse-variance
+fusion, and the same standard errors. Building arm E by feeding raw window rates
+into the V-fit would *not* be a controlled comparison: an earlier attempt at
+that returned log₂PTR = 2.65 against a measured 1.73, because the surrounding
+machinery, not the fitting geometry, was what had been removed.
+
+The 2 × 2 is what licenses any statement of the form "the gain comes from X".
 
 ---
 
