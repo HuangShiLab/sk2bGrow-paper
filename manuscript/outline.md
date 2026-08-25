@@ -214,6 +214,19 @@ Pilea used a rotating biological contactor. We have no application dataset yet.
   does **not** yet act on this (`enzyme::CONTAINMENTS` is declared but unused).
 - The panel should probably be ~8 enzymes, not 16: the four sparsest contribute
   no accuracy and double the negative-control bias.
+- **The panel is what works at low depth, not any single fit.** At 0.5× the mean
+  per-enzyme V-fit has r² = −0.009 — individually worthless — yet fusing sixteen
+  of them correlates 0.913 with measured growth rate. This is the clearest
+  argument for a multi-enzyme panel over a single deterministic sketch, and it is
+  measured rather than asserted.
+- **Bsp24I ⊂ CjePI is a real dependency with no practical effect.** Re-fusing
+  every sample with it dropped moves the estimate by 0.007–0.011 on average and
+  0.050 at worst, and does not improve the Q rejection rate. Report the
+  dependency; do not claim the correction matters.
+- **An annotated origin is worth ~10% of RMSE below 2× and nothing above it**
+  (0.304 → 0.271 at 0.5×, 0.157 → 0.143 at 1×, identical at 5–10×). It does not
+  explain the low-coverage slope compression: with the origin exactly right the
+  0.5× slope is still 0.74.
 - **Cochran's Q earned its keep, and has a blind spot.** It was rejecting in
   56–69 % of samples; that was not biology, it was our double-count. After the
   fix, 6–24 %. A design whose QC can detect its own implementation defects is
@@ -245,8 +258,14 @@ definitions (§5), environment (§6), availability (§7).
   anchors and +0.05 on a FracMinHash sketch, and the sketch effect changes sign
   with the estimator. The claim the data supports is about the **combination**,
   which is the only cell that works at 0.5×.
-- *That sk2bGrow is unbiased.* It still compresses the range at low coverage
-  (slope 0.62 at 0.5×, 0.78 at 1×) and underestimates; Pilea overestimates.
+- *That sk2bGrow is unbiased.* It compresses the range at low coverage (slope
+  0.68 at 0.5×, 0.86 at 1×) and mildly over-estimates at depth (1.03 at 5×, 1.07
+  at 10×); Pilea over-estimates throughout. **And we cannot yet say why.** Three
+  candidate mechanisms were tested and excluded — outlier trimming (no windows
+  are trimmed), inverse-variance fusion (it improves the slope, 0.681 vs 0.497
+  unweighted), and origin error (worth only 0.06 of the 0.32 shortfall). Do not
+  repeat the errors-in-variables explanation: the predictor in that regression is
+  effectively noise-free, so it does not apply.
 - *That sk2bGrow is uniformly faster.* Per sample on this dataset it is
   (8.6 s vs 11.6 s at k = 16, 3.2 s at k = 2), but Pilea **at its shipped
   defaults** is far cheaper below its gate because it does no fitting at all
