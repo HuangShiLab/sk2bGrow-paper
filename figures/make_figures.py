@@ -8,7 +8,13 @@ recomputation — the figures are a pure function of the committed data, so a
 reviewer can reproduce them without rerunning the benchmark.
 """
 from pathlib import Path
+import os
 import sys
+
+# Matplotlib stamps the wall clock into every PDF, so regenerating dirties all
+# of them even when nothing changed. Pin it: the figures are a pure function of
+# the committed data and their bytes should be too.
+os.environ.setdefault('SOURCE_DATE_EPOCH', '0')
 
 import numpy as np
 import pandas as pd
