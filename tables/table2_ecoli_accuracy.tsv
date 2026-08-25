@@ -1,21 +1,21 @@
 coverage	method	n	pearson_r	rmse_vs_predicted	slope
-0.5000	sk2bGrow	16	0.9069	0.5063	0.5187
-0.5000	sk2bGrow (Pilea-parity estimator)	16	0.4454	1.1295	0.1148
+0.5000	sk2bGrow	16	0.9132	0.3041	0.6152
+0.5000	sk2bGrow (Pilea-parity estimator)	16	0.1645	1.1879	0.0577
 0.5000	Pilea (defaults)	0			
 0.5000	Pilea (gates off)	16			
-1.0000	sk2bGrow	16	0.9539	0.3392	0.7195
-1.0000	sk2bGrow (Pilea-parity estimator)	16	0.6050	0.9716	0.1296
+1.0000	sk2bGrow	16	0.9809	0.1568	0.7791
+1.0000	sk2bGrow (Pilea-parity estimator)	16	0.6828	1.0266	0.1230
 1.0000	Pilea (defaults)	0			
 1.0000	Pilea (gates off)	16	0.8885	0.3971	0.5501
-2.0000	sk2bGrow	16	0.9753	0.1854	0.7546
-2.0000	sk2bGrow (Pilea-parity estimator)	16	0.8183	0.6849	0.3108
+2.0000	sk2bGrow	16	0.9815	0.1278	0.8402
+2.0000	sk2bGrow (Pilea-parity estimator)	16	0.7556	0.6672	0.2906
 2.0000	Pilea (defaults)	0			
 2.0000	Pilea (gates off)	16	0.9471	0.2592	0.7548
-5.0000	sk2bGrow	16	0.9787	0.0343	0.9176
-5.0000	sk2bGrow (Pilea-parity estimator)	16	0.9122	0.3707	0.5836
+5.0000	sk2bGrow	16	0.9788	0.0387	0.9197
+5.0000	sk2bGrow (Pilea-parity estimator)	16	0.9137	0.3456	0.6097
 5.0000	Pilea (defaults)	0			
 5.0000	Pilea (gates off)	16	0.9535	0.1031	0.9088
-10.0000	sk2bGrow	15	0.9737	0.0565	0.9445
-10.0000	sk2bGrow (Pilea-parity estimator)	15	0.8979	0.2572	0.7154
-10.0000	Pilea (defaults)	15	0.9724	0.0791	0.8424
-10.0000	Pilea (gates off)	15	0.9724	0.0791	0.8424
+10.0000	sk2bGrow	16	0.9684	0.0625	0.9506
+10.0000	sk2bGrow (Pilea-parity estimator)	16	0.9129	0.2300	0.7600
+10.0000	Pilea (defaults)	16	0.9712	0.0767	0.8409
+10.0000	Pilea (gates off)	16	0.9712	0.0767	0.8409

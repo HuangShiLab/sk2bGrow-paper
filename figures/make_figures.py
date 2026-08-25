@@ -89,7 +89,9 @@ def fig2():
     ax.xaxis.set_minor_formatter(mticker.NullFormatter())
     ax.set_xlabel('subsampled coverage')
     ax.set_ylabel('Pearson r vs measured growth rate')
-    ax.set_ylim(0.3, 1.02); ax.set_xlim(0.42, 13)
+    # arm B collapses to r = 0.16 at 0.5x; the axis has to reach it, or the
+    # series would leave the frame with no indication that it did.
+    ax.set_ylim(0.1, 1.03); ax.set_xlim(0.42, 13)
     ax.set_title('Accuracy against an independent ground truth', loc='left', color=INK)
     ax.legend(loc='lower right')
     fig.text(0.0, -0.05,
@@ -269,56 +271,73 @@ def fig6():
              'Multi-strain communities: 16 reference genomes, 4/8/16 strains per sample, V-shaped '
              'profiles, log₂PTR ~ U[0,2].\nRecall and RMSE must be read together — Pilea at its '
              'shipped defaults earns a flattering RMSE by answering only\n22% of cases, the easiest '
-             'ones. sk2bGrow answers every case but is the slowest of the three.',
+             'ones. sk2bGrow answers every case; cost crosses over at 4×, below which it is the '
+             'cheaper of the two\narms that answer.',
              fontsize=7, color=MUTED, va='top')
     save(fig, 'fig6_simulation')
 
 
 # --- Fig 7: how many enzymes does the panel actually need? ------------------
 def fig7():
-    """Accuracy and cost against panel size. Depth is an *ordered* variable, so
-    it gets a single-hue sequential ramp, not categorical colours."""
+    """Panel size against accuracy and cost.
+
+    Depth is an *ordered* variable in a/b/c, so it gets a single-hue sequential
+    ramp rather than categorical colours; d compares four *methods*, so it uses
+    the fixed categorical slots.
+    """
     f = ROOT / 'data' / 'panel_sweep.tsv'
     if not f.exists():
         print('  (skipping fig7: panel_sweep.tsv absent)'); return
     d = pd.read_csv(f, sep='\t')
-    depths = sorted(d['depth'].unique())
-    ramp = plt.get_cmap('Blues')(np.linspace(0.38, 0.95, len(depths)))
+    depths, ks = sorted(d['depth'].unique()), sorted(d['k'].unique())
+    ramp = plt.get_cmap('Blues')(np.linspace(0.34, 0.95, len(depths)))
 
-    fig, axes = plt.subplots(1, 3, figsize=(7.4, 2.7))
-    for ax in axes:
+    fig, axes = plt.subplots(2, 2, figsize=(7.0, 5.2))
+    (ax_r, ax_e), (ax_t, ax_p) = axes
+    for ax in axes.ravel():
         grid(ax, axis='both')
 
-    for (ax, col, lab) in ((axes[0], 'r', 'Pearson r vs growth rate'),
-                           (axes[1], 'rmse', 'RMSE vs predicted log₂PTR')):
+    for ax, col, lab, ttl in (
+            (ax_r, 'r', 'Pearson r vs growth rate', 'ranking: saturated, flat in k'),
+            (ax_e, 'rmse', 'RMSE vs measured log₂PTR', 'magnitude: worse with more enzymes'),
+            (ax_t, 'seconds', 'wall clock per sample (s)', 'cost: linear in k')):
         for c, dp in zip(ramp, depths):
-            s_ = d[d['depth'] == dp].sort_values('k')
-            ax.plot(s_['k'], s_[col], '-o', color=c, ms=4, label=f'{dp:g}×')
-        ax.set_xlabel('enzymes in panel'); ax.set_ylabel(lab)
-        ax.set_xticks(sorted(d['k'].unique()))
-    axes[0].legend(title='depth', title_fontsize=7, ncol=2, loc='lower right',
-                   handletextpad=0.4, columnspacing=1.0, labelspacing=0.25)
+            g = d[d['depth'] == dp].sort_values('k')
+            ax.plot(g['k'], g[col], '-o', color=c, ms=4, label=f'{dp:g}×')
+        ax.set_xlabel('enzymes in panel'); ax.set_ylabel(lab); ax.set_xticks(ks)
+        ax.set_title(ttl, fontsize=8.4, color=INK, pad=4)
+    ax_r.legend(title='read depth', title_fontsize=7, ncol=2, loc='lower right',
+                handletextpad=0.4, columnspacing=1.0, labelspacing=0.25)
+    ax_t.set_ylim(bottom=0)
+    # r lives in [0.90, 0.99] here; letting it autoscale would magnify noise that
+    # n = 16 media cannot resolve, so the axis is pinned to an honest range.
+    ax_r.set_ylim(0.88, 1.0)
 
-    # cost: one curve, depth-averaged, plus the Pilea reference where measured
-    ax = axes[2]
-    cost = d.groupby('k').agg(sec=('seconds', 'mean'), rss=('rss_mb', 'mean')).reset_index()
-    ax.plot(cost['k'], cost['sec'], '-o', color=ARM_COLOR['A'], ms=4, label='sk2bGrow')
-    if 'pilea_seconds' in d.columns and np.isfinite(d['pilea_seconds']).any():
-        ps = float(np.nanmean(d['pilea_seconds']))
-        ax.axhline(ps, color=ARM_COLOR['C_default'], lw=1.6, ls=(0, (5, 3)))
-        ax.text(cost['k'].max(), ps, ' Pilea', color=ARM_COLOR['C_default'], fontsize=7.5,
-                va='center', ha='left')
-    for _, r_ in cost.iterrows():
-        ax.annotate(f"{r_['rss']:.0f} MB", (r_['k'], r_['sec']), textcoords='offset points',
-                    xytext=(0, -12), ha='center', fontsize=6.2, color=MUTED)
-    ax.set_xlabel('enzymes in panel'); ax.set_ylabel('wall clock per sample (s)')
-    ax.set_xticks(sorted(d['k'].unique())); ax.set_ylim(bottom=0)
-    ax.legend(loc='upper left', handletextpad=0.4)
+    # d: cost against depth, comparing methods rather than panel sizes
+    series = [
+        (d[d['k'] == 2].sort_values('depth'), 'seconds', ARM_COLOR['A'], 'sk2bGrow, 2 enzymes', '-'),
+        (d[d['k'] == 16].sort_values('depth'), 'seconds', ARM_COLOR['B'], 'sk2bGrow, 16 enzymes', '-'),
+        (d.drop_duplicates('depth').sort_values('depth'), 'pilea_seconds',
+         ARM_COLOR['C_relaxed'], 'Pilea, gates off', '-'),
+        (d.drop_duplicates('depth').sort_values('depth'), 'pilea_default_seconds',
+         ARM_COLOR['C_default'], 'Pilea, defaults', (0, (4, 2.5))),
+    ]
+    for g, col, colour, lab, ls in series:
+        if col not in g.columns or not np.isfinite(g[col]).any():
+            continue
+        ax_p.plot(g['depth'], g[col], marker='o', ms=4, color=colour, label=lab, ls=ls)
+    ax_p.set_xscale('log'); ax_p.set_xticks(depths)
+    ax_p.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f'{v:g}×'))
+    ax_p.set_xlabel('read depth'); ax_p.set_ylabel('wall clock per sample (s)')
+    ax_p.set_ylim(bottom=0)
+    ax_p.legend(loc='upper left', handletextpad=0.5, labelspacing=0.25)
+    ax_p.set_title('sk2bGrow vs Pilea, same cells', fontsize=8.4, color=INK, pad=4)
 
-    for ax, letter in zip(axes, 'abc'):
-        ax.text(-0.26, 1.12, letter, transform=ax.transAxes, fontsize=11,
+    for ax, letter in zip(axes.ravel(), 'abcd'):
+        ax.text(-0.22, 1.11, letter, transform=ax.transAxes, fontsize=11,
                 fontweight='bold', color=INK, va='top')
-    fig.subplots_adjust(left=0.085, right=0.985, top=0.9, bottom=0.19, wspace=0.42)
+    fig.subplots_adjust(left=0.10, right=0.985, top=0.93, bottom=0.095,
+                        wspace=0.33, hspace=0.46)
     save(fig, 'fig7_panel_size')
 
 

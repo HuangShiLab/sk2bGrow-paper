@@ -75,6 +75,17 @@ and a 32 bp tag this retains (150 − 32 + 1)/150 ≈ 0.79 of the local depth �
 same factor that applies to a k = 31 sketch, so the two methods are compared at
 matched *effective* depth rather than matched nominal coverage.
 
+A single physical read window can satisfy **two enzymes'** patterns, because the
+panel is not disjoint: every Bsp24I site is also a CjePI site (§2). Such a window
+is one observation and is credited **once to each stratum it belongs to**. The
+read is therefore scanned once per distinct tag length, not once per enzyme —
+scanning per enzyme visits the shared window twice and counts the locus twice for
+both enzymes. That is not hypothetical: it was a defect in this implementation,
+and it inflated CjePI's total count on *E. coli* K-12 by 21.5 %, concentrated at
+1,352 loci hit exactly 2.00× of which 94.7 % were Bsp24I sites. Because the
+inflation is *local* rather than uniform it distorts the coverage profile instead
+of cancelling in the fit's intercept.
+
 Anchors shared between reference genomes are split by expectation-maximisation,
 following the shared-k-mer reassignment Pilea borrows from sylph. Each shared
 count is apportioned in proportion to current genome abundances; abundances are
@@ -205,6 +216,13 @@ A sample passes QC on estimated coverage, dispersion, the fraction of reference
 windows covered, and EM containment; failures are reported with a reason rather
 than dropped silently.
 
+**What the consistency test caught.** Cross-enzyme heterogeneity was the signal
+that exposed the double-counting defect described in §1.2: before the fix,
+Cochran's *Q* rejected in 56–69 % of samples with mean *I*² = 0.34–0.42, and the
+random-effects escalation was firing routinely. After the fix the same samples
+give mean *I*² = 0.07–0.28 and *Q* rejects in 6–24 %. The enzymes were correctly
+reporting that something was wrong with one of them.
+
 **Known gap.** The fusion currently treats all 16 enzymes as independent strata.
 They are not: Bsp24I's site set is *totally contained* in CjePI's (1,636/1,636,
 891/891 and 2,910/2,910 tags on three genomes — the two patterns, written in
@@ -262,9 +280,16 @@ Accessions are in `benches/zheng2020/picks.tsv`.
 
 * λ, the directly measured growth rate — used for correlation, because it is
   measured, not modelled;
-* the *predicted* log₂PTR = λ·C/ln 2 from the paper's own measured C — used for
-  RMSE and slope, because a correlation cannot detect a compressed dynamic
-  range.
+* the *predicted* log₂PTR = λ·C/ln 2, using the C period reported by the same
+  study — used for RMSE and slope, because a correlation cannot detect a
+  compressed dynamic range.
+
+  This second reference is **not fully independent of sequencing**: C was
+  determined in part by marker-frequency analysis, which is itself an ori:ter
+  ratio. RMSE and slope against it are therefore a *consistency check on
+  magnitude*, not an independent validation. The correlation against λ, an
+  optical growth measurement, is independent, and is the number to read as
+  validation.
 
 **Run-out sample.** Pilea excluded the run-out samples. We keep one
 (`E.coli_gDNA_RUN_OUT`, sample alias CON-C) as a **negative control**. In a
@@ -277,9 +302,8 @@ reading noise as a gradient.
 **Coverage titration.** The first 600,000 R1 reads per run were downloaded
 (≈19× of the 4.64 Mb genome); SRA preserves flowcell order, which is random with
 respect to genome position. Each sample was then truncated to nominal
-**0.5×, 1×, 2×, 5× and 10×** (n = ⌈cov·L/150⌉ reads). One medium (M13) is
-missing at 10× — its download finished after the subsampling pass had already
-measured the file — so n = 15 at 10× and 16 at every other depth.
+**0.5×, 1×, 2×, 5× and 10×** (n = ⌈cov·L/150⌉ reads). All 16 media, plus the
+control, are present at every depth.
 
 This titration is a **deviation from Pilea, which ran full depth only**. It is
 the axis the paper is about: PTR at metagenomic per-strain depth, not at isolate

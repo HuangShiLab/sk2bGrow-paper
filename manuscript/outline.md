@@ -41,14 +41,16 @@ Full prose in `manuscript/methods.md` §1.
 
 ### 2. Accuracy on bacterial isolates — **Fig 2** ✅ + 🟡 `fig2_accuracy_vs_coverage`, `fig3_magnitude`
 Zheng et al. 2020, E. coli K-12, 16 media (λ 0.40–1.72 h⁻¹), PRJNA615952.
-- ✅ r = 0.954 at 1×, 0.975 at 2×, 0.979 at 5× (n = 16).
+- ✅ r = **0.981 at 1×**, 0.982 at 2×, 0.979 at 5× (n = 16). Accuracy is already
+  saturated at 1×, matching Pilea's *published full-depth* r of 0.976.
+- ✅ RMSE 0.157 at 1×, slope 0.78; 0.304 / 0.62 at 0.5×.
 - ✅ Pilea at defaults returns **no estimate below 10×**.
 - 🟡 Full-depth run to match Pilea's own Fig 2 directly — needs ~55 GB, deferred.
 - ❌ Assembly-quality sensitivity (45,529 *Escherichia* assemblies × ANI × N50).
 
 **[NEW] 2b. Negative control — `fig4_negative_control`.** Pilea *excluded* the
 run-out samples. We use one: a replication run-out must give log₂PTR ≈ 0.
-sk2bGrow 0.045–0.113; sorted regression returns **2.17** at 0.5×. ✅
+sk2bGrow 0.046–0.260; sorted regression returns **2.21** at 0.5×. ✅
 
 **[NEW] 2d. Which gate suppresses Pilea, and is it right to? ✅**
 Re-applying each default threshold to the gates-off output (exact, no extra
@@ -67,29 +69,45 @@ not *"Pilea is over-conservative"*.
 Pilea's Fig-3 design at reduced scale: 16 reference genomes (incl. *E. coli*
 K-12 / O157:H7 / *Shigella* as a shared-anchor stress test), 4/8/16 strains ×
 1/2/4/8×, V-shaped profiles, log₂PTR ~ U[0,2].
-- ✅ Recall 1.00 for sk2bGrow at every cell; Pilea-defaults 0.185.
-- ✅ sk2bGrow RMSE 0.181 vs Pilea-relaxed 0.293 aggregate.
-- ✅ Opposite bias: sk2bGrow −0.082, Pilea +0.200.
+- ✅ Recall 1.000 for sk2bGrow at every cell; Pilea-defaults 0.224.
+- ✅ sk2bGrow RMSE **0.134** vs Pilea-gates-off 0.265 aggregate.
+- ✅ Opposite bias, and sk2bGrow's is now negligible: **−0.013** vs Pilea **+0.168**.
 - ❌ Scale to Pilea's full grid (32 strains, 32×, 400 samples) — needs a cluster.
 
 ### 4. Attribution — sketch or estimator? — **Fig 5** ✅ `fig5_attribution`
 Holding the estimator fixed, anchors are *behind* FracMinHash at 1×. The gain is
 the coordinate-aware fit, not the deterministic sketch.
 
-### 5. How many enzymes are needed? — **Fig 7 / Table 5** 🟡 *(running)*
+### 5. How many enzymes are needed? — **Fig 7 / Table 7** 🟡 *(second pass running)*
 Rank all 16 by standalone accuracy (each `per_enzyme.tsv` is already an
-independent V-shape fit, so the ranking is free), then sweep k ∈ {2,4,8,12,16}.
-Ranking is dominated by anchor yield: the top 6 are exactly the 6 with > 2,500
-anchors; the bottom 4 have < 450 and are anti-correlated at 0.5×.
-Early partial result (k = 2 vs the full panel, 0.5×): r 0.917 vs 0.907,
-**RMSE 0.279 vs 0.506**, slope 0.733 vs 0.519, at 2.3 s vs 14.8 s.
-If this holds, the sparse enzymes are adding variance, not strata — a result
-that argues against the paper's own 16-enzyme design and must be reported as
-such.
+independent V-shape fit, so the ranking is free — **Table 6**), then sweep
+k ∈ {2,4,8,12,16}. Ranking is dominated by anchor yield: the top six are the six
+with > 1,900 anchors; the bottom four have < 450 and are near-zero or negative at
+0.5×.
 
-### 6. Computational efficiency — **Table 2** ✅
-Index, profile wall-clock, peak RSS, database size. **Pilea is faster** at equal
-panel size; the panel sweep is what closes the gap.
+**This analysis is what found the counting bug.** The first pass said k = 2 beat
+the full panel by a wide margin at low depth. That was not a property of the
+panel: adding Bsp24I (at k = 8) was corrupting CjePI through the double-count
+described in Methods §1.2. After the fix the picture is ordinary and sensible —
+accuracy peaks around **k = 8** (r 0.967, RMSE 0.167 over ≤2×) and decays gently
+to k = 16 (0.959 / 0.196), while cost is linear in k. The residual k = 8 → 16
+decay is real but small; the sharper cost is on the negative control, where mean
+|log₂PTR| rises 0.073 → 0.145.
+
+⚠️ The subsets in the first pass were chosen by the *pre-fix* ranking. The sweep
+is being repeated with the corrected ranking so the two agree; numbers here are
+from the first-pass subsets and will be refreshed.
+
+### 6. Computational efficiency — **Table 7** ✅
+Measured the same way for both tools (`/usr/bin/time -l`, 8 threads, k-mer
+counting inside the timed region). On the 85 *E. coli* cells: sk2bGrow 8.6 s /
+192 MB at k = 16, 7.0 s at k = 8, 3.2 s at k = 2; Pilea **11.6 s / 157 MB** with
+gates off. **The earlier "Pilea is ~7× faster" claim does not survive this
+measurement** — it came from the simulation, where Pilea's shipped gates skip
+fitting entirely below 5× and it reports nothing. Pilea also has a striking
+non-monotonic cost profile: 5.6 s at 0.5×, **21.1 s at 2×**, 5.6 s at 10×,
+because its ZTP-mixture EM (`--max-iter` defaults to infinity) is slowest where
+the mixture is least identifiable — exactly the depth band this paper is about.
 
 ### 7. Application ❌
 Pilea used a rotating biological contactor. We have no application dataset yet.
@@ -100,7 +118,12 @@ Pilea used a rotating biological contactor. We have no application dataset yet.
 - Limits: single-strain-per-species; relic DNA; multi-fork; plasmids.
 - Bsp24I ⊂ CjePI: the panel is ~15 independent strata, not 16 — and the fusion
   does **not** yet act on this (`enzyme::CONTAINMENTS` is declared but unused).
-- If §5 holds, the panel should be *smaller*, not larger.
+- The panel should probably be ~8 enzymes, not 16: the four sparsest contribute
+  no accuracy and double the negative-control bias.
+- **Cochran's Q earned its keep.** It was rejecting in 56–69 % of samples; that
+  was not biology, it was our double-count. After the fix, 6–24 %. A design
+  whose QC can detect its own implementation defects is worth the complexity —
+  and this is the honest way to present that, not as a clean-room result.
 
 ## Methods ✅ → `manuscript/methods.md`
 
@@ -122,8 +145,11 @@ definitions (§5), environment (§6), availability (§7).
 - *That deterministic anchors are the advance.* Holding the estimator fixed,
   anchors are **behind** FracMinHash at 1× (r 0.61 vs 0.89). The contribution is
   the coordinate-aware fit the anchors make possible.
-- *That sk2bGrow is unbiased.* It compresses the PTR range at low coverage
-  (slope 0.52 at 0.5×) and underestimates; Pilea overestimates.
-- *That sk2bGrow is faster.* It is not. Pilea at defaults is ~7× faster.
+- *That sk2bGrow is unbiased.* It still compresses the range at low coverage
+  (slope 0.62 at 0.5×, 0.78 at 1×) and underestimates; Pilea overestimates.
+- *That sk2bGrow is uniformly faster.* Per sample on this dataset it is
+  (8.6 s vs 11.6 s at k = 16, 3.2 s at k = 2), but Pilea **at its shipped
+  defaults** is far cheaper below its gate because it does no fitting at all
+  there — and returns nothing.
 - *Anything about metagenomes yet.* Every real-data result is one strain against
   a complete reference.

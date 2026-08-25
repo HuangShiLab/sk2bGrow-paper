@@ -18,8 +18,8 @@ from style import ARM_COLOR, INK, INK2, MUTED, grid
 
 BLUE, ORANGE = ARM_COLOR['A'], ARM_COLOR['B']
 GLEN = 4_641_652          # NC_000913.3
-EX = 'M1_2x'              # medium M1 at 2x: below Pilea's gate, and a sample
-                          # where the random-effects escalation actually fires
+EX = 'M1_2x'              # medium M1 at 2x: below the depth at which Pilea's
+                          # shipped gates report anything at all
 MEDIUM, DEPTH = 'M1', 2.0
 TOP = 'CjeI'              # densest enzyme; the one panel b/c follow
 
@@ -118,7 +118,7 @@ def panel_b(ax, w, pe):
     ax.axvline(ori / 1e6, color=INK2, lw=1.0, ls=(0, (4, 3)), zorder=3)
     ax.text(ori / 1e6 - 0.08, ax.get_ylim()[1], 'ori ', fontsize=7, color=INK2, ha='right', va='top')
     ax.set_xlabel('genome coordinate (Mb)'); ax.set_ylabel('log₂ window rate')
-    ax.legend(loc='lower right', handletextpad=0.35, borderpad=0.15, labelspacing=0.25,
+    ax.legend(loc='lower left', handletextpad=0.35, borderpad=0.15, labelspacing=0.25,
               markerscale=2.2)
     ax.set_title('coordinates retained: direct V fit', fontsize=8.6, color=INK, pad=4)
     ax.text(-0.24, 1.14, 'b', transform=ax.transAxes, fontsize=11, fontweight='bold', color=INK, va='top')
@@ -175,7 +175,9 @@ def panel_d(ax, pe, out, truth):
     ax.grid(True, axis='x', zorder=0); ax.set_axisbelow(True)
     ax.text(0.0, -0.235, f'fused {fused:.2f}  [{lo:.2f}, {hi:.2f}]', transform=ax.transAxes,
             fontsize=7.0, color=BLUE, ha='left', va='center')
-    ax.text(0.0, -0.325, f'I² = {float(out["enzyme_i2"].iloc[0]):.2f}, random effects'
+    model = str(out['fusion_model'].iloc[0])
+    ax.text(0.0, -0.325,
+            f'I² = {float(out["enzyme_i2"].iloc[0]):.2f}, {model} effects'
             + (f';  - - -  measured {truth:.2f}' if np.isfinite(truth) else ''),
             transform=ax.transAxes, fontsize=6.6, color=INK2, ha='left', va='center')
     ax.set_title('16 enzymes = 16 strata', fontsize=8.6, color=INK, pad=4)

@@ -180,7 +180,42 @@ def table6():
           'panel of that enzyme alone would behave -- Table 7 tests that directly.')
 
 
+# --- Table 7: panel size vs accuracy and cost -------------------------------
+def table7():
+    f = DATA / 'panel_sweep.tsv'
+    if not f.exists():
+        print('  (skipping table7: panel_sweep.tsv absent)'); return
+    d = pd.read_csv(f, sep='\t')
+    low = d[d['depth'] <= 2]
+    g = low.groupby('k').agg(anchors=('anchors', 'first'), r=('r', 'mean'),
+                             RMSE=('rmse', 'mean'), slope=('slope', 'mean'),
+                             ctl_bias=('ctl_bias', 'mean')).reset_index()
+    allk = d.groupby('k').agg(index_s=('index_seconds', 'first'),
+                              profile_s=('seconds', 'mean'),
+                              peak_RSS_MB=('rss_mb', 'mean')).reset_index()
+    t = g.merge(allk, on='k')
+    t['speedup_vs_16'] = t.loc[t['k'] == 16, 'profile_s'].iloc[0] / t['profile_s']
+    t = t.rename(columns={'k': 'enzymes', 'r': 'r (<=2x)', 'RMSE': 'RMSE (<=2x)',
+                          'slope': 'slope (<=2x)', 'ctl_bias': '|control| (<=2x)'})
+
+    pil = []
+    for lab, sc, rc in (('Pilea, gates off', 'pilea_seconds', 'pilea_rss_mb'),
+                        ('Pilea, defaults', 'pilea_default_seconds', 'pilea_default_rss_mb')):
+        if sc in d.columns and np.isfinite(d[sc]).any():
+            u = d.drop_duplicates('depth')
+            pil.append(f'{lab} {np.nanmean(u[sc]):.1f} s / {np.nanmean(u[rc]):.0f} MB')
+    write('table7_panel_size', t,
+          'Table 7. Enzyme-panel size against accuracy and cost (E. coli, 16 media)',
+          'Accuracy columns average the 0.5/1/2x depths, the regime the panel exists for; '
+          'cost columns average all five. Index cost is one-off per reference. '
+          'r is flat in panel size, but RMSE and slope both degrade as sparse enzymes '
+          'are added: the four enzymes with fewer than 450 anchors return noisy, '
+          'zero-shrunk fits whose standard errors understate that bias, so '
+          'inverse-variance fusion pulls the pooled estimate down. '
+          + ('Same cells, ' + '; '.join(pil) + '.' if pil else ''))
+
+
 if __name__ == '__main__':
     print('generating tables ->', OUT)
-    table1(); table2(); table3(); table5(); table6()
+    table1(); table2(); table3(); table5(); table6(); table7()
     print('done')
