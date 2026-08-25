@@ -194,9 +194,12 @@ cut, so only the coordinate changes).
 
 ### 7. Computational efficiency — **Table 7** ✅
 Measured the same way for both tools (`/usr/bin/time -l`, 8 threads, k-mer
-counting inside the timed region). On the 85 *E. coli* cells: sk2bGrow 8.6 s /
-192 MB at k = 16, 7.0 s at k = 8, 3.2 s at k = 2; Pilea **11.6 s / 157 MB** with
-gates off. **The earlier "Pilea is ~7× faster" claim does not survive this
+counting inside the timed region). Averaged over all five depths on the 85
+*E. coli* cells: sk2bGrow 8.2 s / 195 MB at k = 16, 6.5 s at k = 8, 3.2 s at
+k = 2; Pilea **11.5 s / 157 MB** with gates off. The average understates the
+gap where it matters — at 1× and 2× Pilea takes 16.8 s and 21.0 s against our
+6.8 s and 8.3 s, i.e. it is ~2.5× *slower* in the band this paper is about, and
+cheaper only at 0.5× and 10×. **The earlier "Pilea is ~7× faster" claim does not survive this
 measurement** — it came from the simulation, where Pilea's shipped gates skip
 fitting entirely below 5× and it reports nothing. Pilea also has a striking
 non-monotonic cost profile: 5.6 s at 0.5×, **21.1 s at 2×**, 5.6 s at 10×,
@@ -266,10 +269,11 @@ definitions (§5), environment (§6), availability (§7).
   unweighted), and origin error (worth only 0.06 of the 0.32 shortfall). Do not
   repeat the errors-in-variables explanation: the predictor in that regression is
   effectively noise-free, so it does not apply.
-- *That sk2bGrow is uniformly faster.* Per sample on this dataset it is
-  (8.6 s vs 11.6 s at k = 16, 3.2 s at k = 2), but Pilea **at its shipped
-  defaults** is far cheaper below its gate because it does no fitting at all
-  there — and returns nothing.
+- *That sk2bGrow is uniformly faster.* Per sample on this dataset it is on
+  average (8.2 s vs 11.5 s at k = 16, 3.2 s at k = 2) and by 2.5× at 1–2×, but
+  Pilea is cheaper at 0.5× and 10×, and **at its shipped defaults** it is far
+  cheaper below its gate because it does no fitting at all there — and returns
+  nothing.
 - *That sk2bGrow handles draft assemblies out of the box.* On unscaffolded
   contigs Pilea is better, by a wide margin at 1×. The claim is that scaffolding
   fixes it, and scaffolding is a step the user has to take.
