@@ -78,7 +78,7 @@ K-12 / O157:H7 / *Shigella* as a shared-anchor stress test), 4/8/16 strains ×
 Holding the estimator fixed, anchors are *behind* FracMinHash at 1×. The gain is
 the coordinate-aware fit, not the deterministic sketch.
 
-### 5. How many enzymes are needed? — **Fig 7 / Table 7** 🟡 *(second pass running)*
+### 5. How many enzymes are needed? — **Fig 7 / Table 7** ✅
 Rank all 16 by standalone accuracy (each `per_enzyme.tsv` is already an
 independent V-shape fit, so the ranking is free — **Table 6**), then sweep
 k ∈ {2,4,8,12,16}. Ranking is dominated by anchor yield: the top six are the six
@@ -88,15 +88,30 @@ with > 1,900 anchors; the bottom four have < 450 and are near-zero or negative a
 **This analysis is what found the counting bug.** The first pass said k = 2 beat
 the full panel by a wide margin at low depth. That was not a property of the
 panel: adding Bsp24I (at k = 8) was corrupting CjePI through the double-count
-described in Methods §1.2. After the fix the picture is ordinary and sensible —
-accuracy peaks around **k = 8** (r 0.967, RMSE 0.167 over ≤2×) and decays gently
-to k = 16 (0.959 / 0.196), while cost is linear in k. The residual k = 8 → 16
-decay is real but small; the sharper cost is on the negative control, where mean
-|log₂PTR| rises 0.073 → 0.145.
+described in Methods §1.2. The sweep was then repeated with the corrected
+ranking, so Table 6 and Table 7 agree.
 
-⚠️ The subsets in the first pass were chosen by the *pre-fix* ranking. The sweep
-is being repeated with the corrected ranking so the two agree; numbers here are
-from the first-pass subsets and will be refreshed.
+Final picture, averaged over ≤2×:
+
+| enzymes | anchors | r | RMSE | run-out bias | s/sample |
+|---|---|---|---|---|---|
+| 2 | 17,055 | 0.951 | 0.188 | 0.073 | 3.2 |
+| **4** | 24,753 | 0.959 | **0.165** | 0.074 | 4.4 |
+| **8** | 37,232 | **0.969** | 0.171 | 0.123 | 6.5 |
+| 12 | 41,662 | 0.969 | 0.183 | 0.132 | 7.8 |
+| 16 | 43,735 | 0.959 | 0.196 | 0.145 | 8.2 |
+
+**4–8 enzymes, not 16.** r peaks at 8; RMSE at 4; the four sparsest enzymes buy
+nothing and double the run-out bias. Cost is linear in k. Note that a 2-enzyme
+panel is 17,055 anchors against Pilea's 18,261 sketch k-mers — the like-for-like
+sketch-size comparison, and it still gives r = 0.960 at 1× where Pilea's own
+gates report nothing.
+
+⚠️ The mechanism is **not established**. Two candidate explanations were tested
+and both refuted: sparse enzymes are not more biased than dense ones
+(mean bias at 0.5×: −0.319 vs −0.312), and forcing fixed-effect fusion weights
+does not recover the loss (RMSE 0.581 vs 0.506 at 0.5×). Reported as an
+empirical result, not a mechanism.
 
 ### 6. Computational efficiency — **Table 7** ✅
 Measured the same way for both tools (`/usr/bin/time -l`, 8 threads, k-mer

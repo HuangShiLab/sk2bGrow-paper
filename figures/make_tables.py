@@ -16,8 +16,11 @@ OUT.mkdir(exist_ok=True)
 
 def write(name, df, title, note=''):
     df.to_csv(OUT / f'{name}.tsv', sep='\t', index=False, float_format='%.4f')
+    # tabulate applies a scalar floatfmt to integer columns too, which turns a
+    # count like 17055 into 17055.000. Give it one format per column instead.
+    fmts = ['.0f' if pd.api.types.is_integer_dtype(df[c]) else '.3f' for c in df.columns]
     with open(OUT / f'{name}.md', 'w') as fh:
-        fh.write(f'**{title}**\n\n{df.to_markdown(index=False, floatfmt=".3f")}\n')
+        fh.write(f'**{title}**\n\n{df.to_markdown(index=False, floatfmt=fmts)}\n')
         if note:
             fh.write(f'\n{note}\n')
     print(f'  {name}: {len(df)} rows')
@@ -195,8 +198,11 @@ def table7():
                               peak_RSS_MB=('rss_mb', 'mean')).reset_index()
     t = g.merge(allk, on='k')
     t['speedup_vs_16'] = t.loc[t['k'] == 16, 'profile_s'].iloc[0] / t['profile_s']
+    for c in ('k', 'anchors'):
+        t[c] = t[c].astype(int)
+    t['peak_RSS_MB'] = t['peak_RSS_MB'].round().astype(int)
     t = t.rename(columns={'k': 'enzymes', 'r': 'r (<=2x)', 'RMSE': 'RMSE (<=2x)',
-                          'slope': 'slope (<=2x)', 'ctl_bias': '|control| (<=2x)'})
+                          'slope': 'slope (<=2x)', 'ctl_bias': 'run-out bias (<=2x)'})
 
     pil = []
     for lab, sc, rc in (('Pilea, gates off', 'pilea_seconds', 'pilea_rss_mb'),
@@ -206,12 +212,14 @@ def table7():
             pil.append(f'{lab} {np.nanmean(u[sc]):.1f} s / {np.nanmean(u[rc]):.0f} MB')
     write('table7_panel_size', t,
           'Table 7. Enzyme-panel size against accuracy and cost (E. coli, 16 media)',
-          'Accuracy columns average the 0.5/1/2x depths, the regime the panel exists for; '
-          'cost columns average all five. Index cost is one-off per reference. '
-          'r is flat in panel size, but RMSE and slope both degrade as sparse enzymes '
-          'are added: the four enzymes with fewer than 450 anchors return noisy, '
-          'zero-shrunk fits whose standard errors understate that bias, so '
-          'inverse-variance fusion pulls the pooled estimate down. '
+          'Subsets are the top k of Table 6. Accuracy columns average the 0.5/1/2x depths, '
+          'the regime the panel exists for; cost columns average all five. Index cost is '
+          'one-off per reference. Accuracy peaks at 4-8 enzymes and decays to 16, while '
+          'cost is linear in k -- the four sparsest enzymes (< 450 anchors) buy nothing and '
+          'double the bias on the replication run-out control. We did not establish the '
+          'mechanism: two candidate explanations were tested and both refuted (sparse '
+          'enzymes are not more biased than dense ones, and forcing fixed-effect weights '
+          'does not recover the loss). '
           + ('Same cells, ' + '; '.join(pil) + '.' if pil else ''))
 
 

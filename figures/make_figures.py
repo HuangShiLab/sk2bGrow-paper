@@ -17,7 +17,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 sys.path.insert(0, str(Path(__file__).parent))
-from style import ARM_COLOR, ARM_LABEL, ARM_ORDER, INK, INK2, MUTED, GRID as GRIDC, apply, grid
+from style import (ARM_COLOR, ARM_LABEL, ARM_ORDER, INK, INK2, MUTED,
+                   GRID as GRIDC, SURFACE, apply, grid)
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'figures' / 'out'
@@ -298,8 +299,8 @@ def fig7():
         grid(ax, axis='both')
 
     for ax, col, lab, ttl in (
-            (ax_r, 'r', 'Pearson r vs growth rate', 'ranking: saturated, flat in k'),
-            (ax_e, 'rmse', 'RMSE vs measured log₂PTR', 'magnitude: worse with more enzymes'),
+            (ax_r, 'r', 'Pearson r vs growth rate', 'ranking: peaks at 8 enzymes'),
+            (ax_e, 'rmse', 'RMSE vs measured log₂PTR', 'magnitude: best at 4–8 enzymes'),
             (ax_t, 'seconds', 'wall clock per sample (s)', 'cost: linear in k')):
         for c, dp in zip(ramp, depths):
             g = d[d['depth'] == dp].sort_values('k')
@@ -322,10 +323,23 @@ def fig7():
         (d.drop_duplicates('depth').sort_values('depth'), 'pilea_default_seconds',
          ARM_COLOR['C_default'], 'Pilea, defaults', (0, (4, 2.5))),
     ]
+    # Pilea at defaults reports nothing below 10x on this dataset. Plotting its
+    # cost there without saying so reads as "5x cheaper" rather than "declined
+    # to answer", so those points are hollow — same convention as Fig 2.
+    answered = set(grow[(grow['arm'] == 'C_default')].dropna(subset=['log2ptr'])['cov'])
     for g, col, colour, lab, ls in series:
         if col not in g.columns or not np.isfinite(g[col]).any():
             continue
-        ax_p.plot(g['depth'], g[col], marker='o', ms=4, color=colour, label=lab, ls=ls)
+        hollow = 'default' in col
+        ax_p.plot(g['depth'], g[col], marker='' if hollow else 'o', ms=4,
+                  color=colour, label=lab, ls=ls)
+        if hollow:
+            for x, y in zip(g['depth'], g[col]):
+                filled = x in answered
+                ax_p.plot([x], [y], 'o', ms=4.5, color=colour if filled else SURFACE,
+                          markeredgecolor=colour, markeredgewidth=1.4, zorder=5)
+            ax_p.text(0.98, 0.05, 'hollow = no estimate returned',
+                      transform=ax_p.transAxes, fontsize=6.4, color=MUTED, ha='right')
     ax_p.set_xscale('log'); ax_p.set_xticks(depths)
     ax_p.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f'{v:g}×'))
     ax_p.set_xlabel('read depth'); ax_p.set_ylabel('wall clock per sample (s)')
