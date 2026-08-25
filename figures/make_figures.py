@@ -26,6 +26,7 @@ import matplotlib.patheffects as pe
 sys.path.insert(0, str(Path(__file__).parent))
 from style import (ARM_COLOR, ARM_LABEL, ARM_ORDER, ATTRIBUTION, INK, INK2, MUTED,
                    SKETCH_COLOR, REF_COLOR, REF_LABEL, REF_ORDER,
+                   EST_COLOR, EST_LABEL, EST_ORDER,
                    GRID as GRIDC, SURFACE, apply, grid)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -407,7 +408,15 @@ CAP8 = (
     'across 2 to 100 contigs the correlation never leaves 0.86–0.97 while the '
     'slope falls from 0.88 to 0.21. At 50 contigs — a' + NL +
     'draft most people would call good, N50 156 kb — r reads 0.96 and every '
-    'estimate is 44% of truth.'
+    'estimate is 44% of truth.' + NL +
+    'Panel d asks whether a coordinate is needed at all. Fitting the distribution '
+    'of window rates instead of their shape in position — log₂ coverage is uniform '
+    'across the genome and the width of that' + NL +
+    'uniform is log₂(PTR) — recovers most of the loss above 5× (RMSE 0.87 to 0.14) '
+    'with no scaffolding, but carries too little information below it. On the '
+    'stationary control it reports 0.000 at 1×' + NL +
+    'where Pilea reports 1.153, because the per-window standard error is in the '
+    'model rather than being read as growth.'
 )
 
 
@@ -428,8 +437,8 @@ def fig8():
     d = d[d['medium'] != 'RUN_OUT']
     covs = sorted(d['cov'].unique())
 
-    fig, axes = plt.subplots(1, 3, figsize=(10.4, 3.3))
-    ax_r, ax_m, ax_s = axes
+    fig, axes = plt.subplots(2, 2, figsize=(7.6, 6.4))
+    ax_r, ax_m, ax_s, ax_e = axes.ravel()
 
     grid(ax_r, axis='both')
     for cond in REF_ORDER:
@@ -522,7 +531,44 @@ def fig8():
         ax_s.set_title(f'c  correlation cannot see it, at {top:g}×',
                        loc='left', fontsize=9, color=INK)
 
-    fig.subplots_adjust(left=0.062, right=0.995, top=0.9, bottom=0.16, wspace=0.26)
+    # --- d: is a coordinate even necessary? ---------------------------------
+    # RMSE on a log axis, because the three estimators differ by an order of
+    # magnitude and the crossover near 5x is the whole point.
+    grid(ax_e, axis='both')
+    sf = ROOT / 'data' / 'fragmentation_spread.tsv'
+    if sf.exists():
+        sp = pd.read_csv(sf, sep='\t')
+        e = pd.concat([d[['cond', 'medium', 'cov', 'log2ptr', 'pred_log2ptr']],
+                       sp.assign(pred_log2ptr=sp['medium'].map(
+                           d.set_index('medium')['pred_log2ptr'].groupby(level=0).first()))
+                       [['cond', 'medium', 'cov', 'log2ptr', 'pred_log2ptr']]])
+        e = e[e['medium'] != 'RUN_OUT'].dropna(subset=['log2ptr', 'pred_log2ptr'])
+        for cond in EST_ORDER:
+            xs, ys = [], []
+            for c in covs:
+                t = e[(e['cov'] == c) & (e['cond'] == cond)]
+                if len(t) < 3:
+                    continue
+                xs.append(c)
+                ys.append(float(np.sqrt(((t['log2ptr'] - t['pred_log2ptr']) ** 2).mean())))
+            if not xs:
+                continue
+            ax_e.plot(xs, ys, 'o-', color=EST_COLOR[cond], label=EST_LABEL[cond],
+                      ms=5, markeredgecolor='white', markeredgewidth=0.8, zorder=3)
+        ax_e.set_xscale('log'); ax_e.set_yscale('log')
+        ax_e.set_xticks(covs); ax_e.set_xticklabels([f'{c:g}×' for c in covs])
+        for axis in (ax_e.xaxis,):
+            axis.set_minor_locator(mticker.NullLocator())
+            axis.set_minor_formatter(mticker.NullFormatter())
+        ax_e.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f'{v:g}'))
+        ax_e.set_xlabel('subsampled coverage')
+        ax_e.set_ylabel('RMSE vs predicted log₂(PTR)')
+        ax_e.set_title('d  on 100 contigs, which estimator?', loc='left',
+                       fontsize=9, color=INK)
+        ax_e.legend(loc='lower left', handletextpad=0.5, labelspacing=0.3)
+
+    fig.subplots_adjust(left=0.095, right=0.99, top=0.94, bottom=0.115,
+                        wspace=0.28, hspace=0.36)
     save(fig, 'fig8_fragmentation')
 
 

@@ -56,6 +56,15 @@ REF_LABEL = {
 }
 REF_ORDER = ['complete', 'frag', 'scafRel', 'pileaFrag']
 
+#: Estimators compared on a fragmented reference (Fig 8d). The V-fit keeps the
+#: `frag` orange it already has in a/b/c and Pilea keeps its amber, so only the
+#: order-free prototype needs a slot; it takes the unused blue.
+EST_COLOR = {'frag': '#eb6834', 'spread_frag': '#2a78d6', 'pileaFrag': '#eda100'}
+EST_LABEL = {'frag': 'coordinate V-fit',
+             'spread_frag': 'order-free spread MLE',
+             'pileaFrag': 'Pilea (sorted rank)'}
+EST_ORDER = ['frag', 'spread_frag', 'pileaFrag']
+
 INK, INK2, MUTED = '#1a1a1a', '#4a4a4a', '#8a8a8a'
 GRID, SURFACE = '#e6e6e6', '#fcfcfb'
 

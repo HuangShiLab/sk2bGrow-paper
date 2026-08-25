@@ -138,7 +138,7 @@ and both refuted: sparse enzymes are not more biased than dense ones
 does not recover the loss (RMSE 0.581 vs 0.506 at 0.5×). Reported as an
 empirical result, not a mechanism.
 
-### 6. Fragmented references and MAGs — **Fig 8** ✅ `fig8_fragmentation`
+### 6. Fragmented references and MAGs — **Fig 8 / Table 8** ✅ `fig8_fragmentation`
 Pilea's Fig 3 protocol on the Zheng data: complete chromosome vs 100 shuffled
 lognormal contigs vs those contigs re-ordered by `sk2bgrow scaffold`, n = 16
 media per cell, identical reads throughout (43,707 of 43,735 anchors survive the
@@ -178,8 +178,19 @@ cut, so only the coordinate changes).
   truth. Degradation is smooth and monotone, so the rule is "scaffold anything
   not closed", not "stay under N contigs". This is the paper's strongest single
   argument for reporting slope beside correlation.
+- ✅ **The coordinate is not necessary in principle, only for our estimator.**
+  Because log₂ coverage is uniform across the genome with width log₂(PTR), the
+  spread alone determines PTR. Fitting that distribution with the per-window
+  standard error in the model (panel d) takes RMSE on contigs from 0.87 to 0.14
+  at 5× with no scaffolding, and returns 0.000 rather than Pilea's 1.153 on the
+  stationary control at 1×. Below 5× it carries too little information (bias
+  −0.98 at 1×) and it does not match Pilea at depth (RMSE 0.227 vs 0.077 at 10×).
+  Reported as a prototype; the design it argues for is **two estimators chosen by
+  whether a coordinate exists**, which also closes the QC blind spot.
 - ❌ Genuinely incomplete MAGs (missing sequence, contamination) and more distant
   scaffolding references — needs the cluster.
+- ❌ An overdispersion term for the spread estimator, which should fix both its
+  low-depth shrinkage and its ~0.4 floor on the stationary control at 5–10×.
 
 ### 7. Computational efficiency — **Table 7** ✅
 Measured the same way for both tools (`/usr/bin/time -l`, 8 threads, k-mer

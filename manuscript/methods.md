@@ -381,6 +381,35 @@ write wins; against O157:H7 this loses 89,597 bp, 1.93% of the draft. The
 fragmentation results are therefore a slight *under*-estimate of what
 scaffolding delivers.
 
+### 3.4 An order-free estimator, as a control on §3.3
+
+Fragmentation is only fatal if the coordinate is necessary. It is not, in
+principle: since log₂(coverage) is a tent function of position with equal |slope|
+on both replichores, over a uniformly tiled genome the coverage *values* are
+uniform on [log₂ c_ter, log₂ c_ori] and the width of that uniform **is**
+log₂(PTR). Position never enters, which is exactly why the sorted-rank estimator
+of §4 is indifferent to fragmentation.
+
+The reason not to adopt that estimator wholesale is that it reads the *observed*
+spread directly. Sorted values of any sample rise, so sampling noise is credited
+as growth; on the stationary control it returns log₂PTR = 1.15 at 1×.
+
+As a control we therefore fit the same distributional model with the noise
+included. Window *w* contributes *y_w* = *μ_w* + *e_w* with *μ_w* ~ U(*a*, *a*+*W*)
+and *e_w* ~ N(0, *s_w*²), where *s_w* is the standard error §1.3 already reports.
+Marginalising *μ_w*,
+
+    p(y_w | a, W) = [Φ((a + W − y_w)/s_w) − Φ((a − y_w)/s_w)] / W
+
+is maximised over (*a*, *W*) per enzyme and the per-enzyme widths are fused by
+the same inverse-variance scheme as §1.6. The estimator is order-free by
+construction and cannot manufacture a gradient from its own sampling error.
+
+It is reported as a **prototype**, not as part of the method: it recovers most of
+what fragmentation destroys above 5× but carries too little information below,
+and it does not match the sorted-rank estimator at depth. Its role here is to
+separate "the coordinate is necessary" from "our estimator needs the coordinate".
+
 A contig-count sweep (2, 5, 10, 20, 50, 100 contigs at 10×, same 16 media)
 locates the threshold rather than assuming one. It finds that there is not one:
 degradation is smooth and monotone in bias from two contigs upward, and Pearson

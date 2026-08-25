@@ -238,7 +238,66 @@ def table7():
           + ('Same cells, ' + '; '.join(pil) + '.' if pil else ''))
 
 
+# --- Table 8: reference fragmentation ---------------------------------------
+def table8():
+    f = DATA / 'fragmentation.tsv'
+    if not f.exists():
+        print('  (skipping table8: fragmentation.tsv absent)'); return
+    d = pd.read_csv(f, sep='\t')
+    sf = DATA / 'fragmentation_spread.tsv'
+    if sf.exists():
+        sp = pd.read_csv(sf, sep='\t')
+        pred = d.drop_duplicates('medium').set_index('medium')['pred_log2ptr']
+        gr = d.drop_duplicates('medium').set_index('medium')['growth_rate']
+        sp['pred_log2ptr'] = sp['medium'].map(pred)
+        sp['growth_rate'] = sp['medium'].map(gr)
+        d = pd.concat([d, sp], ignore_index=True)
+
+    LAB = {'complete': 'complete chromosome',
+           'frag': '100 contigs',
+           'scafSelf': '100 contigs, scaffolded vs itself',
+           'scafRel': '100 contigs, scaffolded vs a relative',
+           'pileaFrag': '100 contigs, Pilea',
+           'spread_frag': '100 contigs, order-free spread MLE'}
+    grow = d[d['medium'] != 'RUN_OUT']
+    ctl = d[d['medium'] == 'RUN_OUT'].set_index(['cond', 'cov'])['log2ptr']
+    rows = []
+    for cov in sorted(grow['cov'].unique()):
+        for cond, lab in LAB.items():
+            s = grow[(grow['cov'] == cov) & (grow['cond'] == cond)].dropna(
+                subset=['log2ptr'])
+            if s.empty:
+                continue
+            ok = s.dropna(subset=['pred_log2ptr'])
+            e = ok['log2ptr'] - ok['pred_log2ptr']
+            degenerate = len(s) < 3 or s['log2ptr'].nunique() < 2
+            rows.append(dict(
+                coverage=cov, reference=lab, n=len(s),
+                pearson_r=np.nan if degenerate else
+                stats.pearsonr(s['growth_rate'], s['log2ptr'])[0],
+                rmse=float(np.sqrt((e ** 2).mean())) if len(ok) else np.nan,
+                bias=float(e.mean()) if len(ok) else np.nan,
+                slope=np.nan if degenerate else
+                float(np.polyfit(s['growth_rate'], s['log2ptr'], 1)[0]),
+                # Only sk2bGrow has a fusion QC. analyze.py defaults `passed`
+                # to True where the column is absent, which would print a
+                # spurious 100% for Pilea in the one table that is about the QC.
+                qc_pass=100 * s['passed'].mean()
+                if cond.startswith(('complete', 'frag', 'scaf'))
+                and 'passed' in s and s['passed'].notna().any() else np.nan,
+                stationary_control=ctl.get((cond, cov), np.nan)))
+    write('table8_fragmentation', pd.DataFrame(rows),
+          'Table 8. Reference fragmentation: the same reads against a complete, a '
+          'fragmented, and a scaffolded reference',
+          'The 100-contig reference holds 43,707 of the complete genome\'s 43,735 '
+          'anchors, so the genomic coordinate is the only variable. qc_pass is the '
+          'share of estimates the fusion QC accepts -- note that it is HIGHEST '
+          'where the estimates are worst. stationary_control is the estimate for '
+          'the RUN_OUT sample, whose true log2(PTR) is ~0. Blank r or slope: the '
+          'method returned nothing, or a constant.')
+
+
 if __name__ == '__main__':
     print('generating tables ->', OUT)
-    table1(); table2(); table3(); table5(); table6(); table7()
+    table1(); table2(); table3(); table5(); table6(); table7(); table8()
     print('done')
