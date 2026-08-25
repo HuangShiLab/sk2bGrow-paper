@@ -19,7 +19,8 @@ import matplotlib.patheffects as pe
 
 sys.path.insert(0, str(Path(__file__).parent))
 from style import (ARM_COLOR, ARM_LABEL, ARM_ORDER, ATTRIBUTION, INK, INK2, MUTED,
-                   SKETCH_COLOR, GRID as GRIDC, SURFACE, apply, grid)
+                   SKETCH_COLOR, REF_COLOR, REF_LABEL, REF_ORDER,
+                   GRID as GRIDC, SURFACE, apply, grid)
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'figures' / 'out'
@@ -381,7 +382,145 @@ def fig7():
     save(fig, 'fig7_panel_size')
 
 
+#: Fig 8's caption, kept out of the function so the hard line breaks that keep
+#: savefig's tight bbox from widening the canvas stay visible.
+CAP8 = (
+    'The same reads throughout, and 43,707 of the complete genome\'s 43,735 '
+    'anchors survive the cut; only the coordinate changes. Fragmenting into 100 '
+    'shuffled contigs does not add' + NL +
+    'scatter, it removes the gradient: every estimate collapses toward zero '
+    '(panel b, slope {slope:.2f}), and {qc:.0f}% of those collapsed estimates '
+    'pass the fusion QC at 5\u201310\u00d7, because a destroyed' + NL +
+    'coordinate makes every enzyme agree there is no gradient. Pilea\'s rank '
+    'regression needs no coordinate and is nearly indifferent to the cut, so on '
+    'unscaffolded contigs it wins' + NL +
+    'outright (r 0.83 against 0.55 at 1×). `sk2bgrow scaffold` is what puts the '
+    'coordinate back: it restores the complete-reference curve exactly — the '
+    'blue halo under the green — even against' + NL +
+    'a different strain. Panel c is why the slope has to be reported beside r: '
+    'across 2 to 100 contigs the correlation never leaves 0.86–0.97 while the '
+    'slope falls from 0.88 to 0.21. At 50 contigs — a' + NL +
+    'draft most people would call good, N50 156 kb — r reads 0.96 and every '
+    'estimate is 44% of truth.'
+)
+
+
+# --- Fig 8: does the method survive a fragmented reference? ------------------
+def fig8():
+    """The MAG case. Panel a is accuracy against coverage per reference
+    condition; panel b is estimated against predicted magnitude at 10x, which is
+    where the failure shows its shape -- fragmentation does not add noise, it
+    collapses every estimate toward zero.
+
+    Colour encodes the reference condition, a different categorical dimension
+    from the arms, so it takes its own fixed slot order.
+    """
+    f = ROOT / 'data' / 'fragmentation.tsv'
+    if not f.exists():
+        print('  (skipping fig8: fragmentation.tsv absent)'); return
+    d = pd.read_csv(f, sep='\t')
+    d = d[d['medium'] != 'RUN_OUT']
+    covs = sorted(d['cov'].unique())
+
+    fig, axes = plt.subplots(1, 3, figsize=(10.4, 3.3))
+    ax_r, ax_m, ax_s = axes
+
+    grid(ax_r, axis='both')
+    for cond in REF_ORDER:
+        xs, ys = [], []
+        for c in covs:
+            s = d[(d['cov'] == c) & (d['cond'] == cond)].dropna(subset=['log2ptr'])
+            if len(s) < 3 or s['log2ptr'].nunique() < 2:
+                continue
+            xs.append(c); ys.append(stats.pearsonr(s['growth_rate'], s['log2ptr'])[0])
+        if not xs:
+            continue
+        # `complete` and `scafRel` coincide almost exactly -- that IS the result,
+        # but two curves drawn identically look like one. Draw complete as a wide
+        # halo underneath so the agreement is visible rather than hidden.
+        wide = cond == 'complete'
+        ax_r.plot(xs, ys, 'o-', color=REF_COLOR[cond], label=REF_LABEL[cond],
+                  lw=4.0 if wide else 2.0, ms=8 if wide else 5,
+                  markeredgecolor='white', markeredgewidth=0.8,
+                  zorder=2 if wide else 3)
+    ax_r.axhline(0, lw=1.0, color=MUTED, zorder=1)
+    ax_r.set_xscale('log')
+    ax_r.set_xticks(covs); ax_r.set_xticklabels([f'{c:g}×' for c in covs])
+    ax_r.xaxis.set_minor_locator(mticker.NullLocator())
+    ax_r.xaxis.set_minor_formatter(mticker.NullFormatter())
+    ax_r.set_xlabel('subsampled coverage')
+    ax_r.set_ylabel('Pearson r vs measured growth rate')
+    ax_r.set_title('a  ranking', loc='left', fontsize=9, color=INK)
+    ax_r.legend(loc='lower right', handletextpad=0.5, labelspacing=0.3)
+
+    grid(ax_m, axis='both')
+    top = max(covs)
+    lim = (0, 2.05)
+    ax_m.plot(lim, lim, ls=':', lw=1.2, color=MUTED, zorder=1)
+    ax_m.text(1.98, 1.90, 'y = x', fontsize=7, color=MUTED, ha='right', va='top')
+    for cond in REF_ORDER:
+        s = d[(d['cov'] == top) & (d['cond'] == cond)].dropna(
+            subset=['log2ptr', 'pred_log2ptr'])
+        if s.empty:
+            continue
+        wide = cond == 'complete'
+        ax_m.plot(s['pred_log2ptr'], s['log2ptr'], 'o', color=REF_COLOR[cond],
+                  ms=9 if wide else 5, markeredgecolor='white',
+                  markeredgewidth=0.8, zorder=2 if wide else 3,
+                  label=REF_LABEL[cond])
+    ax_m.set_xlim(*lim); ax_m.set_ylim(*lim)
+    ax_m.set_xlabel('predicted log₂(PTR)')
+    ax_m.set_ylabel('estimated log₂(PTR)')
+    ax_m.set_title(f'b  magnitude at {top:g}×', loc='left', fontsize=9, color=INK)
+
+    frag = d[(d['cond'] == 'frag') & (d['cov'] >= 5) & np.isfinite(d['log2ptr'])]
+    qc = 100 * frag['passed'].mean() if len(frag) else float('nan')
+    slope = np.polyfit(*[d[(d['cond'] == 'frag') & (d['cov'] == top)]
+                         .dropna(subset=['log2ptr', 'pred_log2ptr'])[c]
+                         for c in ('pred_log2ptr', 'log2ptr')], 1)[0]
+    fig.text(0.0, -0.02, CAP8.format(qc=qc, slope=slope), fontsize=7,
+             color=MUTED, va='top')
+    # --- c: where the threshold is ------------------------------------------
+    # r and the fitted slope share one 0-1 axis because both are dimensionless
+    # and both would be 1 for a perfect estimator. That is the whole point of
+    # the panel: they diverge, so r is not a fragmentation diagnostic.
+    grid(ax_s, axis='both')
+    sw = ROOT / 'data' / 'fragmentation_sweep.tsv'
+    if sw.exists():
+        w = pd.read_csv(sw, sep='\t')
+        w = w[w['medium'] != 'RUN_OUT'].dropna(subset=['log2ptr'])
+        ns = sorted(w['n_contigs'].unique())
+        rs, sl = [], []
+        for n in ns:
+            t = w[w['n_contigs'] == n]
+            rs.append(stats.pearsonr(t['growth_rate'], t['log2ptr'])[0])
+            sl.append(np.polyfit(t['growth_rate'], t['log2ptr'], 1)[0])
+        ax_s.axhline(1.0, ls=':', lw=1.0, color=MUTED, zorder=1)
+        ax_s.plot(ns, rs, 'o-', color=MUTED, ms=5, markeredgecolor='white',
+                  markeredgewidth=0.8, zorder=3)
+        ax_s.plot(ns, sl, 'o-', color=REF_COLOR['frag'], ms=5,
+                  markeredgecolor='white', markeredgewidth=0.8, zorder=4)
+        ax_s.annotate('Pearson r', (ns[2], rs[2]), textcoords='offset points',
+                      xytext=(0, 9), ha='center', fontsize=7.5, color=MUTED)
+        ax_s.annotate('fitted slope', (ns[2], sl[2]), textcoords='offset points',
+                      xytext=(0, -16), ha='center', fontsize=7.5,
+                      color=REF_COLOR['frag'])
+        ax_s.set_xscale('log')
+        ax_s.set_xticks(ns)
+        ax_s.set_xticklabels([str(n) for n in ns])
+        ax_s.xaxis.set_minor_locator(mticker.NullLocator())
+        ax_s.xaxis.set_minor_formatter(mticker.NullFormatter())
+        ax_s.set_ylim(0, 1.12)
+        ax_s.set_xlabel('contigs the reference is cut into')
+        ax_s.set_ylabel('value (1.0 = correct)')
+        ax_s.set_title(f'c  correlation cannot see it, at {top:g}×',
+                       loc='left', fontsize=9, color=INK)
+
+    fig.subplots_adjust(left=0.062, right=0.995, top=0.9, bottom=0.16, wspace=0.26)
+    save(fig, 'fig8_fragmentation')
+
+
 if __name__ == '__main__':
     print('regenerating figures ->', OUT)
-    fig1(); fig2(); fig3(); fig4(); fig5(); fig6(); fig7()
+    fig1(); fig2(); fig3(); fig4(); fig5(); fig6(); fig7(); fig8()
     print('done')

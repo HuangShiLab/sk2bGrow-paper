@@ -138,7 +138,50 @@ and both refuted: sparse enzymes are not more biased than dense ones
 does not recover the loss (RMSE 0.581 vs 0.506 at 0.5×). Reported as an
 empirical result, not a mechanism.
 
-### 6. Computational efficiency — **Table 7** ✅
+### 6. Fragmented references and MAGs — **Fig 8** ✅ `fig8_fragmentation`
+Pilea's Fig 3 protocol on the Zheng data: complete chromosome vs 100 shuffled
+lognormal contigs vs those contigs re-ordered by `sk2bgrow scaffold`, n = 16
+media per cell, identical reads throughout (43,707 of 43,735 anchors survive the
+cut, so only the coordinate changes).
+
+| coverage | | complete | 100 contigs | scaffolded vs O157:H7 | Pilea on 100 contigs |
+|---|---|---:|---:|---:|---:|
+| 1× | r | 0.981 | 0.550 | 0.977 | 0.827 |
+| | slope | 0.779 | 0.103 | 0.755 | 0.628 |
+| 10× | r | 0.968 | 0.859 | 0.967 | 0.960 |
+| | RMSE | 0.063 | 0.862 | 0.086 | 0.077 |
+| | slope | 0.951 | 0.210 | 0.984 | 0.820 |
+| | QC pass | 75% | **100%** | 88% | — |
+
+- ✅ **Fragmentation removes the gradient rather than adding noise.** Every
+  estimate lands at about a fifth of truth. r = 0.86 at 10× makes this look
+  survivable; the slope of 0.21 says it is not. This is the clearest case in the
+  paper for reporting slope beside correlation.
+- ✅ **Pilea wins outright on unscaffolded contigs** (r 0.827 vs 0.550 at 1×);
+  fragmentation costs its rank regression almost nothing, 0.889 to 0.827. This
+  is a genuine architectural advantage of the sorted estimator and the paper
+  should say so rather than only reporting the scaffolded column.
+- ✅ **`scaffold` restores the complete-reference result exactly, across
+  strains.** Contig order returns with Spearman 1.0000 against *E. coli*
+  O157:H7, orientation 99/99 correct. The 712 kb raw placement error is a rigid
+  rotation, invisible to a fit that searches for the origin instead of assuming
+  it. The method is therefore not restricted to closed genomes.
+- ⚠️ **The QC is anti-correlated with the failure**: 100% of fragmented
+  estimates pass at 5–10× against 75% of correct ones. Cochran's Q asks whether
+  the enzymes agree, and a destroyed coordinate makes all sixteen agree there is
+  no gradient. This belongs in the Discussion as a stated limit of the QC, with
+  a contig-count guard as the fix.
+- ✅ **There is no safe contig count, and r cannot find one** (panel c, 10×,
+  n = 16): across 1, 2, 5, 10, 20, 50 and 100 contigs the correlation stays
+  0.86–0.97 while the slope falls 0.95 → 0.21 and the bias grows to −0.81. At 50
+  contigs (N50 156 kb, a good draft) r reads 0.96 and every estimate is 44% of
+  truth. Degradation is smooth and monotone, so the rule is "scaffold anything
+  not closed", not "stay under N contigs". This is the paper's strongest single
+  argument for reporting slope beside correlation.
+- ❌ Genuinely incomplete MAGs (missing sequence, contamination) and more distant
+  scaffolding references — needs the cluster.
+
+### 7. Computational efficiency — **Table 7** ✅
 Measured the same way for both tools (`/usr/bin/time -l`, 8 threads, k-mer
 counting inside the timed region). On the 85 *E. coli* cells: sk2bGrow 8.6 s /
 192 MB at k = 16, 7.0 s at k = 8, 3.2 s at k = 2; Pilea **11.6 s / 157 MB** with
@@ -149,7 +192,7 @@ non-monotonic cost profile: 5.6 s at 0.5×, **21.1 s at 2×**, 5.6 s at 10×,
 because its ZTP-mixture EM (`--max-iter` defaults to infinity) is slowest where
 the mixture is least identifiable — exactly the depth band this paper is about.
 
-### 7. Application ❌
+### 8. Application ❌
 Pilea used a rotating biological contactor. We have no application dataset yet.
 
 ## Discussion
@@ -160,10 +203,14 @@ Pilea used a rotating biological contactor. We have no application dataset yet.
   does **not** yet act on this (`enzyme::CONTAINMENTS` is declared but unused).
 - The panel should probably be ~8 enzymes, not 16: the four sparsest contribute
   no accuracy and double the negative-control bias.
-- **Cochran's Q earned its keep.** It was rejecting in 56–69 % of samples; that
-  was not biology, it was our double-count. After the fix, 6–24 %. A design
-  whose QC can detect its own implementation defects is worth the complexity —
-  and this is the honest way to present that, not as a clean-room result.
+- **Cochran's Q earned its keep, and has a blind spot.** It was rejecting in
+  56–69 % of samples; that was not biology, it was our double-count. After the
+  fix, 6–24 %. A design whose QC can detect its own implementation defects is
+  worth the complexity — and this is the honest way to present that, not as a
+  clean-room result. But it tests *agreement between strata*, so it cannot see a
+  failure that is identical across them: on a fragmented reference every enzyme
+  agrees there is no gradient and 100 % of the wrong answers pass. A
+  contig-count guard, not a better Q, is the fix.
 
 ## Methods ✅ → `manuscript/methods.md`
 
@@ -182,14 +229,22 @@ definitions (§5), environment (§6), availability (§7).
 - Enzyme definitions verified against the original Perl on three genomes.
 
 **Cannot — and must not imply:**
-- *That deterministic anchors are the advance.* Holding the estimator fixed,
-  anchors are **behind** FracMinHash at 1× (r 0.61 vs 0.89). The contribution is
-  the coordinate-aware fit the anchors make possible.
+- *That deterministic anchors are the advance, or that the estimator is.*
+  Neither factor carries the result: the coordinate fit is worth +0.30 r on
+  anchors and +0.05 on a FracMinHash sketch, and the sketch effect changes sign
+  with the estimator. The claim the data supports is about the **combination**,
+  which is the only cell that works at 0.5×.
 - *That sk2bGrow is unbiased.* It still compresses the range at low coverage
   (slope 0.62 at 0.5×, 0.78 at 1×) and underestimates; Pilea overestimates.
 - *That sk2bGrow is uniformly faster.* Per sample on this dataset it is
   (8.6 s vs 11.6 s at k = 16, 3.2 s at k = 2), but Pilea **at its shipped
   defaults** is far cheaper below its gate because it does no fitting at all
   there — and returns nothing.
-- *Anything about metagenomes yet.* Every real-data result is one strain against
-  a complete reference.
+- *That sk2bGrow handles draft assemblies out of the box.* On unscaffolded
+  contigs Pilea is better, by a wide margin at 1×. The claim is that scaffolding
+  fixes it, and scaffolding is a step the user has to take.
+- *Anything about metagenomes yet.* Every real-data result is one strain, and
+  every community result is simulated.
+- *That the QC catches what goes wrong.* It catches enzyme disagreement, which
+  is why it caught our own double-count; it is blind to a destroyed coordinate,
+  which it passes at 100%. Say both.

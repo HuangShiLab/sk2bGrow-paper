@@ -339,6 +339,56 @@ returned 223 of them). Strains are sampled without replacement per cell.
 Pilea used 120 genomes, up to 32 strains, up to 32× and 400 samples. The
 laptop-scale grid does not establish behaviour at 32 strains or 32×.
 
+### 3.3 Reference fragmentation
+
+The coordinate fit of §1.4 needs a genomic coordinate, which a draft assembly
+does not have. Following Pilea's Fig 3, the *E. coli* reference is cut into 100
+contigs with lognormal lengths (μ = 0, σ = 1, floor 500 bp — the indexer's own
+minimum, so no contig is discarded), the order is shuffled and each contig is
+independently reverse-complemented with probability 0.5.
+
+Sequence content is untouched: the fragmented database holds 43,707 anchors
+against the complete genome's 43,735, the 28 lost being tags that straddled a
+cut. Reads are identical. **The coordinate is the only variable.**
+
+Four reference conditions:
+
+| condition | reference |
+|---|---|
+| complete | the finished chromosome |
+| frag | 100 contigs |
+| scafSelf | `frag` re-ordered by `sk2bgrow scaffold` against the same genome |
+| scafRel | `frag` re-ordered against *E. coli* O157:H7 |
+
+`scafSelf` is circular by construction and is reported only to separate
+"scaffolding does not work" from "scaffolding does not work across strains".
+`scafRel` is the case a MAG user faces.
+
+Scaffolding places contigs by shared tags and is scored against the known
+layout. Against O157:H7 it places 99 of 100 contigs, orients 99 of 99 correctly,
+and recovers the contig **order** exactly (Spearman 1.0000 against the truth).
+Its median start error of 712 kb is almost entirely a rigid rotation — O157:H7's
+origin sits elsewhere — and §1.5 searches for the origin rather than assuming
+it, so a rotation does not reach the estimate; after removing it the median
+residual is 73 kb, 1.6% of the chromosome, from O157:H7's strain-specific
+insertions.
+
+The scaffolded contigs are re-emitted as a single pseudo-contig with each contig
+written at its inferred start and the gaps filled with N, which the digester
+rejects as ambiguous and so contributes no anchors. Where two contigs are placed
+overlapping — possible when the coordinates come from another strain — the later
+write wins; against O157:H7 this loses 89,597 bp, 1.93% of the draft. The
+fragmentation results are therefore a slight *under*-estimate of what
+scaffolding delivers.
+
+A contig-count sweep (2, 5, 10, 20, 50, 100 contigs at 10×, same 16 media)
+locates the threshold rather than assuming one. It finds that there is not one:
+degradation is smooth and monotone in bias from two contigs upward, and Pearson
+r stays between 0.86 and 0.97 across the whole range while the fitted slope falls
+from 0.88 to 0.21. Correlation is therefore not a usable diagnostic for
+fragmentation, which is the concrete case behind §5's warning that r is
+invariant to affine transformation.
+
 ---
 
 ## 4. Comparison methods

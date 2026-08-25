@@ -37,6 +37,25 @@ ATTRIBUTION = {
 }
 SKETCH_COLOR = {'2bRAD anchors': '#2a78d6', 'FracMinHash': '#1baf7a'}
 
+#: Reference conditions in the fragmentation experiment. A different categorical
+#: dimension from ARMS, so it takes the same four validated slots in its own
+#: fixed order. `complete` keeps sk2bGrow's blue because it *is* sk2bGrow, on the
+#: reference it was designed for.
+REF_COLOR = {
+    'complete':  '#2a78d6',
+    'frag':      '#eb6834',
+    'scafRel':   '#1baf7a',
+    'pileaFrag': '#eda100',
+}
+REF_LABEL = {
+    'complete':  'complete chromosome',
+    'frag':      '100 contigs',
+    'scafSelf':  'scaffolded vs itself',
+    'scafRel':   'scaffolded vs a relative',
+    'pileaFrag': 'Pilea on 100 contigs',
+}
+REF_ORDER = ['complete', 'frag', 'scafRel', 'pileaFrag']
+
 INK, INK2, MUTED = '#1a1a1a', '#4a4a4a', '#8a8a8a'
 GRID, SURFACE = '#e6e6e6', '#fcfcfb'
 
