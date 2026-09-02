@@ -44,13 +44,30 @@ Zheng et al. 2020, E. coli K-12, 16 media (λ 0.40–1.72 h⁻¹), PRJNA615952.
 - ✅ r = **0.981 at 1×**, 0.982 at 2×, 0.979 at 5× (n = 16). Accuracy is already
   saturated at 1×, matching Pilea's *published full-depth* r of 0.976.
 - ✅ RMSE 0.157 at 1×, slope 0.78; 0.304 / 0.62 at 0.5×.
+
+  ⚠️ **"Slope" means two different regressions in this manuscript and the text
+  must say which every time.** Table 2 (`make_tables.py:75`) regresses the
+  estimate on **measured λ**, so its units are log₂(PTR) per h⁻¹ and a slope of
+  1 has no interpretation — that is the 0.78 / 0.62 quoted here. Fig 3
+  (`make_figures.py:133`) regresses the estimate on **predicted log₂(PTR)**,
+  which is dimensionless, so slope 1 *is* the unbiased line — that is the
+  0.86 / 0.68 quoted in the Discussion. The two are not interchangeable and
+  differ because C varies by medium (λ 1.72 → pred 1.725, but λ 1.51 → pred
+  1.684). Pick one convention for the manuscript; the Fig-3 convention is the
+  one every "tracks y = x" statement depends on.
 - ✅ Pilea at defaults returns **no estimate below 10×**.
 - 🟡 Full-depth run to match Pilea's own Fig 2 directly — needs ~55 GB, deferred.
 - ❌ Assembly-quality sensitivity (45,529 *Escherichia* assemblies × ANI × N50).
 
 **[NEW] 2b. Negative control — `fig4_negative_control`.** Pilea *excluded* the
 run-out samples. We use one: a replication run-out must give log₂PTR ≈ 0.
-sk2bGrow 0.046–0.260; sorted regression returns **2.21** at 0.5×. ✅
+sk2bGrow 0.046–0.260 across all five depths. Rank regression invents a gradient,
+but the two rank arms must not be conflated: **arm B** (anchors + rank, a
+diagnostic arm that is not any shipped tool) returns **2.21** at 0.5× and 1.82
+at 1×, while **Pilea itself** (arm C, gates off) returns **0.96 at 1×** and
+0.59 at 2×, falling to 0.17 by 10×. Pilea's 0.96 is the defensible claim about a
+released tool; 2.21 is the claim about the estimator class. Say which is which
+in the caption. ✅
 
 **[NEW] 2d. Which gate suppresses Pilea, and is it right to? ✅**
 Re-applying each default threshold to the gates-off output (exact, no extra
@@ -192,7 +209,12 @@ cut, so only the coordinate changes).
 - ❌ An overdispersion term for the spread estimator, which should fix both its
   low-depth shrinkage and its ~0.4 floor on the stationary control at 5–10×.
 
-### 7. Computational efficiency — **Table 7** ✅
+### 7. Computational efficiency — **Table 9** 🟡
+Numbers verified against `data/panel_sweep.tsv` (columns `seconds`, `rss_mb`,
+`pilea_seconds`, `pilea_rss_mb`, `pilea_default_seconds`); `make_tables.py` does
+not yet emit them as a table file. Table 7 is the enzyme-panel sweep — do not
+reuse that number for this section.
+
 Measured the same way for both tools (`/usr/bin/time -l`, 8 threads, k-mer
 counting inside the timed region). Averaged over all five depths on the 85
 *E. coli* cells: sk2bGrow 8.2 s / 195 MB at k = 16, 6.5 s at k = 8, 3.2 s at
