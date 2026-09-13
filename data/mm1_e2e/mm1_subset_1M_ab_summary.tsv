@@ -1,0 +1,2 @@
+sample	subset	anchors_compared	anchors_nonzero_mm2	anchors_nonzero_mm1	anchors_lost_by_mm1	anchor_loss_frac	median_count_ratio_shared_anchors	genomes_nonzero_mm2	genomes_lost_entirely	count_wall_mm2_s	count_wall_mm1_s	speedup
+SRR28338159	1M_pairs	29672394	1797315	1703604	95156	0.052944	1.0000	522	0	955.02	111.25	8.585

@@ -1,0 +1,59 @@
+n merged = 522
+
+=== raw vs coverage-partial spearman (qc_rate_raw) ===
+      feature  rho_raw  p_raw  rho_partial_cov  p_partial
+    n_contigs  -0.4094 0.0000          -0.3370     0.0000
+          n50   0.4263 0.0000           0.3584     0.0000
+ Completeness   0.4658 0.0000           0.3534     0.0000
+Contamination  -0.1791 0.0000          -0.1663     0.0001
+
+=== bivariate with mean coverage ===
+rho(n_contigs, mean_cov) = -0.252  p=5.40e-09
+rho(n50, mean_cov) = +0.250  p=6.84e-09
+rho(Completeness, mean_cov) = +0.354  p=7.44e-17
+rho(Contamination, mean_cov) = -0.072  p=1.02e-01
+rho(qc_rate_raw, mean_cov) = +0.516  p=6.92e-37
+
+=== within coverage quartile: spearman(qc_rate_raw, n_contigs) ===
+Q1: n=131  cov 1.54-2.23  rho=-0.194  p=0.0266
+Q2: n=130  cov 2.23-2.64  rho=-0.220  p=0.0121
+Q3: n=130  cov 2.65-3.42  rho=-0.340  p=0.0001
+Q4: n=131  cov 3.43-33.63  rho=-0.432  p=0.0000
+
+=== mean qc_rate: coverage quartile x contig bin ===
+contig_bin  <=10  11-25  26-50  51-100  101-200  >200
+cov_q                                                
+Q1         0.060  0.014  0.029   0.021    0.005 0.000
+Q2         0.241  0.092  0.013   0.043    0.030 0.048
+Q3         0.146  0.150  0.076   0.058    0.009 0.067
+Q4         0.327  0.363  0.187   0.181    0.061 0.056
+
+=== cell counts ===
+contig_bin  <=10  11-25  26-50  51-100  101-200  >200
+cov_q                                                
+Q1            13     16     35      42       21     4
+Q2             6     17     33      41       26     7
+Q3            19     17     38      38       13     5
+Q4            35     34     25      24       11     2
+
+=== frac MAGs qc_rate>0: cov quartile x contig bin ===
+contig_bin  <=10  11-25  26-50  51-100  101-200  >200
+cov_q                                                
+Q1         0.385  0.125  0.257   0.167    0.048 0.000
+Q2         0.833  0.588  0.061   0.366    0.154 0.143
+Q3         0.579  0.706  0.395   0.342    0.077 0.400
+Q4         0.914  0.912  0.640   0.583    0.364 0.500
+
+=== consistency: med std_log2ptr, QC-any vs none ===
+group   n_qc   med_qc n_noqc  med_noqc
+ALL      213    0.105    309     0.152
+Q1        24    0.105    107     0.150
+Q2        37    0.105     93     0.158
+Q3        54    0.129     76     0.142
+Q4        98    0.099     33     0.129
+
+OLS: std_log2ptr ~ qc_any + log10(cov)
+  beta_qc_any = -0.0836 (p=5.49e-05)
+  beta_log_cov = 0.0268 (p=6.35e-01)
+
+wrote c5_qc_x_quality_with_cov.tsv + c5_coverage_control.tsv

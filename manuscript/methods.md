@@ -1,9 +1,13 @@
+> **SUPERSEDED 部分（2026-09-13）**：Table 2 已于 HPC C1 双端实例再生成（arm A 0.5–10×：0.941/0.919/0.959/0.971/0.970），形式交互检验仅 2× 显著为负。本文档中的旧数字与 "interaction" 主张以 manuscript.md 为准。详见 data/repro_check/ 与 data/repro_check/multiseed/INTERACTION_REPORT.md。
+
 # Methods
 
 Section order follows Pilea (Microbiome 2026) so the two papers can be read
 side by side. Every number quoted here is reproduced by the scripts in
 [sk2bGrow/benches](https://github.com/HuangShiLab/sk2bGrow) from the tables in
-`data/`.
+`data/`. Sections 3.5–3.6 and 6 report experiments that have no Pilea
+counterpart — the landmark-source, robustness and HPC-scale questions are new
+with this paper.
 
 ---
 
@@ -228,7 +232,7 @@ They are not: Bsp24I's site set is *totally contained* in CjePI's (1,636/1,636,
 891/891 and 2,910/2,910 tags on three genomes — the two patterns, written in
 opposite strand orientations, differ at exactly one position), and about half of
 Bsp24I's tags are also CjeI sites. The panel therefore offers at most ~15
-independent strata, and *Q* is mildly anti-conservative. The containment
+independent strata, and *Q* is mildly conservative (positive dependence deflates *Q*, so cross-strata heterogeneity is under-detected rather than over-called). The containment
 relations are recorded in the code (`enzyme::CONTAINMENTS`) but are not yet
 consumed by the weighting.
 
@@ -418,6 +422,94 @@ from 0.88 to 0.21. Correlation is therefore not a usable diagnostic for
 fragmentation, which is the concrete case behind §5's warning that r is
 invariant to affine transformation.
 
+### 3.5 Faecal microbiome (Sun et al.)
+
+**Source.** BioProject PRJNA689204 — deep shotgun sequencing of three human
+stool samples (SRR13371683, SRR13371682, SRR13371681; 2 × 150 bp,
+125–135 Gb per sample, ≈394 Gb in total) with bench-generated 2bRAD libraries
+(BcgI) prepared from the same samples. This is the paper's only real route-B
+data, and it bounds what the dataset can show: with a single enzyme, the
+cross-enzyme fusion, Cochran's *Q* and the panel-level QC of §1.6 are not
+testable on it.
+
+**Observation unit.** Species × sample; reads are attributed to species-level
+references with the EM step of §1.2. For the Pilea arm the abundance floor is
+set to **p ≥ 0.015 %** so that its coverage gate lands at the same effective
+depth as in shallower studies (the floor scales with the measured 125–135 Gb
+per-sample depth).
+
+**Three arms.** (Arm labels here are local to this experiment and distinct
+from the attribution arms A/B/E of §4.)
+
+| arm | input | method |
+|---|---|---|
+| A | WGS reads | Pilea (§4), default gates and gates off |
+| B | WGS reads | sk2bGrow |
+| C | real 2bRAD library | sk2bGrow |
+
+Arm A vs B is the cross-method comparison on identical input; B vs C is the
+in-silico vs real-library comparison for one method.
+
+**Exact dedup.** In the published 2bRAD data, reads were collapsed by exact
+sequence identity (an awk exact-match dedup; 95.7 % of reads fold onto a
+unique sequence). Because dedup status drives the arm-C result, arm C is run
+on the deduplicated counts, on the raw pre-dedup counts, and on a
+capped-dedup sensitivity series C′ = min(C, cap) with cap ∈ {1, 2, 3, 5}.
+
+**Per-anchor efficiency.** For each species with ≥30 shared anchors observed
+in all three samples, the per-anchor relative counts define an empirical
+capture-efficiency profile *eᵢ*; its dispersion σ_eff and its between/within
+decomposition are defined in §5.
+
+### 3.6 Rotating biological contactor metagenome (PRJNA974210, "C5")
+
+**Source.** BioProject PRJNA974210 — 9 biofilm samples from the flowpath of a rotating biological contactor (Hong Kong), the dataset of Pilea's MAG-scale benchmark
+(67–79 M read pairs each). References: **522 MAGs**. The project's NCBI
+esummary lists 525 assemblies; 523 were collected as `.fna`, and 3 archaeal
+MAGs were removed by the domain filter, leaving 522 bacterial MAGs (24.1 M
+anchors at k16). MAG quality (completeness, contamination) is scored by
+CheckM2 1.1.0; contig counts and N50 are computed from the FASTA directly.
+
+**Reporting conventions.** sk2bGrow has no output gate — every MAG gets a row
+— so recall is reported three ways: *reported_fraction* (rows returned / 522,
+always 1.00), *estimate_fraction* (rows with a finite PTR estimate / 522) and
+*qc_recall* (QC passes / 522, the denominator-matched counterpart of Pilea's
+default-gate output). Where Pilea's gates-off arm crashes (a `min_samples`
+failure on 6 of 9 samples, stably reproducible) it is reported as a property
+of the arm, not censored.
+
+**Cost instrumentation.** Wall-clock and peak RSS per stage from
+`/usr/bin/time -v`; the count stage is further decomposed by phase timing on a
+1 M read-pair subset (database load, index build, match, window write-out).
+
+**Mismatch-1 arm.** `--max-mismatch` is a runtime parameter (§1.2), so the
+mm = 1 arm reruns counting against the same index. A posting-list diagnostic
+(`seed_hist`: key count and mean/hit posting length per seed slot) is used to
+explain where lookup time goes.
+
+**Containment screen and dilution experiment.** To test whether a containment
+prefilter makes unrestricted-database counting feasible at GTDB scale, a
+diluted database was built: the 522 real MAGs plus **4,700 synthetic random
+genomes** (3.5 Mb each, fixed seed, absent by construction), ≈242 M anchors
+in total, indexed with `--screen-scale 2000`. On an identical 1 M read-pair
+subset, counting is run unrestricted and with `--screen`. The synthetic
+genomes are a false-positive census (truth = zero counts); the real MAGs are
+an equivalence check (screened counts must be a subset of the unrestricted
+counts, with per-anchor ratios ≈ 1).
+
+### 3.7 GC-spanning genome set
+
+Eighteen complete NCBI assemblies selected from GTDB R232 metadata (a local
+GTDB R226 snapshot was substituted where R232 metadata was unavailable on the
+analysis machine; all measured quantities are FASTA-derived and unaffected)
+with: ≤5 contigs, CheckM2 completeness ≥98 %, contamination ≤1 %, 1–2
+representatives per genus, and measured GC spanning **25.4–72.0 %** in
+roughly even bands (25.4, 26.1, 30.6, 33.0–33.5, 43.5, 50.7–50.8, 57.0,
+61.5, 65.3, 66.0–66.1, 72.0). The set feeds the F2–F4 experiments (§6). At
+its low-GC end the set contains two *Buchnera* genomes of only 0.65 Mb, so
+low GC and small genome size are confounded there and are read as a joint
+boundary, not separated.
+
 ---
 
 ## 4. Comparison methods
@@ -444,7 +536,7 @@ default threshold to the gates-off output shows that `--min-cove` is responsible
 for **68 of 68** suppressed *E. coli* estimates and **167 of 172** in the
 simulation (sole cause in 145). `--min-frac` and `--min-cont` are essentially
 never binding at these depths. Because a 150 bp read yields 120 31-mers, Pilea's
-threshold of 5 on *k-mer* coverage corresponds to ≈6.6× *read* coverage; at 5×
+threshold of 5 on *k-mer* coverage corresponds to ≈6.25× *read* coverage (5 × 150/120); at 5×
 nominal the measured median is 3.93 and the gate fires.
 
 The gate is not arbitrary conservatism. At 0.5× nominal, Pilea's gates-off
@@ -477,6 +569,14 @@ that returned log₂PTR = 2.65 against a measured 1.73, because the surrounding
 machinery, not the fitting geometry, was what had been removed.
 
 The 2 × 2 is what licenses any statement of the form "the gain comes from X".
+
+**Faecal three-arm comparison.** The Sun dataset (§3.5) adds a second,
+independent arm structure: A = Pilea on WGS, B = sk2bGrow on WGS, C =
+sk2bGrow on the real 2bRAD library. These labels are local to that experiment
+and unrelated to the attribution arms above. Pilea is run at both its default
+gates and gates off (thresholds as above); sk2bGrow is run on the
+deduplicated, raw and capped-dedup count tables (§3.5), because the effect of
+exact dedup on the 2bRAD route is itself one of the questions.
 
 ---
 
@@ -514,27 +614,226 @@ Three points of method:
    reported as absent rather than as zero, which would read as "scored badly"
    instead of "produced no signal".
 
+**Agreement between methods (faecal three-arm).** Where two methods estimate
+the same genome in the same sample, agreement is quantified by:
+
+* **Bland–Altman** — bias = mean(*ŷ* − *y*) and the 95 % limits of agreement
+  bias ± 1.96·SD of the pairwise differences. Detects systematic offset; a
+  narrow observed dynamic range depresses correlation-based agreement without
+  implying mis-ranking.
+* **CCC** — Lin's concordance correlation coefficient,
+  ρ_c = 2*r*σ_ŷσ_y / (σ_ŷ² + σ_y² + (μ_ŷ − μ_y)²): the Pearson correlation
+  penalised for deviation from the 45° line. Low CCC together with tight
+  limits of agreement indicates dynamic-range compression rather than
+  disagreement.
+
+**Per-anchor efficiency dispersion σ_eff and ICC decomposition.** On the Sun
+data, per-anchor relative counts *eᵢ* (observed counts normalised by the
+species mean, per sample) carry a capture-efficiency component beyond Poisson
+noise; its magnitude is σ_eff, the CV of *eᵢ* after Poisson correction,
+estimated per species (§3.5). A variance-components decomposition of *eᵢ*
+across the three samples splits the dispersion into a between-anchor component
+(a stable locus property, correctable by an empirical *e_prior*) and a
+within-anchor component (sample-specific residual); the intraclass correlation
+ICC = σ²_between / (σ²_between + σ²_within) is the correctable fraction.
+Because *eᵢ* is spatially uncorrelated along the genome, window averaging
+divides the residual by √(anchors per window): σ_eff bounds the window-level
+excess coefficient of variation, not the fitted PTR directly.
+
 **Computational cost.** Wall-clock and peak resident set size are taken from
 `/usr/bin/time -l`. On macOS this propagates a grandchild's `ru_maxrss`
 (verified explicitly), so the figure includes the Python statistics layer that
 the Rust binary spawns. Both tools were given 8 threads. Cost is reported per
 sample, with the one-off index/database build reported separately.
 
+**Uncertainty quantification and analysis provenance.** Unless stated
+otherwise, correlations and fitted slopes are reported with 95% confidence
+intervals from a media bootstrap: the media are resampled with replacement
+10,000 times, the statistic is recomputed on each resample, and the interval is
+the 2.5–97.5% percentile range. Comparisons between arms evaluated on the same
+cells (e.g. the two landmark sources in F1) use a paired bootstrap resampling
+the same media for both arms, and are reported as a difference with its
+bootstrap interval rather than as a hypothesis test. The source × estimator
+interaction of the Results is tested on the Fisher-z scale as
+(z_A − z_B) − (z_E − z_C) under the same paired resampling; it is significant at
+1×, 2× and 10× and not at 5× (data/ci_bootstrap/interaction.tsv). The Zheng
+titration, multi-strain simulation, fragmentation protocol and Sun three-arm
+analysis were pre-specified; the F1–F5 robustness experiments are post-hoc
+analyses undertaken after internal review, and are labelled as such at first
+mention.
+
 ---
 
-## 6. Computational environment
+## 6. Landmark-source and robustness experiments (F1–F5)
+
+All five experiments isolate the **landmark source** — deterministic 2bRAD
+anchors vs a density-matched FracMinHash sketch — from the estimator around
+it. F1 and F2 ask whether accuracy differences survive density matching; F3
+quantifies the misassignment risk of mismatch-tolerant counting; F4 asks
+whether the fragmentation results of §3.3 are landmark-agnostic; F5 costs the
+two sources at GTDB-like scale. Throughout, enzyme arms follow the C1 parity
+convention (`--windows`) and sketch arms the armE convention (no
+`--windows`, §4); a matched pair is only ever compared inside the same
+harness, and cross-harness numbers are never quoted against each other.
+
+### 6.1 Density matching on the Zheng grid (F1)
+
+**Purpose.** Test whether the anchor-vs-sketch accuracy gap survives once
+landmark density is matched — i.e. whether the panel's advantage is density or
+structure.
+
+**Inputs.** The Zheng grid (§3.1) at 0.5–10× nominal coverage.
+
+**Arms.** Panel arms use nested enzyme subsets of increasing density
+(k2/k4/k8/k16); sketch arms use Pilea FracMinHash with the scale chosen so
+that landmarks per Mb agree with the matched panel arm within ≈2 %
+(s268/s184/s123/s104 against k2/k4/k8/k16), plus two over-density references
+(s30/s60, 3.5×/1.8× panel density) as controls. FMH counts are rewritten into
+armE count tables and pass through the sk2bGrow estimator (§4).
+
+**Outputs.** Pearson r per (arm, depth) on the four matched pairs;
+per-window landmark counts and detection fraction; per-cell failure cause.
+
+### 6.2 GC sweep (F2)
+
+**Purpose.** Measure panel anchor density and PTR accuracy as functions of
+genome GC content.
+
+**Inputs.** The 18 genomes of §3.7. Reads come from a purpose-built
+planted-gradient simulator: the reference simulator is count-level Monte
+Carlo with no read output, so a read-level simulator was written to the same
+model — 150 bp single-end, no sequencing error, GC-neutral, 50 %
+reverse-complement; log₂ copy(*p*) = −log₂PTR·dist(*p*, ori)/(*L*/2) with the
+origin planted at *L*/2; depth *d* is the mean per-base depth over the
+terminus half; start positions are drawn copy-weighted, an inhomogeneous
+Poisson process with shot noise included.
+
+**Grid.** planted log₂PTR ∈ {0.5, 1.0, 1.5, 2.0} × 2 seeds (n = 8 truth
+replicates per cell) × depths {0.5, 1, 2, 5}× × arms {panel k8, panel k16,
+FMH matched to k8, FMH matched to k16}. The matching scale is recomputed per
+genome from its measured anchor density, scale = round(*L*/n_anchors), and
+the matched FMH density agrees with the panel within ≤4 %.
+
+**Outputs.** r/RMSE/slope per GC band and depth; density per arm per genome
+(landmarks/Mb).
+
+### 6.3 Mismatch tolerance and misassignment (F3)
+
+**Purpose.** Quantify the risk that mismatch-tolerant counting credits an
+observation to the wrong landmark.
+
+**Census.** For each of the 18 F2 genomes, every pair of indexed anchors in
+the same tag-length group at Hamming distance 1 or 2 is enumerated
+(distance-0 pairs are the multi-copy families themselves, §1.1). Multi-copy,
+shared and non-chromosomal anchors are included, because the counting layer
+can retrieve them; each pair is classified uu / um / mm by uniqueness flags
+(both unique / exactly one unique / neither).
+
+**Empirical, enzyme panel.** Simulated reads — the F2 simulator with the
+gradient removed (misassignment needs no gradient), 0.5×, i.i.d. substitutions
+at 0, 0.1 and 1 %, no indels, no quality bias — are counted by the real Rust
+counting layer at `--max-mismatch 0/1/2`. A Python replica of the full
+counting rules (exact-first suppression, seed ranges, best-distance tie
+handling, multi-mapper retention) attributes each recorded observation — read
+names encode the true origin — as correct / wrong_tie / wrong_only. The
+replica is validated anchor-exact against the Rust output on every cell
+before use.
+
+**Sketch arm, stated plainly.** sk2bGrow has no sketch counting mode in the
+CLI, so the FMH arm is a **rule-level simulation**: the same counting rules
+applied to the k16-matched sketch keys over a full *k* = 31 sliding window,
+with no motif gate — mirroring Pilea's per-read k-mer counting. It answers
+what *would* happen were sketch counting to accept *m* mismatches, not what
+any shipped tool does.
+
+**Outputs.** Census pairs per 1,000 landmarks (uu/um/mm × d ≤ 1 / d ≤ 2);
+misassigned fraction of recorded observations per (mode, error rate, *m*).
+
+### 6.4 Fragmentation × sketch (F4)
+
+**Purpose.** Two questions: does the coordinate-fit collapse of §3.3 recur
+identically on sketch landmarks, and can contigs be scaffolded on FMH
+landmarks as well as on enzyme tags?
+
+**Inputs.** Three genomes from the F2 set (*E. coli* 50.8 % GC, *B. subtilis*
+43.5 %, *P. aeruginosa* 65.3 %). The F2 genomes are 3–4 contigs and are first
+concatenated into a single pseudo-chromosome (the index's coordinate system),
+then fragmented with the §3.3 protocol (100 lognormal contigs, shuffled,
+independently reverse-complemented, seed 0). *P. aeruginosa* has no close
+sister in the set, so its cross-strain scaffold reference is a **synthetic
+0.1 %-divergence SNP mutant** (7,534 SNPs, fixed seed, labelled synthetic);
+the other two use real sister species with large-scale rearrangements. Reads
+are the F2 simulated FASTQ reused: planted log₂PTR ∈ {0.5, 1.0, 2.0} × 2
+seeds × {1, 5}×, n = 6 per (genome, condition, depth).
+
+**Arms and conditions.** Enzyme arm: sk2bGrow counting at C1 parity; sketch
+arm: Pilea-interpreted FMH counts at the k16-matched scale at armE parity.
+Reference conditions as in §3.3: complete, frag, scafSelf, scafRel.
+
+**Sketch scaffolding, stated plainly.** The shipped `sk2bgrow scaffold`
+digests enzyme tags only; the FMH arm therefore runs a **1:1 Python port of
+the placement algorithm** (`scaffold.rs`) onto Pilea FMH keys — same
+shared-tag mapping, Kendall-vote orientation, median start placement,
+min_tags = 3, min_concordance = 0.8, same output schema — so downstream
+scoring and pseudo-contig rebuild are unchanged. Sketch scaffolding here is a
+port, not the shipped binary; its correctness is supported by the near-perfect
+self-arm placements.
+
+**Permutation null.** Whether an estimate on fragmented references exceeds
+chance is judged by shuffling window positions and refitting the identical
+V-fit **200 times** per cell.
+
+**Outputs.** PTR recovery (r/RMSE/slope) per condition and arm; placement
+rate, orientation accuracy and order Spearman; permutation null distributions.
+
+### 6.5 Index cost at GTDB-like scale (F5)
+
+**Purpose.** Cost the two landmark sources at matched density, feeding the
+GTDB-scale budget decision of §3.6.
+
+**Genomes.** 300 genomes, 1–20 Mb, GC 24.3–73.2 %: 282 drawn at random from
+the local GTDB pool (2,200 random draws thinned to a GC-uniform 282) plus the
+18 genomes of §3.7; merged 300-genome indexes are built in a single
+invocation.
+
+**Arms.** sk2bGrow `index` at k16 (full panel) and k8 (top-8); an FMH arm of
+Pilea-style reference sketches (`sketch_loci`, *k* = 31, armE hash semantics)
+at the F2-matched scale, plus a **half-density reference arm** (s200, ≈0.53×
+the k16-matched landmark count). The binary index does not yet accept FMH
+anchors, so the FMH arm's costs are those of the current Python
+implementation — a gap that is itself reported.
+
+**Measurement.** Builds wrapped in `/usr/bin/time -v` (wall-clock, peak RSS);
+disk by `du -sb`; profile cost on the first 2 M single-end reads of two real
+WGS samples (PRJNA1280254), 8 threads, `--no-stats`, matching the F2
+profile-cost convention.
+
+**Half-density accuracy.** 3 genomes (50.8/65.3/72.0 % GC) × 4 arms (panel
+k16/k8, FMH matched, FMH s200) × 4 depths (0.5–5×) × 8 truth replicates.
+
+**Outputs.** Bytes per landmark; build wall-clock/RSS and on-disk size per
+index; per-sample profile wall-clock/RSS; half-density accuracy against
+matched density.
+
+---
+
+## 7. Computational environment
 
 Apple M3 Max, 16 cores, 48 GB RAM, macOS 14.7; Rust 1.92.0, Python 3.12.4.
 All benchmarks in this paper run on a single laptop. Runs deferred for scale —
 full-depth *E. coli*, the 45,529-assembly quality sweep, Pilea's full
 32-strain/32× grid, and the marine metagenome application — are marked as such
-where they appear.
+where they appear. The F1–F5 experiments (§6) and the C5 deep-dive runs
+(§3.6) ran on an internal HPC cluster (SLURM scheduler, Intel partition,
+Lustre storage).
 
 ---
 
-## 7. Data and code availability
+## 8. Data and code availability
 
 sk2bGrow: <https://github.com/HuangShiLab/sk2bGrow>.
 Manuscript, figures and figure code: <https://github.com/HuangShiLab/sk2bGrow-paper>.
 Figures are a pure function of the tables in `data/`; `python3 figures/make_figures.py`
 regenerates all of them with no network access and no recomputation from reads.
+Sequencing data: PRJNA615952 (Zheng *E. coli* panel), PRJNA689204 (Sun faecal
+study), PRJNA974210 (rotating biological contactor metagenome).

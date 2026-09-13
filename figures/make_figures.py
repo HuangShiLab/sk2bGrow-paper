@@ -185,16 +185,41 @@ def fig4():
     save(fig, 'fig4_negative_control')
 
 
-# --- Fig 5: what is responsible — sketch or estimator? ----------------------
-def fig5():
-    """The full 2x2. One panel per estimator, one line per sketch, so the
-    interaction is the difference between the two panels rather than something
-    the reader has to compute.
+#: Fig 6's caption, kept at module level so the hard line breaks stay visible.
+CAP5 = (
+    'a, the full 2\u00d72 at the Pilea operating point — scale 250, a landmark density '
+    '2.4\u00d7 below the enzyme panel — which is where the sketch penalty lives; the '
+    'interaction is a fact about this operating point, not a property of the' + NL +
+    'sketch. b, the same comparison after density matching (FracMinHash scale 104 '
+    'vs the 16-enzyme panel; 9,645 vs 9,422 landmarks/Mb): at \u22651\u00d7 the two landmark '
+    'modes are tied at every depth, and at 0.5\u00d7 the sketch scores higher on the' + NL +
+    'cells it survives (r 0.82\u20130.84, n = 10\u201311, vs 0.50\u20130.57, n = 15\u201316) — but it '
+    'loses 6 of 17 cells to `no downhill origin`. c, the mechanism at 0.5\u00d7: '
+    'windows are populated almost identically in the two' + NL +
+    'modes (median 17.5 vs 14.1 landmarks/window; detected fraction 0.175 vs '
+    '0.185) — deterministic anchors are not what keeps windows populated. The '
+    'panel\u2019s low-coverage robustness comes from redundancy across its 16' + NL +
+    'strata: a single-strata sketch dies outright when its one stratum fits no '
+    'gradient and no fusion can rescue it, while the panel still answers if any '
+    'of its 16 strata do.'
+)
 
-    Colour encodes the *sketch* and is identical across panels: the same entity
-    keeps the same hue, and the panel carries the estimator.
+
+# --- Fig 6: what is responsible — sketch or estimator? ----------------------
+def fig5():
+    """Panel a: the full 2x2 at the Pilea operating point. Panel b: the same
+    comparison once sketch density is matched to the panel. Panel c: the
+    mechanism — per-window landmark counts, which turn out to be identical
+    across modes, so the difference is strata redundancy, not anchor kind.
     """
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.2), sharey=True)
+    f1 = ROOT / 'data' / 'f1_sketch' / 'F1_results.tsv'
+    f1m = ROOT / 'data' / 'f1_sketch' / 'F1_mechanism.tsv'
+    fig = plt.figure(figsize=(11.8, 3.5))
+    gs = fig.add_gridspec(1, 4, width_ratios=[1, 1, 1.02, 0.92], wspace=0.34)
+    ax_a1 = fig.add_subplot(gs[0, 0])
+    ax_a2 = fig.add_subplot(gs[0, 1], sharey=ax_a1)
+    ax_b = fig.add_subplot(gs[0, 2], sharey=ax_a1)
+    ax_c = fig.add_subplot(gs[0, 3])
     covs = sorted(grow['cov'].unique())
     ESTIMATORS = [('coordinate V-fit', 'coordinate V-fit (ours)'),
                   ('rank regression', 'rank regression (iRep / Pilea)')]
@@ -205,7 +230,7 @@ def fig5():
             return np.nan
         return stats.pearsonr(s_['growth_rate'], s_['log2ptr'])[0]
 
-    for ax, (est, title) in zip(axes, ESTIMATORS):
+    for ax, (est, title) in zip([ax_a1, ax_a2], ESTIMATORS):
         grid(ax, axis='both')
         drawn = {}
         for sketch, colour in SKETCH_COLOR.items():
@@ -243,27 +268,92 @@ def fig5():
         ax.xaxis.set_minor_formatter(mticker.NullFormatter())
         ax.set_xlabel('subsampled coverage')
         ax.set_title(title, fontsize=9, color=INK, pad=6)
-    axes[0].set_ylabel('Pearson r vs measured growth rate')
-    axes[0].set_ylim(0.1, 1.04)
+    ax_a1.set_ylabel('Pearson r vs measured growth rate')
+    ax_a1.set_ylim(0.1, 1.04)
+    ax_a1.text(0.03, 0.03, 'operating point: scale 250,\n2.4\u00d7 below panel density',
+               transform=ax_a1.transAxes, fontsize=6.6, color=MUTED, va='bottom')
 
     at1 = {k: r_at(v, 1.0) for k, v in ATTRIBUTION.items()}
     gain = {sk: at1[('coordinate V-fit', sk)] - at1[('rank regression', sk)]
             for sk in SKETCH_COLOR}
     inter = gain['2bRAD anchors'] - gain['FracMinHash']
-    cap = (
-        f"The two factors are not additive. At 1x the coordinate fit is worth "
-        f"{gain['2bRAD anchors']:+.2f} r on 2bRAD anchors but only "
-        f"{gain['FracMinHash']:+.2f} on a FracMinHash sketch" + NL +
-        f'(interaction {inter:+.2f}). The sketch effect changes sign with the estimator: anchors are '
-        'ahead under the coordinate fit and' + NL +
-        'behind under rank regression. Neither component carries the result on its own.'
-    ).replace('1x', '1\u00d7')
+
+    # --- b: density-matched --------------------------------------------------
+    d = pd.read_csv(f1, sep='\t')
+    grid(ax_b, axis='both')
+    pair = [('A_k16', 'enzyme panel k16', SKETCH_COLOR['2bRAD anchors']),
+            ('E_s104', 'FracMinHash s104', SKETCH_COLOR['FracMinHash'])]
+    for arm, lab, colour in pair:
+        s = d[d['arm'] == arm].sort_values('cov')
+        ax_b.plot(s['cov'], s['r'], 'o-', color=colour, ms=5,
+                  markeredgecolor='white', markeredgewidth=1.0, label=lab)
+    lo = d[(d['arm'] == 'A_k16') & (d['cov'] == covs[0])].iloc[0]
+    hi = d[(d['arm'] == 'E_s104') & (d['cov'] == covs[0])].iloc[0]
+    # At 0.5x the sketch r is computed on the cells that survived; the dropped
+    # cells are the whole story, so both n's are printed next to the points.
+    ax_b.annotate(f"n={hi['n']:.0f}/17 — 6 cells die:\n`no downhill origin`",
+                  (covs[0], hi['r']), textcoords='offset points', xytext=(18, -26),
+                  fontsize=6.6, color=SKETCH_COLOR['FracMinHash'], ha='left')
+    ax_b.annotate(f"n={lo['n']:.0f}/17", (covs[0], lo['r']),
+                  textcoords='offset points', xytext=(14, -12), fontsize=6.6,
+                  color=SKETCH_COLOR['2bRAD anchors'], ha='left')
+    ax_b.set_xscale('log')
+    ax_b.set_xticks(covs); ax_b.set_xticklabels([f'{c:g}×' for c in covs])
+    ax_b.xaxis.set_minor_locator(mticker.NullLocator())
+    ax_b.xaxis.set_minor_formatter(mticker.NullFormatter())
+    ax_b.set_xlabel('subsampled coverage')
+    ax_b.set_title('b  density-matched (s104 vs k16)\nsame estimator, same density',
+                   fontsize=8.4, color=INK, pad=5)
+    ax_b.legend(loc='lower right', fontsize=7, handletextpad=0.5, labelspacing=0.3)
+
+    # --- c: mechanism — window population at 0.5x ----------------------------
+    m = pd.read_csv(f1m, sep='\t')
+    m = m[(m['cov'] == 0.5) & (m['arm'].isin(['A_k16', 'E_s104']))]
+    rows = {r['arm']: r for _, r in m.iterrows()}
+    order = ['A_k16', 'E_s104']
+    labs = ['panel k16', 'sketch s104']
+    cols = [SKETCH_COLOR['2bRAD anchors'], SKETCH_COLOR['FracMinHash']]
+    x = np.arange(2)
+    grid(ax_c, axis='y')
+    ax_c.bar(x - 0.18, [rows[a]['lm_win_med'] for a in order], width=0.34,
+             color=cols, zorder=3)
+    ax_c.set_ylabel('landmarks / window (median)')
+    ax_c.set_ylim(0, 21)
+    for xi, a in zip(x, order):
+        ax_c.text(xi - 0.18, rows[a]['lm_win_med'] + 0.5,
+                  f"{rows[a]['lm_win_med']:.1f}", ha='center', fontsize=7.5,
+                  color=INK)
+    ax2 = ax_c.twinx()
+    ax2.bar(x + 0.18, [rows[a]['det_frac_med'] for a in order], width=0.34,
+            color=cols, alpha=0.42, hatch='//', edgecolor='white', zorder=3)
+    ax2.set_ylabel('detected fraction', color=INK2)
+    ax2.set_ylim(0, 0.25)
+    ax2.tick_params(axis='y', colors=INK2)
+    for xi, a in zip(x, order):
+        ax2.text(xi + 0.18, rows[a]['det_frac_med'] + 0.008,
+                 f"{rows[a]['det_frac_med']:.3f}", ha='center', fontsize=7.5,
+                 color=INK2)
+    ax_c.set_xticks(x); ax_c.set_xticklabels(labs)
+    ax_c.set_title('c  mechanism at 0.5\u00d7:\nwindows equally populated',
+                   fontsize=8.4, color=INK, pad=5)
+    from matplotlib.patches import Patch
+    ax_c.legend(handles=[Patch(facecolor=MUTED, label='landmarks / window'),
+                         Patch(facecolor=MUTED, alpha=0.42, hatch='//',
+                               edgecolor='white', label='detected fraction')],
+                loc='upper left', fontsize=6.8, handlelength=1.2)
+
+    ax_a1.text(-0.28, 1.13, 'a', transform=ax_a1.transAxes, fontsize=11,
+               fontweight='bold', color=INK, va='top')
+    cap = (CAP5 + NL + NL +
+           f'(panel a: at 1\u00d7 the coordinate fit is worth {gain["2bRAD anchors"]:+.2f} r on '
+           f'2bRAD anchors but only {gain["FracMinHash"]:+.2f} on a FracMinHash sketch; '
+           f'interaction {inter:+.2f}.)')
     fig.text(0.0, -0.02, cap, fontsize=7, color=MUTED, va='top')
-    fig.subplots_adjust(left=0.095, right=0.985, top=0.88, bottom=0.17, wspace=0.09)
+    fig.subplots_adjust(left=0.055, right=0.985, top=0.82, bottom=0.14)
     save(fig, 'fig5_attribution')
 
 
-# --- Fig 6: multi-strain simulation — accuracy, recall and cost -------------
+# --- Fig 5: multi-strain simulation — accuracy, recall and cost -------------
 def fig6():
     """Three panels because three different things matter and they trade off:
     how often a method answers, how right it is, and what it costs."""
@@ -333,7 +423,7 @@ def fig7():
         grid(ax, axis='both')
 
     for ax, col, lab, ttl in (
-            (ax_r, 'r', 'Pearson r vs growth rate', 'ranking: peaks at 8 enzymes'),
+            (ax_r, 'r', 'Pearson r vs growth rate', 'r: tied 4–12, point peak at 8'),
             (ax_e, 'rmse', 'RMSE vs measured log₂PTR', 'magnitude: best at 4–8 enzymes'),
             (ax_t, 'seconds', 'wall clock per sample (s)', 'cost: linear in k')):
         for c, dp in zip(ramp, depths):
@@ -379,7 +469,8 @@ def fig7():
     ax_p.set_xlabel('read depth'); ax_p.set_ylabel('wall clock per sample (s)')
     ax_p.set_ylim(bottom=0)
     ax_p.legend(loc='upper left', handletextpad=0.5, labelspacing=0.25)
-    ax_p.set_title('sk2bGrow vs Pilea, same cells', fontsize=8.4, color=INK, pad=4)
+    ax_p.set_title('sk2bGrow vs Pilea, same cells\n(single genome; the ordering flips at MAG scale — Fig. 11)',
+                   fontsize=8.4, color=INK, pad=4)
 
     for ax, letter in zip(axes.ravel(), 'abcd'):
         ax.text(-0.22, 1.11, letter, transform=ax.transAxes, fontsize=11,
@@ -389,16 +480,22 @@ def fig7():
     save(fig, 'fig7_panel_size')
 
 
-#: Fig 8's caption, kept out of the function so the hard line breaks that keep
+#: Fig 9's caption, kept out of the function so the hard line breaks that keep
 #: savefig's tight bbox from widening the canvas stay visible.
 CAP8 = (
     'The same reads throughout, and 43,707 of the complete genome\'s 43,735 '
     'anchors survive the cut; only the coordinate changes. Fragmenting into 100 '
-    'shuffled contigs does not add' + NL +
-    'scatter, it removes the gradient: every estimate collapses toward zero '
-    '(panel b, slope {slope:.2f}), and {qc:.0f}% of those collapsed estimates '
-    'pass the fusion QC at 5\u201310\u00d7, because a destroyed' + NL +
-    'coordinate makes every enzyme agree there is no gradient. Pilea\'s rank '
+    'shuffled contigs kills the coordinate fit — every per-enzyme' + NL +
+    'V-fit on shuffled windows has r\u00b2 below zero — and the residual estimates are '
+    'winner\u2019s-curse artifacts of the origin grid search: permuting window '
+    'coordinates and refitting 200\u00d7 gives a null' + NL +
+    'distribution of the same order as the estimates on fragmented references, '
+    'so the surviving correlation is inflated by the search artifact, not '
+    'recovered biology. Slope and RMSE are the primary metrics.' + NL +
+    'Every estimate collapses toward zero (panel b, slope {slope:.2f}), and '
+    '{qc:.0f}% of those collapsed estimates pass the fusion QC at 5\u201310\u00d7, '
+    'because a destroyed coordinate makes every enzyme agree' + NL +
+    'there is no gradient. Pilea\'s rank '
     'regression needs no coordinate and is nearly indifferent to the cut, so on '
     'unscaffolded contigs it wins' + NL +
     'outright (r 0.83 against 0.55 at 1×). `sk2bgrow scaffold` is what puts the '
@@ -420,7 +517,7 @@ CAP8 = (
 )
 
 
-# --- Fig 8: does the method survive a fragmented reference? ------------------
+# --- Fig 9: does the method survive a fragmented reference? ------------------
 def fig8():
     """The MAG case. Panel a is accuracy against coverage per reference
     condition; panel b is estimated against predicted magnitude at 10x, which is
@@ -464,7 +561,8 @@ def fig8():
     ax_r.xaxis.set_minor_locator(mticker.NullLocator())
     ax_r.xaxis.set_minor_formatter(mticker.NullFormatter())
     ax_r.set_xlabel('subsampled coverage')
-    ax_r.set_ylabel('Pearson r vs measured growth rate')
+    ax_r.set_ylabel('Pearson r vs measured growth rate\n(r inflated by ori-search '
+                    'artifact — read slope / RMSE)', fontsize=8)
     ax_r.set_title('a  ranking', loc='left', fontsize=9, color=INK)
     ax_r.legend(loc='lower right', handletextpad=0.5, labelspacing=0.3)
 
@@ -515,8 +613,9 @@ def fig8():
                   markeredgewidth=0.8, zorder=3)
         ax_s.plot(ns, sl, 'o-', color=REF_COLOR['frag'], ms=5,
                   markeredgecolor='white', markeredgewidth=0.8, zorder=4)
-        ax_s.annotate('Pearson r', (ns[2], rs[2]), textcoords='offset points',
-                      xytext=(0, 9), ha='center', fontsize=7.5, color=MUTED)
+        ax_s.annotate('Pearson r — inflated by\nsearch artifact', (ns[2], rs[2]),
+                      textcoords='offset points',
+                      xytext=(0, 10), ha='center', fontsize=7.5, color=MUTED)
         ax_s.annotate('fitted slope', (ns[2], sl[2]), textcoords='offset points',
                       xytext=(0, -16), ha='center', fontsize=7.5,
                       color=REF_COLOR['frag'])
@@ -572,7 +671,379 @@ def fig8():
     save(fig, 'fig8_fragmentation')
 
 
+#: Fig 8 (GC sweep) caption.
+CAP6GC = (
+    'Eighteen real genomes spanning GC 25.4\u201372.0%, simulated reads, planted '
+    'log\u2082PTR 0.5\u20132.0 (n = 8 cells per point). a, Enzyme-panel landmark density '
+    'against GC: k16 rises monotonically (\u22484.5k/Mb at 26% to \u224812.4k/Mb at' + NL +
+    '72%) and only the low-GC end is depressed (\u22482\u00d7 below mid-GC); '
+    'density-matched FracMinHash tracks the panel within a few percent at every '
+    'GC. The k8/k16 ratio thins at the GC extremes (0.63 at 72%) — the extra' + NL +
+    'eight enzymes buy high-GC density, not accuracy. b, Pearson r at 1\u00d7: k8 '
+    'matches k16 at every GC despite carrying only 63% of its landmarks at 72% '
+    'GC (A6 holds across GC), and matched FracMinHash ties the panel.' + NL +
+    'Shaded band: the instrument boundary — at GC \u226430% together with 0.5\u00d7 depth '
+    'every landmark mode fails (r < 0.7) — so the claimable range is GC \u226530% '
+    'at \u22651\u00d7 coverage.'
+)
+
+
+# --- Fig 8 (GC sweep): panel density vs GC, accuracy vs GC ------------------
+def fig6_gc_sweep():
+    """The enzyme panel as an instrument across GC. Left: landmark density;
+    right: 1x accuracy. Panel lines keep the sketch blue, FMH the green."""
+    den = pd.read_csv(ROOT / 'data' / 'f2_gc_sweep' / 'F2_density.tsv', sep='\t')
+    acc = pd.read_csv(ROOT / 'data' / 'f2_gc_sweep' / 'F2_accuracy.tsv', sep='\t')
+    BLUE, GREEN = SKETCH_COLOR['2bRAD anchors'], SKETCH_COLOR['FracMinHash']
+    den = den.copy()
+    den['fam'] = den['mode'].map(
+        lambda mo: mo if mo.startswith('panel_') else 'fmh_' + mo.rsplit('_', 1)[-1])
+
+    fig, (ax_d, ax_a) = plt.subplots(1, 2, figsize=(8.8, 3.4))
+    grid(ax_d, axis='both'); grid(ax_a, axis='both')
+
+    series = [('panel_k16', 'panel k16', BLUE, '-', 1.0),
+              ('panel_k8', 'panel k8', BLUE, '--', 0.55),
+              ('panel_k2', 'panel k2', BLUE, ':', 0.35),
+              ('fmh_k16', 'FMH matched k16', GREEN, '-', 1.0),
+              ('fmh_k8', 'FMH matched k8', GREEN, '--', 0.55)]
+    for fam, lab, c, ls, al in series:
+        s = den[den['fam'] == fam].sort_values('gc')
+        ax_d.plot(s['gc'], s['landmarks_mb'], ls=ls, color=c, alpha=al, lw=2.0,
+                  label=lab, zorder=3)
+    k16 = den[den['fam'] == 'panel_k16'].set_index('gc')['landmarks_mb']
+    k8 = den[den['fam'] == 'panel_k8'].set_index('gc')['landmarks_mb']
+    g72 = max(k16.index)
+    ax_d.annotate(f'k8/k16 = {k8[g72] / k16[g72]:.2f}', xy=(g72, k8[g72]),
+                  xytext=(g72 - 24, k8[g72] * 0.55), fontsize=7.5, color=INK2,
+                  arrowprops=dict(arrowstyle='-', color=INK2, lw=0.8))
+    ax_d.text(0.03, 0.47, 'low-GC end \u22482\u00d7 depressed', transform=ax_d.transAxes,
+              fontsize=7, color=MUTED, va='top')
+    ax_d.set_xlabel('genome GC (%)'); ax_d.set_ylabel('landmarks / Mb')
+    ax_d.set_title('panel density vs GC', loc='left', fontsize=9, color=INK)
+    ax_d.legend(loc='upper left', fontsize=7, handletextpad=0.6, labelspacing=0.3)
+
+    # right: r at 1x, three series
+    a = acc[acc['depth'] == 1.0].copy()
+    fmh = (a[a['mode'].str.startswith('E_')].groupby('genome')
+           .agg(gc=('gc', 'first'), r=('r', 'mean')).reset_index())
+    frames = []
+    for mode, lab, c, ls in [('A_k16', 'panel k16', BLUE, '-'),
+                             ('A_k8', 'panel k8', BLUE, '--')]:
+        t = a[a['mode'] == mode][['gc', 'r']].copy()
+        t['lab'], t['c'], t['ls'] = lab, c, ls
+        frames.append(t)
+    fmh['lab'], fmh['c'], fmh['ls'] = 'FMH matched', GREEN, '-'
+    frames.append(fmh[['gc', 'r', 'lab', 'c', 'ls']])
+    ax_a.axvspan(24.5, 30.5, color=MUTED, alpha=0.12, zorder=0)
+    ax_a.text(27.5, 0.575, 'dead zone\n(fails at 0.5\u00d7)', ha='center',
+              fontsize=6.8, color=INK2, va='bottom')
+    for t in frames:
+        t = t.sort_values('gc')
+        ax_a.plot(t['gc'], t['r'], ls=t['ls'].iloc[0], color=t['c'].iloc[0],
+                  lw=1.6, alpha=0.85, zorder=3, label=t['lab'].iloc[0])
+        ax_a.plot(t['gc'], t['r'], 'o', color=t['c'].iloc[0], ms=5, alpha=0.85,
+                  markeredgecolor='white', markeredgewidth=0.8, zorder=4)
+    ax_a.set_xlabel('genome GC (%)'); ax_a.set_ylabel('Pearson r at 1\u00d7')
+    ax_a.set_ylim(0.55, 1.02)
+    ax_a.set_title('accuracy at 1\u00d7 vs GC', loc='left', fontsize=9, color=INK)
+    ax_a.legend(loc='lower right', fontsize=7, handletextpad=0.5, labelspacing=0.3)
+
+    ax_d.text(-0.16, 1.04, 'a', transform=ax_d.transAxes, fontsize=11,
+              fontweight='bold', color=INK, va='top')
+    ax_a.text(-0.16, 1.04, 'b', transform=ax_a.transAxes, fontsize=11,
+              fontweight='bold', color=INK, va='top')
+    fig.text(0.0, -0.04, CAP6GC, fontsize=7, color=MUTED, va='top')
+    fig.subplots_adjust(left=0.085, right=0.985, top=0.9, bottom=0.17, wspace=0.3)
+    save(fig, 'fig6_gc_sweep')
+
+
+#: Fig 10 caption.
+CAP9 = (
+    'Sun PRJNA689204 stool communities, three samples of \u2248125\u2013135 Gb each. a, '
+    'Bland\u2013Altman summary of sk2bGrow-WGS (B) against Pilea at its shipped '
+    'defaults (A), on the common denominator of species both methods report' + NL +
+    '(n = 58/68/78 per sample): bias is stable at +0.22 to +0.25 log\u2082 (Pilea '
+    'reads \u224816\u201319% high) with limits of agreement \u2248 \u22120.43 to +0.89; the low CCC '
+    '(0.25\u20130.37) reflects the narrow observed range (span \u22481.4 log\u2082),' + NL +
+    'not broken agreement. Per-species points are not committed; each marker is '
+    'a sample\u2019s bias with its LoA whisker, annotated with n and the B/A ranges. '
+    'b, the real-2bRAD arm (C) against the same WGS arm: exact read-level' + NL +
+    'deduplication (95.7% of reads collapse to unique sequences) destroys the '
+    'PTR signal — Pearson r falls from 0.73\u20130.80 to 0.30\u20130.60 and CCC collapses '
+    '(e.g. S06: r 0.797 to 0.435, CCC 0.728 to 0.192). sk2bGrow\u2019s pipeline must not' + NL +
+    'deduplicate before counting. (raw-arm numbers from the c_arm_diag run, '
+    'REVIEW \u00a76; deduped from p2_review_agreement.tsv.)'
+)
+
+
+# --- Fig 10: metagenome agreement — BA summary + dedup ablation --------------
+def fig9_metagenome():
+    ag = pd.read_csv(ROOT / 'data' / 'sun_three_arm' / 'p2_review_agreement.tsv',
+                     sep='\t')
+    ba = ag[ag['comparison'] == 'A_default_vs_B'].set_index('sample')
+    # raw-arm numbers exist only as prose in REVIEW.md §6 (c_arm_diag, job
+    # 4006836); the deduped arms are the committed tsv rows.
+    raw = {'S01': (0.449, 0.440), 'S06': (0.797, 0.728), 'S07': (0.734, 0.566)}
+    SAMP = [('S01', 'S01'), ('S06', 'S06'), ('S07', 'S07')]
+    SC = {'S01': ARM_COLOR['A'], 'S06': ARM_COLOR['B'], 'S07': ARM_COLOR['C_default']}
+
+    fig, (ax_a, ax_b) = plt.subplots(
+        1, 2, figsize=(9.0, 3.5), gridspec_kw={'width_ratios': [1.15, 1]})
+    grid(ax_a, axis='y')
+    ax_a.axhline(0, lw=1.0, color=MUTED, zorder=1)
+    for i, (s, _) in enumerate(SAMP):
+        r = ba.loc[s]
+        c = SC[s]
+        ax_a.plot([i, i], [r['loa_lo'], r['loa_hi']], '-', color=c, lw=1.6,
+                  zorder=2)
+        ax_a.plot([i, i], [r['loa_lo'], r['loa_hi']], '_', color=c, ms=11,
+                  mew=1.6, zorder=2)
+        ax_a.plot([i], [r['bias']], 'o', color=c, ms=7, zorder=3,
+                  markeredgecolor='white', markeredgewidth=1.0)
+        note = f"n={r['n']}\nB [{r['range_x']}]\nA [{r['range_y']}]"
+        ax_a.annotate(note, (i, r['bias']), textcoords='offset points',
+                      xytext=(-16 if i == 2 else 16, 2),
+                      ha='right' if i == 2 else 'left',
+                      fontsize=6.6, color=INK2, va='center')
+    ax_a.set_xticks(range(3))
+    ax_a.set_xticklabels([s for s, _ in SAMP])
+    ax_a.set_xlabel('sample')
+    ax_a.set_ylabel('\u0394log\u2082(PTR)  (Pilea \u2212 sk2bGrow-WGS)')
+    ax_a.set_ylim(-0.75, 1.15)
+    ax_a.set_title('method agreement, common denominator', loc='left',
+                   fontsize=9, color=INK)
+    ax_a.text(0.03, 0.97, 'bias +0.22 to +0.25\nLoA \u2248 \u22120.43 to +0.89',
+              transform=ax_a.transAxes, fontsize=6.8, color=MUTED, va='top')
+
+    # b: raw vs deduped, r and CCC
+    ded = ag[ag['comparison'] == 'B_vs_C'].set_index('sample')
+    grid(ax_b, axis='y')
+    x = np.arange(3)
+    w = 0.2
+    DED = '#bdbdbd'
+    for i, (s, _) in enumerate(SAMP):
+        rr, cr = raw[s]
+        rd, cd = ded.loc[s]['r'], ded.loc[s]['ccc']
+        bars = [(rr, SC[s], 0), (rd, DED, 0), (cr, SC[s], 1), (cd, DED, 1)]
+        for j, (v, c, k) in enumerate(bars):
+            ax_b.bar(i + (j - 1.5) * (w + 0.02), v, width=w, color=c, zorder=3,
+                     alpha=0.95 if c == DED else 0.75 + 0.25 * (1 - k))
+            ax_b.text(i + (j - 1.5) * (w + 0.02), v + 0.02, f'{v:.2f}',
+                      ha='center', fontsize=6.2, color=INK2)
+    from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
+    handles = [Line2D([], [], marker='s', ls='', color=SC[s], ms=8, label=s)
+               for s, _ in SAMP]
+    handles += [Patch(facecolor=DED, label='deduped counts')]
+    ax_b.legend(handles=handles, loc='upper right', fontsize=6.8,
+                handletextpad=0.4, ncol=2, columnspacing=0.8)
+    ax_b.text(0.02, 0.97, 'per sample: left pair = Pearson r,\nright pair = CCC',
+              transform=ax_b.transAxes, fontsize=6.8, color=INK2, va='top')
+    ax_b.text(0.02, 0.90, 'exact dedup collapses r and CCC',
+              transform=ax_b.transAxes, fontsize=6.8, color=MUTED, va='top')
+    ax_b.set_xticks(x); ax_b.set_xticklabels([s for s, _ in SAMP])
+    ax_b.set_xlabel('sample')
+    ax_b.set_ylabel('agreement with WGS arm (B)')
+    ax_b.set_ylim(0, 1.05)
+    ax_b.set_title('real 2bRAD arm: dedup ablation', loc='left', fontsize=9,
+                   color=INK)
+
+    ax_a.text(-0.14, 1.04, 'a', transform=ax_a.transAxes, fontsize=11,
+              fontweight='bold', color=INK, va='top')
+    ax_b.text(-0.16, 1.04, 'b', transform=ax_b.transAxes, fontsize=11,
+              fontweight='bold', color=INK, va='top')
+    fig.text(0.0, -0.05, CAP9, fontsize=7, color=MUTED, va='top')
+    fig.subplots_adjust(left=0.075, right=0.985, top=0.88, bottom=0.15,
+                        wspace=0.34)
+    save(fig, 'fig9_metagenome')
+
+
+#: Fig 11 caption.
+CAP10 = (
+    'RBC metagenome (PRJNA974210): 522 MAGs \u00d7 9 samples. a, the '
+    'enzyme-consistency QC passes less often as the reference fragments: mean '
+    'QC pass rate falls from 22.5% (\u226410 contigs) to 2\u20137% (>25 contigs);' + NL +
+    'Spearman \u03c1 = \u22120.41 across 522 MAGs, still \u22120.34 after controlling for '
+    'mean coverage (both p < 1e\u22124) — the QC genuinely filters fragmented '
+    'references; coverage is the strongest single predictor and the two' + NL +
+    'effects are partially entangled in this MAG population. b, recall under '
+    'three denominators: sk2bGrow\u2019s reported fraction is structurally 1.00 '
+    '(it has no output gate) — a denominator artifact, not performance; under '
+    'the gate-comparable denominator (QC passes / 522) sk2bGrow reports' + NL +
+    '3.8\u201313.8% and Pilea (defaults) 5.0\u201311.1%, overlapping ranges; on the '
+    'common denominator (the MAGs Pilea reports, which sk2bGrow also '
+    'estimates) sk2bGrow\u2019s QC passes 43\u201376% of them.'
+)
+
+
+# --- Fig 11: MAG QC — fragmentation filter + recall denominators ------------
+def fig10_mag_qc():
+    binned = pd.read_csv(ROOT / 'data' / 'c5_review' / 'c5_qc_x_ncontigs_binned.tsv',
+                         sep='\t')
+    recall = pd.read_csv(ROOT / 'data' / 'c5_review' / 'c5_recall_three_ways.tsv',
+                         sep='\t')
+    common = pd.read_csv(ROOT / 'data' / 'c5_review' / 'c5_common_denominator.tsv',
+                         sep='\t')
+
+    fig, (ax_a, ax_b) = plt.subplots(1, 2, figsize=(8.8, 3.4))
+    grid(ax_a, axis='y'); grid(ax_b, axis='y')
+
+    x = np.arange(len(binned))
+    ax_a.bar(x, 100 * binned['qc_rate_mean'], width=0.62,
+             color=ARM_COLOR['A'], zorder=3)
+    for xi, (_, row) in zip(x, binned.iterrows()):
+        ax_a.text(xi, 100 * row['qc_rate_mean'] + 0.6,
+                  f"{100 * row['qc_rate_mean']:.0f}%", ha='center', fontsize=7.5,
+                  color=INK)
+        ax_a.text(xi, -2.8, f"n={row['n_mags']}", ha='center', va='top',
+                  fontsize=6.6, color=INK2)
+    ax_a.set_xticks(x); ax_a.set_xticklabels(binned['ncontig_bin'], fontsize=7.5)
+    ax_a.set_xlabel('contigs in the MAG'); ax_a.set_ylabel('QC pass rate (%)')
+    ax_a.set_ylim(0, 27)
+    ax_a.set_title('QC pass rate vs reference fragmentation', loc='left',
+                   fontsize=9, color=INK)
+    ax_a.text(0.97, 0.95, 'Spearman \u03c1 = \u22120.41 (raw)\n\u22120.34 controlling coverage\n'
+                          '(p < 1e\u22124, n = 522 MAGs)',
+              transform=ax_a.transAxes, fontsize=6.6, color=MUTED, va='top',
+              ha='right')
+
+    sk = recall[recall['arm'] == 'sk2bgrow']
+    pl = recall[recall['arm'] == 'pilea_default']
+    comm = (common['n_common_qc_sk2b'] / common['n_common']).mean()
+    groups = [('reported fraction\n(rows output / 522)',
+               sk['reported_fraction'].mean(), pl['reported_fraction'].mean()),
+              ('gate-comparable\n(QC passes / 522)',
+               sk['qc_recall'].mean(), pl['reported_fraction'].mean()),
+              ('common denominator\n(QC pass on Pilea\u2019s set)',
+               comm, 1.0)]
+    x = np.arange(3); w = 0.34
+    for k, (lab, sv, pv) in enumerate(groups):
+        ax_b.bar(k - w / 2, sv, width=w, color=ARM_COLOR['A'], zorder=3,
+                 label='sk2bGrow' if k == 0 else None)
+        ax_b.bar(k + w / 2, pv, width=w, color=ARM_COLOR['C_default'], zorder=3,
+                 label='Pilea (defaults)' if k == 0 else None)
+        ax_b.text(k - w / 2, sv + 0.02, f'{sv:.2f}', ha='center', fontsize=7.2,
+                  color=ARM_COLOR['A'])
+        ax_b.text(k + w / 2, pv + 0.02, f'{pv:.2f}', ha='center', fontsize=7.2,
+                  color=ARM_COLOR['C_default'])
+    ax_b.set_xticks(x); ax_b.set_xticklabels([g[0] for g in groups], fontsize=7)
+    ax_b.set_ylabel('fraction of 522 MAGs')
+    ax_b.set_ylim(0, 1.35)
+    ax_b.legend(loc='upper right', fontsize=7, handletextpad=0.5)
+    ax_b.set_title('recall under three denominators', loc='left', fontsize=9,
+                   color=INK)
+    ax_b.text(0.30, 0.50, '1.00 = no output gate,\nnot performance', fontsize=6.6,
+              color=MUTED)
+
+    ax_a.text(-0.14, 1.04, 'a', transform=ax_a.transAxes, fontsize=11,
+              fontweight='bold', color=INK, va='top')
+    ax_b.text(-0.13, 1.04, 'b', transform=ax_b.transAxes, fontsize=11,
+              fontweight='bold', color=INK, va='top')
+    fig.text(0.0, -0.05, CAP10, fontsize=7, color=MUTED, va='top')
+    fig.subplots_adjust(left=0.085, right=0.985, top=0.88, bottom=0.17,
+                        wspace=0.3)
+    save(fig, 'fig10_mag_qc')
+
+
+#: Fig 12 caption.
+CAP11 = (
+    'Cost narrative for scaling past single-genome benchmarks. a, wall clock '
+    'per sample relative to Pilea at its defaults: on the 522-MAG RBC dataset '
+    'the as-built matcher costs \u224890\u2013240\u00d7 (matching reads against 24.1M' + NL +
+    'anchors is 89.6% of count time); dropping to --max-mismatch 1 (two ~16-bp '
+    'seeds instead of three ~11-bp seeds) shortens posting lists enough to cut '
+    'this to \u22484\u201313\u00d7 measured end-to-end on all nine samples (12\u201328\u00d7 over' + NL +
+    'the mm = 2 baseline), at the price of 2.8\u201310.7% of anchors lost (median' + NL +
+    '4.4%; 0 genomes lost; unbiased on shared anchors). At GTDB scale (\u226590% of references '
+    'absent from a sample) the M4 containment screen adds a 21.1\u00d7 lookup '
+    'speedup and drives false positives on absent genomes from 4,048/4,700' + NL +
+    'to 0. b, GTDB projection (136,646 species representatives \u2248 629 Gbp, '
+    '38.8 B/anchor on disk): enzyme k16 \u2248232 GB, k8 \u2248184 GB, half-density FMH '
+    '(scale 200) \u2248124 GB with \u22640.007 r lost at \u22651\u00d7. The often-quoted 752 GB' + NL +
+    'is peak resident memory during a build, not disk.'
+)
+
+
+# --- Fig 12: cost waterfall — C5 measured, mm=1, screen, GTDB disk ----------
+def fig11_cost_waterfall():
+    cost = pd.read_csv(ROOT / 'data' / 'c5_review' / 'c5_cost_per_sample.tsv',
+                       sep='\t')
+    ratio = cost['sk2bgrow_total_min'] / (cost['pilea_default_wall_s'] / 60.0)
+
+    fig, (ax_a, ax_b) = plt.subplots(
+        1, 2, figsize=(9.2, 3.5), gridspec_kw={'width_ratios': [1.25, 1]})
+    grid(ax_a, axis='y'); grid(ax_b, axis='y')
+
+    # the mm=1 range is measured end-to-end on all nine samples
+    # (data/mm1_e2e/mm1_full_sample_cost.tsv joined to Pilea's per-sample wall)
+    mm1 = pd.read_csv(ROOT / 'data' / 'mm1_e2e' / 'mm1_full_sample_cost.tsv',
+                      sep='\t')
+    pilea_wall = cost[['run', 'pilea_default_wall_s']].rename(
+        columns={'run': 'sample'})
+    mm1 = mm1.merge(pilea_wall, on='sample')
+    mm1_ratio = mm1['wall_s'] / mm1['pilea_default_wall_s']
+    stages = [('Pilea\ndefaults', 1.0, 1.0, ARM_COLOR['C_default'], None),
+              ('sk2bGrow\nas built\n(522 MAGs)', ratio.min(), ratio.max(),
+               ARM_COLOR['A'], None),
+              ('+ mm = 1\n(measured)', mm1_ratio.min(), mm1_ratio.max(),
+               ARM_COLOR['A'], '//')]
+    for i, (lab, lo, hi, c, hatch) in enumerate(stages):
+        ax_a.bar(i, hi - lo, bottom=lo, width=0.56, color=c, hatch=hatch,
+                 edgecolor='white' if hatch else None, zorder=3)
+        top = hi * 1.25
+        ax_a.text(i, top, '1\u00d7' if hi == lo else f'{lo:.0f}\u2013{hi:.0f}\u00d7',
+                  ha='center', fontsize=8, color=INK)
+    ax_a.set_yscale('log')
+    ax_a.set_ylim(0.7, 900)
+    ax_a.set_yticks([1, 10, 100])
+    ax_a.set_yticklabels(['1', '10', '100'])
+    ax_a.set_xticks(range(3)); ax_a.set_xticklabels([s[0] for s in stages],
+                                                    fontsize=7.5)
+    ax_a.set_ylabel('wall clock per sample (\u00d7 Pilea defaults)')
+    ax_a.set_title('cost per sample, staged', loc='left', fontsize=9, color=INK)
+    ax_a.annotate('mm=1 (measured, n=9): 12\u201328\u00d7 faster than mm=2 end-to-end;\n'
+                  'anchor loss 2.8\u201310.7% (median 4.4%), 0 genomes lost',
+                  xy=(2, mm1_ratio.max()), xytext=(0.02, 0.40),
+                  textcoords='axes fraction',
+                  fontsize=6.6, color=MUTED, ha='left',
+                  arrowprops=dict(arrowstyle='-', color=MUTED, lw=0.8))
+    ax_a.text(0.30, 0.04, 'GTDB scale, M4 containment screen: lookup 21.1\u00d7 faster '
+                          '(\u226590% refs absent);\nfalse positives on absent genomes '
+                          '4,048 to 0',
+              transform=ax_a.transAxes, fontsize=6.4, color=MUTED, va='bottom')
+
+    disks = [('enzyme k16', 232, ARM_COLOR['A'], None),
+             ('enzyme k8', 184, ARM_COLOR['A'], '//'),
+             ('FMH half-density\n(scale 200)', 124, SKETCH_COLOR['FracMinHash'],
+              None)]
+    for i, (lab, gb, c, hatch) in enumerate(disks):
+        ax_b.bar(i, gb, width=0.56, color=c, hatch=hatch,
+                 edgecolor='white' if hatch else None, zorder=3)
+        ax_b.text(i, gb + 6, f'\u2248{gb} GB', ha='center', fontsize=7.8,
+                  color=INK)
+    ax_b.set_xticks(range(3)); ax_b.set_xticklabels([d[0] for d in disks],
+                                                    fontsize=7.5)
+    ax_b.set_ylabel('GTDB index, disk (GB)')
+    ax_b.set_ylim(0, 275)
+    ax_b.set_title('GTDB projection: index disk', loc='left', fontsize=9,
+                   color=INK)
+    ax_b.text(0.98, 0.97, 'A1\u2019s 752 GB was peak RSS during the build,\nnot disk '
+                          '(disk \u2248 38.8 B/anchor)', transform=ax_b.transAxes,
+              fontsize=6.6, color=MUTED, va='top', ha='right')
+
+    ax_a.text(-0.12, 1.04, 'a', transform=ax_a.transAxes, fontsize=11,
+              fontweight='bold', color=INK, va='top')
+    ax_b.text(-0.14, 1.04, 'b', transform=ax_b.transAxes, fontsize=11,
+              fontweight='bold', color=INK, va='top')
+    fig.text(0.0, -0.04, CAP11, fontsize=7, color=MUTED, va='top')
+    fig.subplots_adjust(left=0.085, right=0.985, top=0.88, bottom=0.17,
+                        wspace=0.32)
+    save(fig, 'fig11_cost_waterfall')
+
+
 if __name__ == '__main__':
     print('regenerating figures ->', OUT)
     fig1(); fig2(); fig3(); fig4(); fig5(); fig6(); fig7(); fig8()
+    fig6_gc_sweep(); fig9_metagenome(); fig10_mag_qc(); fig11_cost_waterfall()
     print('done')

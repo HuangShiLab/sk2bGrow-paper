@@ -1,0 +1,38 @@
+======================================================================
+B (WGS in-silico BcgI) vs C (real 2bRAD, deduped), fraction>=0.5 & dispersion<5 both
+B_vs_C S01: n=18  r=0.297 CCC=0.186  bias=-0.730 SD=1.896 LoA=[-4.45,2.99]
+   B log2PTR range [0.08, 7.73] (span 7.65)   C log2PTR range [0.04, 2.55] (span 2.51)
+B_vs_C S06: n=18  r=0.435 CCC=0.192  bias=-1.211 SD=2.674 LoA=[-6.45,4.03]
+   B log2PTR range [0.14, 10.84] (span 10.70)   C log2PTR range [0.05, 2.33] (span 2.28)
+B_vs_C S07: n=20  r=0.604 CCC=0.308  bias=-0.631 SD=2.519 LoA=[-5.57,4.31]
+   B log2PTR range [0.03, 10.45] (span 10.42)   C log2PTR range [0.17, 3.16] (span 2.99)
+B_vs_C ALL: n=56  r=0.455 CCC=0.238  bias=-0.849 SD=2.362 LoA=[-5.48,3.78]
+   B log2PTR range [0.03, 10.84] (span 10.81)   C log2PTR range [0.04, 3.16] (span 3.12)
+
+raw output counts (no reliability filter):
+  S01: arm B n=808, arm C n=339
+  S06: arm B n=1019, arm C n=437
+  S07: arm B n=959, arm C n=436
+
+======================================================================
+A (Pilea default on WGS) vs B, common denominator
+A_default_vs_B S01: n=58  r=0.431 CCC=0.313  bias=+0.247 SD=0.340 LoA=[-0.42,0.91]
+   B log2PTR range [0.04, 1.45] (span 1.41)   A log2PTR range [0.32, 1.74] (span 1.42)
+A_gatesoff_vs_B S01: n=381  r=0.095 CCC=0.070  bias=-0.932 SD=2.771 LoA=[-6.36,4.50]
+   B log2PTR range [0.00, 15.86] (span 15.86)   A log2PTR range [0.00, 13.70] (span 13.70)
+  S01 arm A gate: reported n=67/67; coverage reported median=18.58, max=437.61; gated-out coverage median=nan
+A_default_vs_B S06: n=68  r=0.344 CCC=0.253  bias=+0.222 SD=0.340 LoA=[-0.44,0.89]
+   B log2PTR range [0.01, 1.45] (span 1.44)   A log2PTR range [0.28, 1.23] (span 0.95)
+A_gatesoff_vs_B S06: n=459  r=0.005 CCC=0.003  bias=-1.153 SD=3.397 LoA=[-7.81,5.51]
+   B log2PTR range [0.01, 35.46] (span 35.45)   A log2PTR range [0.00, 8.00] (span 8.00)
+  S06 arm A gate: reported n=80/80; coverage reported median=25.47, max=9096.47; gated-out coverage median=nan
+A_default_vs_B S07: n=78  r=0.505 CCC=0.368  bias=+0.225 SD=0.336 LoA=[-0.43,0.88]
+   B log2PTR range [0.03, 1.49] (span 1.46)   A log2PTR range [0.30, 1.36] (span 1.07)
+A_gatesoff_vs_B S07: n=403  r=0.046 CCC=0.026  bias=-1.237 SD=3.227 LoA=[-7.56,5.09]
+   B log2PTR range [0.00, 27.21] (span 27.21)   A log2PTR range [0.00, 10.85] (span 10.85)
+  S07 arm A gate: reported n=87/87; coverage reported median=21.49, max=1682.59; gated-out coverage median=nan
+
+arm B log2 PTR range by sample (all reported):
+  S01: n=808 range [0.00, 24.50] (span 24.50)
+  S06: n=1019 range [0.01, 35.46] (span 35.45)
+  S07: n=959 range [0.00, 27.21] (span 27.21)

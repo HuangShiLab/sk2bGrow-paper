@@ -19,4 +19,21 @@
 | PpiI     |           73.500 |             73 |               73.800 |                 74 |            137.500 |              137 |       1.000 |
 | PsrI     |           92.400 |             92 |               83.700 |                 84 |             92.700 |               93 |       1.000 |
 
-Densities in tags per Mb. Measured with the panel transcribed from 2bRADExtraction.pl. 46 of 48 cells reproduce the design report within 3%; HaeIV differs by exactly 2.00x (locus vs window counting) and Hin4I is unreconciled.
+**GC sweep: panel density across 18 genomes (GC 25.4–72.0%)**
+
+|   gc_pct |   n_genomes |   panel_k2 |   panel_k4 |   panel_k8 |   panel_k16 |   k8_k16 |   fmh_k8 |   fmh_k16 |
+|---------:|------------:|-----------:|-----------:|-----------:|------------:|---------:|---------:|----------:|
+|   25.400 |           1 |   1610.000 |   2390.000 |   3790.000 |    4463.000 |    0.849 | 3776.000 |  4468.000 |
+|   26.100 |           1 |   1633.000 |   2500.000 |   3995.000 |    4787.000 |    0.835 | 3937.000 |  4762.000 |
+|   30.600 |           1 |   1653.000 |   2427.000 |   3465.000 |    4795.000 |    0.723 | 3470.000 |  4834.000 |
+|   33.000 |           2 |   2289.000 |   3325.000 |   5017.000 |    6115.500 |    0.820 | 4895.500 |  5954.500 |
+|   33.500 |           1 |   2294.000 |   3555.000 |   4994.000 |    5908.000 |    0.845 | 4848.000 |  5782.000 |
+|   43.500 |           2 |   2401.000 |   4002.500 |   6467.000 |    8292.500 |    0.780 | 6397.000 |  8177.500 |
+|   50.800 |           2 |   3721.000 |   5368.000 |   8060.500 |    9516.500 |    0.847 | 7833.000 |  9272.500 |
+|   57.000 |           2 |   3157.000 |   4904.500 |   7791.000 |    9470.000 |    0.823 | 7717.500 |  9361.000 |
+|   61.500 |           1 |   3730.000 |   5331.000 |   8002.000 |    9712.000 |    0.824 | 7852.000 |  9518.000 |
+|   65.300 |           1 |   3010.000 |   4596.000 |   7464.000 |    9683.000 |    0.771 | 7182.000 |  9350.000 |
+|   66.000 |           2 |   3594.500 |   5754.000 |   9883.000 |   12624.500 |    0.783 | 9588.000 | 12253.000 |
+|   72.000 |           2 |   2659.500 |   4417.500 |   7931.500 |   12428.000 |    0.638 | 7784.000 | 12276.500 |
+
+Densities in tags per Mb. Measured with the panel transcribed from 2bRADExtraction.pl. 46 of 48 cells reproduce the design report within 3%; HaeIV differs by exactly 2.00x (locus vs window counting) and Hin4I is unreconciled. GC-sweep block: panel k16 density rises with GC from ~4.5k/Mb at 26% to ~12.4k/Mb at 72% (low-GC depression only, no high-GC collapse); the k8/k16 ratio thins at the GC extremes (0.72 at 30.6%, 0.64 at 72%). Density-matched FracMinHash arms track the panel within 4% at every GC level. Genomes are GTDB R232 stand-ins (R226 metadata unavailable locally); reads are self-simulated with a planted replication gradient (F2 REVIEW protocol); each cell is the median of the genomes sharing a GC level.

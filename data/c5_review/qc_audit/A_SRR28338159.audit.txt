@@ -1,0 +1,48 @@
+per-enzyme table: 8352 rows, 16 enzymes
+
+==========================================================================
+1. How many enzymes survive per (sample, genome)
+==========================================================================
+   k = 1 is the case where Cochran's Q cannot be computed, so
+   `consistent` is True for a test that never ran.
+
+  depth   cells   mean k    k=0    k=1   fit_rate
+    all     522     10.6      1      2      0.660
+
+==========================================================================
+2. What the per-enzyme `ok` flag rejects
+==========================================================================
+   fits 8352, ok=False 2840 (34.0%)
+     non-finite estimate : 2840
+     negative estimate   : 0
+   fit.py sets `ok = log2_ptr >= 0`. If `negative` is 0 that
+   condition rejected nothing -- every rejection came from an
+   earlier return path, so the flag is a sign check, not a
+   quality check.
+
+==========================================================================
+3. Accepted fits that are worse than a horizontal line (r2 < 0)
+==========================================================================
+   overall: 71/5512 (1.3%)
+
+   Nothing gates on r2: `fuse` never reads it, and before the
+   min_r2 / n_enzymes_negative_r2 columns were added it did not
+   survive fusion at all.
+
+==========================================================================
+4. Fused table: how many estimates rest on an unrun check
+==========================================================================
+   rows (sample x genome): 522
+   no `consistency_checked` column -- table predates the fix;
+   re-fuse to get it. Rows with n_enzymes == 1 are the affected set:
+     n_enzymes == 1: 3 (0.6%)
+
+==========================================================================
+5. The coverage column, which any suspicious detector thresholds on
+==========================================================================
+   quantiles: p1=1.478, p5=1.615, p25=1.943, p50=2.364, p75=3.212, p95=8.254, p99=19.062
+   NOTE this is the mean over *surviving* enzymes, unweighted, so it
+   is biased upward exactly where coverage is low. Compare against
+   enzyme_fit_rate before trusting a threshold on it.
+   enzyme_fit_rate: median 0.625, share below 0.5 = 26.6%
+   rows where most of the panel saw nothing yet coverage reads 2.018 (median): 139

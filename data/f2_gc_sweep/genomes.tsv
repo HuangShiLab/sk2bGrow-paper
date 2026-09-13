@@ -1,0 +1,19 @@
+genome_id	gc	ncbi_accession	gtdb_species	gtdb_gc	size_bp	contigs
+g00_Buchnera_aphidicola_Y	26.09	GCA_005081705.1	Buchnera aphidicola_Y	26.0872	652809	4
+g01_Buchnera_aphidicola_C	25.44	GCA_001939165.1	Buchnera aphidicola_C	25.4389	643531	2
+g02_Campylobacter_D_jejuni	30.60	GCA_020720145.1	Campylobacter_D jejuni	30.6028	1625720	2
+g03_Campylobacter_devanensis	33.50	GCA_900446565.1	Campylobacter devanensis	33.5046	1621429	2
+g04_Staphylococcus_equorum	33.00	GCA_033447145.1	Staphylococcus equorum	33.0036	2871638	2
+g05_Staphylococcus_aureus	33.00	GCA_049558145.1	Staphylococcus aureus	32.9961	2973479	1
+g06_Bacillus_subtilis	43.50	GCA_049945055.1	Bacillus subtilis	43.5011	4222131	4
+g07_Bacillus_atrophaeus	43.48	GCA_052441705.1	Bacillus atrophaeus	43.4823	4050843	1
+g08_Escherichia_coli	50.80	GCA_030294385.1	Escherichia coli	50.8002	5168473	3
+g09_Escherichia_sp005843885	50.74	GCA_005781185.1	Escherichia sp005843885	50.7399	5120753	1
+g10_Klebsiella_pneumoniae	57.00	GCA_029291275.1	Klebsiella pneumoniae	57.0005	5830071	4
+g11_Klebsiella_variicola	57.02	GCA_017255425.1	Klebsiella variicola	57.0182	5696278	2
+g12_Aquipseudomonas_alloputida	61.52	GCA_024662295.1	Aquipseudomonas alloputida	61.5244	6181761	4
+g13_Pseudomonas_aeruginosa	65.30	GCA_037996905.1	Pseudomonas aeruginosa	65.3012	7533884	3
+g14_Mycobacterium_kubicae	66.01	GCA_010723135.1	Mycobacterium kubicae	66.0063	6014391	5
+g15_Mycobacterium_peregrinum	66.06	GCA_048287135.1	Mycobacterium peregrinum	66.0614	7307615	4
+g16_Streptomyces_violaceoruber	72.00	GCA_000203835.1	Streptomyces violaceoruber	71.9984	9054847	3
+g17_Streptomyces_fungicidicus	72.01	GCA_044383995.1	Streptomyces fungicidicus	72.0077	8363733	5

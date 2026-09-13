@@ -1,0 +1,11 @@
+phase	diag_1M_pairs_s	frac_of_count	cost_model	extrapolated_s_SRR58
+db_load	52.41	0.0242	fixed_per_run	52
+windows_write	0.38	0.0002	fixed_per_run	0
+index_build	14.02	0.0065	fixed_per_run	14
+match(reads_vs_24.1M_anchors)	1939.50	0.8964	linear_per_read_pair	66435
+sample_write(windows+rates)	157.28	0.0727	linear_per_read_pair	5387
+TOTAL	2163.59	1.0000		71890
+actual_count_wall_s				58931
+linear_extrap_error_pct				+22.0
+implied_match_plus_write_ms_per_pair_full_run				1.718
+measured_ms_per_pair_1M_subset				2.097

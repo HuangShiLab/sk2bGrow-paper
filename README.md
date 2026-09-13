@@ -45,11 +45,18 @@ and the subsampling read counts. `data/results_raw.tsv` carries one row per
 
 | figure | claim |
 |---|---|
-| `fig5_simulation` | multi-strain communities: recall, accuracy and cost — **read the three panels together** |
-| `fig1_accuracy_vs_coverage` | sk2bGrow is at or above Pilea at every coverage; the margin is in the 1–2× band |
-| `fig2_magnitude` | **both tools are biased at 1×, in opposite directions** — see below |
-| `fig3_negative_control` | the sorted-regression estimator invents a gradient on a non-growing culture |
-| `fig4_attribution` | the estimator, not the deterministic sketch, carries the gain |
+| `fig1_overview` (Fig 1) | the method, on real output from one 2× sample |
+| `fig2_accuracy_vs_coverage` (Fig 2) | sk2bGrow is at or above Pilea at every coverage; the margin is in the 1–2× band |
+| `fig3_magnitude` (Fig 3) | **both tools are biased at 1×, in opposite directions** — see below |
+| `fig4_negative_control` (Fig 4) | the sorted-regression estimator invents a gradient on a non-growing culture |
+| `fig6_simulation` (Fig 5) | multi-strain communities: recall, accuracy and cost — **read the three panels together** |
+| `fig5_attribution` (Fig 6) | the estimator × landmark-source interaction, at the Pilea operating point and density-matched |
+| `fig7_panel_size` (Fig 7) | 4–8 enzymes suffice; the four sparsest add nothing |
+| `fig6_gc_sweep` (Fig 8) | panel density rises with GC; instrument boundary at GC ≲ 30% × 0.5× |
+| `fig8_fragmentation` (Fig 9) | fragmentation destroys the coordinate; `scaffold` restores the complete-reference result |
+| `fig9_metagenome` (Fig 10) | Sun cohort: cross-method concordance + the exact-dedup ablation |
+| `fig10_mag_qc` (Fig 11) | C5: QC pass rate falls with MAG fragmentation; recall under a common protocol |
+| `fig11_cost_waterfall` (Fig 12) | cost at scale, measured: 89.5–240.8× → mm=1 → containment screen |
 
 ## Multi-strain simulation (Pilea's Fig-3 design, laptop scale)
 
@@ -59,7 +66,7 @@ sample at 1/2/4/8x, V-shaped profiles, log2PTR ~ U[0,2], 2 replicates.
 
 | method | recall | RMSE | bias | sec | peak RSS |
 |---|---:|---:|---:|---:|---:|
-| sk2bGrow | **1.000** | **0.168** | −0.070 | 22.4 | **188 MB** |
+| sk2bGrow | **1.000** | **0.134** | −0.013 | 16.4 | **187 MB** |
 | Pilea (defaults) | 0.224 | 0.083 | −0.045 | **2.8** | 223 MB |
 | Pilea (gates off) | 0.997 | 0.265 | +0.168 | 17.7 | 222 MB |
 
@@ -68,7 +75,7 @@ Neither tool reported a genome that was not in the sample (spurious = 0).
 **Recall and RMSE have to be read together.** Pilea at its shipped defaults has
 the best RMSE in this table, but it earns it by answering only 22% of cases —
 the high-coverage ones. At matched recall (gates off) its RMSE is 0.265 against
-sk2bGrow's 0.168. Quoting either RMSE alone misrepresents the comparison.
+sk2bGrow's 0.134. Quoting either RMSE alone misrepresents the comparison.
 
 **sk2bGrow is the slowest of the three**, and gets relatively slower as coverage
 rises (6.8 s at 1x, 45 s at 8x) because the anchor scan is linear in read count
@@ -84,7 +91,7 @@ Neither tool is unbiased at 1×; only by 10× does sk2bGrow track y = x
 (slope 1.06 vs Pilea 0.94). Any abstract sentence built on r alone is
 misleading, and a reviewer will find this panel.
 
-**The deterministic sketch is not what wins.** Fig 4: holding the sketch fixed
+**The deterministic sketch is not what wins.** Fig 6: holding the sketch fixed
 and swapping the estimator moves accuracy far more than the reverse, and under a
 sorted-regression estimator the anchors are *behind* FracMinHash at 1×
 (0.61 vs 0.89). The contribution is the coordinate-aware V-shape fit that the

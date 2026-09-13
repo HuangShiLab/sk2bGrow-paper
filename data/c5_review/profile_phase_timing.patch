@@ -1,0 +1,52 @@
+--- /tmp/profile_head.rs	2026-09-03 23:03:30.287363329 +0800
++++ src/crates/sk2bgrow-cli/src/cmd/profile.rs	2026-09-03 08:49:53.000000000 +0800
+@@ -86,9 +86,17 @@
+ }
+ 
+ pub fn run(args: Args, ctx: &Ctx) -> Result<()> {
++    let timing = std::env::var_os("SK2B_PHASE_TIMING").is_some();
++    let mark = |what: &str, t0: std::time::Instant| {
++        if timing {
++            eprintln!("[phase-timing] {:<12} {:>12.2} s", what, t0.elapsed().as_secs_f64());
++        }
++    };
++    let t0_load = std::time::Instant::now();
+     let read_files = expand_inputs(&args.reads, READ_EXTS)?;
+     let db = AnchorDb::load(&args.db)
+         .with_context(|| format!("loading database {}", args.db.display()))?;
++    mark("db_load", t0_load);
+     ctx.say(format!(
+         "database: {} anchors, {} genomes",
+         db.n_anchors(),
+@@ -176,9 +184,13 @@
+         describe(policy)
+     ));
+     let wpath = args.output.join("windows.tsv");
++    let t_ww = std::time::Instant::now();
+     write_windows(&wpath, &db, &all_windows)?;
++    mark("windows_write", t_ww);
+ 
++    let t_ib = std::time::Instant::now();
+     let index = AnchorIndex::build_restricted(&db, args.max_mismatch, restrict);
++    mark("index_build", t_ib);
+     let cfg = MatchConfig {
+         max_mismatch: args.max_mismatch,
+         mode: match args.mode {
+@@ -192,10 +204,17 @@
+     let outputs: Vec<PathBuf> = samples
+         .par_iter()
+         .map(|(name, files)| -> Result<PathBuf> {
++            let t_match0 = std::time::Instant::now();
+             let (counts, stats) = count_sample(&index, files, &cfg)?;
++            let t_match = t_match0.elapsed();
+             let em = reassign(&db, &counts, &EmConfig::default());
+             let tsv = args.output.join(format!("{name}.counts.tsv"));
++            let t_write0 = std::time::Instant::now();
+             write_count_table(&tsv, name, &db, &counts, &window_ids, true, restrict)?;
++            if timing {
++                eprintln!("[phase-timing] sample {:<12} match {:>12.2} s  write {:>10.2} s",
++                    name, t_match.as_secs_f64(), t_write0.elapsed().as_secs_f64());
++            }
+             let statj = args.output.join(format!("{name}.stats.json"));
+             std::fs::write(
+                 &statj,
