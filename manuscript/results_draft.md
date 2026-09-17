@@ -1,4 +1,4 @@
-> **SUPERSEDED 部分（2026-09-13）**：Table 2 已于 HPC C1 双端实例再生成（arm A 0.5–10×：0.941/0.919/0.959/0.971/0.970），形式交互检验仅 2× 显著为负。本文档中的旧数字与 "interaction" 主张以 manuscript.md 为准。详见 data/repro_check/ 与 data/repro_check/multiseed/INTERACTION_REPORT.md。
+> **SUPERSEDED 部分（2026-09-13）**：Table 2 已于 HPC C1 双端实例再生成（arm A 0.5–10×：0.923/0.912/0.958/0.971/0.970 (2026-09-17 signed fixed-origin)），形式交互检验仅 2× 显著为负。本文档中的旧数字与 "interaction" 主张以 manuscript.md 为准。详见 data/repro_check/ 与 data/repro_check/multiseed/INTERACTION_REPORT.md。
 
 # Results (new sections, draft)
 

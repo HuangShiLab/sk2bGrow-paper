@@ -35,12 +35,12 @@ media with independently measured growth rates λ spanning 0.40–1.72 h⁻¹,
 titrated to nominal 0.5×, 1×, 2×, 5× and 10× depth. The titration is a
 deliberate deviation from Pilea, which ran full depth only; it is the axis this
 paper is about, because metagenomic per-strain coverage is typically 1–2×, not
-isolate depth. sk2bGrow reached r = 0.919 against measured λ at 1× (95%
-media-bootstrap CI [0.819, 0.972]; n = 16), 0.959 at 2× and 0.971 at 5× —
+isolate depth. sk2bGrow reached r = 0.912 against measured λ at 1× (95%
+media-bootstrap CI [0.798, 0.970]; n = 16), 0.958 at 2× and 0.971 at 5× —
 essentially matching Pilea's published full-depth r of 0.976 from 5× onward;
-at 0.5× r = 0.941 (CI [0.882, 0.975]). Magnitude was usable but compressed:
-RMSE 0.346 with fitted slope 0.79 at 1×, degrading to RMSE 0.407 and slope
-0.62 at 0.5× (Fig. 2a–c; Table 2). The slope in Table 2 regresses the estimated
+at 0.5× r = 0.923 (CI [0.854, 0.968]). Magnitude was usable but compressed:
+RMSE 0.374 with fitted slope 0.83 at 1×, degrading to RMSE 0.483 and slope
+0.59 at 0.5× (Fig. 2a–c; Table 2). The slope in Table 2 regresses the estimated
 log₂PTR on the measured growth rate; the slopes annotated on the Fig. 2b, c
 scatter regress the estimate on the predicted value (λC/ln2) — two different
 regressions of the same points, reported in the direction each comparison
@@ -51,8 +51,8 @@ returned no estimate below 10× at any point in the titration.
 
 #### 2.2 A negative control that Pilea excluded
 
-A stationary-phase replication run-out that sorted regression fails badly on was recovered by sk2bGrow. Pilea excluded the run-out samples from its benchmark; we kept one (`E.coli_gDNA_RUN_OUT`, CON-C). In a replication run-out, ongoing rounds are allowed to finish while new initiation is blocked, so every chromosome in the population ends fully replicated and log₂PTR must be ≈ 0; a method that reports a large PTR here is reading noise as a gradient. sk2bGrow returned 0.061–0.301 across the titration, while sorted-rank
-regression on the same windows returned 1.80 at 0.5× — six times any sk2bGrow
+A stationary-phase replication run-out that sorted regression fails badly on was recovered by sk2bGrow. Pilea excluded the run-out samples from its benchmark; we kept one (`E.coli_gDNA_RUN_OUT`, CON-C). In a replication run-out, ongoing rounds are allowed to finish while new initiation is blocked, so every chromosome in the population ends fully replicated and log₂PTR must be ≈ 0; a method that reports a large PTR here is reading noise as a gradient. With the shared origin fixed in advance, the V-fit allows small signed estimates rather than censoring noise slopes at zero; its run-out estimates were 0.018–0.238 across the titration, with all 16 enzyme strata contributing at every depth. Sorted-rank
+regression on the same windows returned 1.80 at 0.5× — seven times any sk2bGrow
 estimate, and in exactly the direction of reading noise as growth (Fig. 2d).
 
 #### 2.3 Which gate suppresses Pilea, and is it right to?
@@ -62,6 +62,9 @@ The coverage gate, not the estimator, is what suppresses Pilea below 10× — an
 ### 3. Multi-strain communities
 
 sk2bGrow recalled every strain at every cell of a multi-strain community benchmark, at half the RMSE of gates-off Pilea and with bias reduced to negligible. Following Pilea's Fig. 3 design at a scale a laptop can run, we simulated communities of 4, 8 or 16 strains — 16 complete reference genomes deliberately including *E. coli* K-12, *E. coli* O157:H7 and *Shigella dysenteriae* as a shared-anchor stress test for the EM attribution — at 1/2/4/8× per-strain coverage, with V-shaped replication profiles and log₂PTR ~ U[0,2]. Recall was 1.000 for sk2bGrow at every cell, against 0.224 for Pilea at its shipped defaults. Aggregate RMSE was 0.134 for sk2bGrow versus 0.265 for Pilea gates-off, and the two methods showed opposite signed bias — sk2bGrow's now negligible (−0.013) against Pilea's +0.168. Two scope caveats: the grid is laptop-scale and does not establish behaviour at Pilea's full 32 strains / 32× / 400 samples; and because Pilea's shipped gates skip fitting below 5× entirely, per-sample timings from this benchmark are not a fair cost comparison — the properly controlled timing is in §8 (Fig. 3; Table 3; Table 4).
+
+
+We then stress-tested the simulation away from its generative model on one 16-genome community, per genome. A 1% substitution-error arm was indistinguishable from the no-error control (mean bias +0.001 versus +0.001 log₂); a real GC-efficiency gradient produced the expected −0.19-log₂ compression. Counting a near-neighbour (*E. coli* O157:H7) at mismatch 0/1/2 gave mean biases −0.068/−0.089/−0.080 and showed that the motif-gated enzyme path does not open the sketch mode's mismatch-rescue channel (`data/m1_rerun/sim_unfriendly.tsv`; Methods §6.3). Recall 1.000 therefore still describes an exact-match-favourable grid, but it is no longer supported only by the estimator's own generative model.
 
 
 ### 4. What do the landmarks contribute?
@@ -79,9 +82,9 @@ operating point:
 
 | coverage | anchors + V-fit | FracMinHash + V-fit | anchors + rank | FracMinHash + rank (Pilea) |
 |---|---|---|---|---|
-| 0.5× | **0.941** | 0.883 | 0.517 | — (degenerate) |
-| 1× | **0.919** | 0.912 | 0.775 | 0.778 |
-| 2× | **0.959** | 0.958 | 0.925 | 0.848 |
+| 0.5× | **0.923** | 0.883 | 0.517 | — (degenerate) |
+| 1× | 0.912 | **0.912** | 0.775 | 0.778 |
+| 2× | **0.958** | 0.958 | 0.925 | 0.848 |
 | 5× | 0.971 | **0.990** | 0.947 | 0.988 |
 | 10× | 0.970 | **0.987** | 0.938 | 0.973 |
 
@@ -124,7 +127,7 @@ byte-identical outputs (255/255 cells; `data/f1_symm/`), so the harness is
 symmetric in effect. Second, cross-harness comparisons of absolute r remain
 invalid, for a measured reason: the F1 harness counted single-end reads only,
 so its 0.5× arm-A baseline (r = 0.568) carries half the reads of the committed
-paired-end grid (r = 0.941; Table 2), and the F1 harness at 1× single-end (≈
+paired-end grid (r = 0.923; Table 2), and the F1 harness at 1× single-end (≈
 the same read count as 0.5× paired-end) returns r = 0.906 — the driver is read
 count, not estimator or code drift (count tables recount md5-identical; the
 grid itself was regenerated end-to-end on the current code, `data/repro_check/`).
@@ -180,7 +183,7 @@ like-for-like sketch-size comparison — and delivers r = 0.960 at 1×, where
 Pilea's shipped gates report nothing. We report this as an empirical result,
 not a mechanism: sparse enzymes are not more biased than dense ones (mean bias
 at 0.5×, −0.319 vs −0.312), and forcing fixed-effect fusion weights does not
-recover the loss (RMSE 0.581 vs 0.506 at 0.5×). This analysis is also what
+recover the loss (RMSE 0.581 vs 0.506 at 0.5×). A leave-one-medium-out check at 1× gives held-out r = 0.981 for k = 4 and 0.983 for k = 8, against same-set values of 0.983 for both (`data/review_response/lomo_kscan.tsv`); selection optimism is therefore negligible here, although the enzyme ordering remains a panel-specific observation. This analysis is also what
 exposed a double-counting bug (Bsp24I corrupting CjePI at k ≥ 8; Methods
 §1.2); the sweep was repeated with the corrected ranking.
 
@@ -238,7 +241,7 @@ one: across 1–100 contigs at 10×, r stays 0.86–0.97 while the slope falls
 r reads 0.96 while every estimate is 44% of truth. Degradation is smooth and
 monotone, so the rule is "scaffold anything not closed" (Fig. 6).
 
-**Table 8 (inline).** Fragmentation experiment on the Zheng protocol (n = 16 media per cell, identical reads throughout; 43,707 of 43,735 anchors survive the cut, so only the coordinate changes). Provenance: the complete-reference column is from the earlier laptop-side analysis instance and therefore differs at 1× from the regenerated paired-end grid of Table 2 (r 0.981 vs 0.919); the fragmentation protocol is on the re-run queue behind the estimator decision (Methods §6 provenance note). The load-bearing contrasts in this section are within-experiment — complete vs fragmented vs scaffolded on identical reads — and do not depend on which instance the complete column came from.
+**Table 8 (inline).** Fragmentation experiment on the Zheng protocol (n = 16 media per cell, identical reads throughout; 43,707 of 43,735 anchors survive the cut, so only the coordinate changes). Provenance: the complete-reference column is from the earlier laptop-side analysis instance and therefore differs at 1× from the regenerated paired-end grid of Table 2 (r 0.981 vs 0.912); the fragmentation protocol is on the re-run queue behind the estimator decision (Methods §6 provenance note). The load-bearing contrasts in this section are within-experiment — complete vs fragmented vs scaffolded on identical reads — and do not depend on which instance the complete column came from.
 
 | coverage | | complete | 100 contigs | scaffolded vs O157:H7 | Pilea on 100 contigs |
 |---|---|---:|---:|---:|---:|
@@ -285,8 +288,9 @@ two estimators chosen by whether a coordinate exists. The fragmentation failure
 also exposes a blind spot in the enzyme-consistency QC: 100% of fragmented
 estimates pass at 5–10×, against 75% of correct complete-reference ones.
 Cochran's Q asks whether the enzymes agree, and a destroyed coordinate makes
-all sixteen agree that there is no gradient. A contig-count guard, not a
-better Q, is the fix.
+all sixteen agree that there is no gradient. The default now refuses a
+multi-contig manifest rather than silently falling back to sorted regression;
+explicit `--method sorted` remains available.
 
 *(Fig. 6; Table 8)*
 
@@ -448,13 +452,13 @@ projected, not shipped.
 
 **The panel should probably be ~8 enzymes, not 16.** The four sparsest enzymes contribute no accuracy and double the negative-control (run-out) bias (§5). The recommendation holds across the measured GC range, and a two-enzyme panel already carries 17,055 anchors — comparable to Pilea's 18,261 sketch k-mers — so the like-for-like comparison is favourable at every panel size.
 
-**The panel is what works at low depth, not any single fit.** At 0.5× the mean per-enzyme V-fit has r² = −0.009 — individually worthless — yet fusing sixteen of them correlates 0.941 with measured growth rate. This is the clearest argument for a multi-enzyme panel over a single deterministic sketch, and it is measured rather than asserted.
+**The panel is what works at low depth, not any single fit.** At 0.5× the mean per-enzyme V-fit has r² = −0.009 — individually worthless — yet fusing sixteen of them correlates 0.923 with measured growth rate. This is the clearest argument for a multi-enzyme panel over a single deterministic sketch, and it is measured rather than asserted.
 
 **Bsp24I ⊂ CjePI is a real dependency with no practical effect.** Measured on three genomes, Bsp24I's site set is 100% contained in CjePI's (1,636/1,636, 891/891 and 2,910/2,910 tags), with an additional partial Bsp24I p0 ⊂ CjeI p1 relation (48.4/47.4/50.9%). The panel therefore offers at most ~15 independent strata, not 16, and "~15 independent strata" is an optimistic reading; the fusion does not yet act on this relation (the containment table is declared but unused in the weighting). Re-fusing every sample with the dependency handled moved the estimate by 0.007–0.011 on average and 0.050 at worst, and did not improve the *Q* rejection rate. We report the dependency and do not claim the correction matters.
 
-**An annotated origin is worth ~10% of RMSE below 2× and nothing above it** (0.304 → 0.271 at 0.5×; 0.157 → 0.143 at 1×; identical at 5–10×). It does not explain the low-coverage slope compression: with the origin exactly right, the 0.5× slope is still 0.74. The compression is reported as unresolved. Read against measured λ, the OLS slope of ŷ on λ is 0.62 at 0.5×, 0.79 at 1×, and remains below 1 at depth (0.92 at 5×, 0.95 at 10×); read against the λC-predicted log₂PTR — a non-independent reference (Methods §3.1) — the same slopes come out 1.04 and 1.08 at 5× and 10×, so any over-estimation at depth is a magnitude-consistency statement rather than independent evidence of bias. Candidate mechanisms we tested — outlier trimming, inverse-variance fusion weighting, origin misplacement — do not account for the shortfall.
+**An annotated origin is worth ~10% of RMSE below 2× and nothing above it** (0.304 → 0.271 at 0.5×; 0.157 → 0.143 at 1×; identical at 5–10×). It does not explain the low-coverage slope compression: with the origin exactly right, the 0.5× slope is still 0.74. The compression is reported as unresolved. Read against measured λ, the OLS slope of ŷ on λ is 0.59 at 0.5×, 0.83 at 1×, and remains slightly below 1 at depth (0.92 at 5×, 0.95 at 10×); read against the λC-predicted log₂PTR — a non-independent reference (Methods §3.1) — the same slopes come out 1.04 and 1.08 at 5× and 10×, so any over-estimation at depth is a magnitude-consistency statement rather than independent evidence of bias. Candidate mechanisms we tested — outlier trimming, inverse-variance fusion weighting, origin misplacement, and three GC-correction variants — do not account for the shortfall. At 5×/10×, disabling GC correction gives slopes 0.940/0.975, iterative residual refitting gives 0.917/0.936, and applying a stationary run-out curve gives 0.964/1.006 (`data/m1_rerun/gc_tests.tsv`). The run-out curve removes most of the deep-depth slope deficit without changing r materially, but this cross-sample correction is a diagnostic rather than a deployable default: it needs a non-growing library and does not address the 0.5–1× compression.
 
-**Cochran's *Q* earned its keep, and has a blind spot.** Before the double-counting defect of Methods §1.2 was fixed, *Q* was rejecting in 56–69% of samples (mean *I*² = 0.34–0.42); after the fix, the same samples give *I*² = 0.07–0.28 and *Q* rejects in 6–24%. A design whose QC can detect its own implementation defects is worth the complexity — and this is the honest way to present that, not as a clean-room result. But *Q* tests *agreement between strata*, so it cannot see a failure that is identical across them: on a fragmented reference every enzyme agrees there is no gradient, and 100% of the wrong answers pass. A contig-count guard, not a better *Q*, is the fix.
+**Cochran's *Q* earned its keep, and has a blind spot.** Before the double-counting defect of Methods §1.2 was fixed, *Q* was rejecting in 56–69% of samples (mean *I*² = 0.34–0.42); after the fix, the same samples give *I*² = 0.07–0.28 and *Q* rejects in 6–24%. A design whose QC can detect its own implementation defects is worth the complexity — and this is the honest way to present that, not as a clean-room result. But *Q* tests *agreement between strata*, so it cannot see a failure that is identical across them: on a fragmented reference every enzyme agrees there is no gradient, and 100% of the wrong answers pass. We therefore changed the default: `auto` now refuses a multi-contig manifest rather than silently falling back to sorted-rank regression; a scaffolded coordinate fit or an explicit sorted analysis is required.
 
 **Failure is loud, not silent — and loud is not a compliment.** sk2bGrow has no coverage gate: on the C5 MAG panel it emitted estimates for 522/522 MAGs (recall 1.00), including references the sample may not even contain; Pilea's gate refuses silently. High yield therefore *includes wrong answers shipped*, which is why every yield number in this paper is paired with either that caveat or the QC-pass rate under a common denominator (3.8–13.8% vs Pilea's 5.0–11.1%). The loudness is also what makes the M4 containment pre-screen necessary.
 
@@ -671,7 +675,16 @@ With *b*₁ = *b*₂ this is the plain V that CoPTR-Ref shows to be the maximum
 likelihood model, and log₂PTR is the fitted drop from origin to terminus. The
 two-slope form exists for multi-fork replication, where overlapping rounds put a
 genuine kink in the profile at PTR > 2. Which of the two is used is decided by
-**BIC**, and the segmented form is only offered when ≥30 windows are available.
+**BIC** on the weighted residual χ² (matching the weighted fit objective); the
+segmented form is only offered when ≥30 windows are available and the preliminary
+log₂PTR exceeds 2. Sign selection occurs only while searching for the origin,
+where rejecting an uphill solution distinguishes origin from terminus. Once that
+shared origin is fixed, each enzyme's slopes are allowed to be negative: a
+stationary control can yield a small negative gradient, and truncating those
+slopes at zero manufactures a positive control bias. The window standard errors
+are re-expressed as a smooth function of the first-pass fitted profile in a
+second weighted pass, so a window's weight is not correlated with its own
+upward count fluctuation.
 
 Standard errors are scaled by the reduced χ² of the fit. The window standard
 errors of §1.3 describe counting noise only; anchor efficiency noise, residual
@@ -748,15 +761,19 @@ The panel is the 16 Type IIB enzymes of the 2bRAD-M lineage: AlfI, AloI, BaeI,
 BcgI, BplI, BsaXI, BslFI, Bsp24I, CjeI, CjePI, CspCI, FalI, HaeIV, Hin4I, PpiI,
 PsrI.
 
-Recognition patterns and flank offsets were **transcribed from
-`2bRADExtraction.pl`**, the reference implementation, rather than from secondary
-tables; five of sixteen definitions we had initially taken from secondary
-sources were wrong. Correctness was then checked by comparing measured anchor
-density against the published per-genome densities on three genomes
+Recognition patterns and flank offsets follow the reference
+`2bRADExtraction.pl` regular expressions as transcribed through the audited
+Fast2bRAD-M `enzymes.rs` table; we no longer take definitions from secondary
+summary tables. Correctness was checked by comparing measured anchor density
+against the published per-genome densities on three genomes
 (*E. coli* K-12, *B. subtilis* 168, *P. putida*): **46 of 48 cells agree within
 3 %** (Table 1). HaeIV differs by exactly 2.00×, a locus-versus-window counting
-convention; Hin4I is unreconciled — no IUPAC variant, spacer length or
-deduplication convention we tried reproduces the published 1,650/2,010/1,057.
+convention. Hin4I uses the Perl/Fast2bRAD-M dual-pattern union because that is
+the lineage of the production implementations; no IUPAC variant, spacer length
+or deduplication convention reproduces the design report's 1,650/2,010/1,057.
+Those three published densities are internally inconsistent (their ratios are
+not constant under any convention tested) and are recorded as unresolved
+literature values, not as evidence against the implementation.
 
 BslFI is a Type IIS enzyme (GGGAC, 10-11/14-15) that cuts on one side only;
 it is retained because a fixed-length tag is still excised, but it is not a
@@ -800,13 +817,16 @@ log₂PTR must be ≈ 0. This tests a failure mode that correlation against a gr
 panel cannot see, and it costs nothing: a method that reports a large PTR here is
 reading noise as a gradient.
 
-**Coverage titration.** Both sequencing ends are 150 bp; every arm in this
-benchmark — sk2bGrow and Pilea alike — uses R1 only, so the two tools see
-identical input. The first 600,000 R1 reads per run were downloaded
-(≈19× of the 4.64 Mb genome); SRA preserves flowcell order, which is random with
-respect to genome position. Each sample was then truncated to nominal
-**0.5×, 1×, 2×, 5× and 10×** (n = ⌈cov·L/150⌉ reads). All 16 media, plus the
-control, are present at every depth.
+**Coverage titration.** Both mates are 150 bp and the committed Zheng grid is
+paired-end for every arm: sk2bGrow, both Pilea arms, and the FracMinHash
+attribution arm read `_1` and `_2` consistently. For each run the first
+600,000 read pairs were retained (≈19× of the 4.64 Mb genome per end), then
+truncated to nominal **0.5×, 1×, 2×, 5× and 10×** at the pair level
+(n = ⌈cov·L/150⌉ pairs). SRA order is not random with respect to run quality, so
+we checked the protocol at 2× against fixed-seed random subsampling: file-order
+r = 0.974 versus random-subsample r = 0.957, with the same code and inputs
+(`data/m1_rerun/fact_checks.txt`). All 16 media, plus the control, are present
+at every depth.
 
 This titration is a **deviation from Pilea, which ran full depth only**. It is
 the axis the paper is about: PTR at metagenomic per-strain depth, not at isolate
@@ -840,7 +860,12 @@ returned 223 of them). Strains are sampled without replacement per cell.
 
 **Deviations from Pilea's grid**, all in the direction of a smaller experiment:
 Pilea used 120 genomes, up to 32 strains, up to 32× and 400 samples. The
-laptop-scale grid does not establish behaviour at 32 strains or 32×.
+laptop-scale grid does not establish behaviour at 32 strains or 32×. We also
+ran three deliberately unfavourable variants on one 16-genome community: 1 %
+substitution errors (bias +0.001 versus control +0.001), a real GC-efficiency
+gradient (bias −0.195), and a near-neighbour *E. coli* O157:H7 reference counted
+at mismatch 0/1/2 (mean bias −0.068/−0.089/−0.080;
+`data/m1_rerun/sim_unfriendly.tsv`).
 
 #### 3.3 Reference fragmentation
 
@@ -1355,7 +1380,7 @@ matched density.
 ### 7. Computational environment
 
 Apple M3 Max, 16 cores, 48 GB RAM, macOS 14.7; Rust 1.92.0, Python 3.12.4.
-All benchmarks in this paper run on a single laptop. Runs deferred for scale —
+The primary benchmark grid was run on a laptop; the C1 paired-end regrid and F1–F5/C5-scale experiments used the internal HPC. Runs deferred for scale —
 full-depth *E. coli*, the 45,529-assembly quality sweep, Pilea's full
 32-strain/32× grid, and the marine metagenome application — are marked as such
 where they appear. The F1–F5 experiments (§6) and the C5 deep-dive runs

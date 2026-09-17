@@ -89,51 +89,18 @@ far cheaper than either (2.8 s) because below its gate it does no fitting at all
 
 ## Two things not to overclaim
 
-**The headline correlation hides a bias.** Fig 3 is the honest panel. At 1×
-sk2bGrow correlates better than Pilea (0.981 vs 0.889) but sits systematically
-*below* the identity line — mean −0.13 log₂ units, growing to −0.23 at the top
-of the range because the slope is 0.86, not 1 — while Pilea sits systematically
-*above* it (mean +0.35, slope 0.63). Better ranking, not better magnitude. Neither tool is
-unbiased at 1×; by 10× sk2bGrow slightly overshoots (slope 1.07 vs Pilea 0.94).
-Any abstract sentence built on r alone is misleading, and a reviewer will find
-this panel.
+**The headline correlation hides a bias.** Fig 2 is the honest panel. At 1×
+sk2bGrow ties the density-matched sketch on ranking (r 0.912 vs 0.912) but sits
+below the identity line: the slope against predicted log₂(PTR) is 0.58, against
+Pilea gates-off 0.63. Better or equal ranking, not better magnitude. Neither
+tool is unbiased at 1×; only by 10× does sk2bGrow track y = x closely
+(slope 1.07 vs Pilea 0.92). Any abstract sentence built on r alone is
+misleading.
 
-**Neither the sketch nor the estimator carries the result alone.** Fig 5 is the
-full 2 × 2 — both sketches × both estimators on the same subsampled reads. At 1×
-the coordinate fit is worth +0.30 r on anchors but only +0.05 on a FracMinHash
-sketch, and the *sketch* effect changes sign with the estimator: anchors are
-+0.04 ahead under the V-fit (0.981 vs 0.940) and 0.21 behind under rank
-regression (0.683 vs 0.889). The two factors interact, and at 0.5× only the
-combination survives at all (0.913, against 0.724 for the V-fit on a
-FracMinHash sketch and a fully degenerate Pilea arm). Deterministic anchors keep
-the windows populated at that depth; the coordinate fit turns them into an
-unbiased slope. The paper must claim the **combination**, not either factor.
-
-> An earlier three-arm reading of this figure concluded "the estimator, not the
-> sketch, carries the gain". That was an artefact of the missing fourth cell
-> (FracMinHash + V-fit) and has been withdrawn.
-
-## Ground truth
-
-`data/growth_rates.tsv` from the paper's supplementary source data. Two targets,
-**not equally independent**:
-
-- `growth_rate` (λ, h⁻¹) — measured by OD/microscopy. Independent. This is the
-  real test and what Pilea's published r = 0.9764 refers to.
-- `pred_log2ptr` = λC/ln2 — theory-predicted log₂(PTR). **Not independent**: the
-  authors derived C from this same sequencing by marker-frequency analysis.
-  Useful for checking magnitude; circular if quoted as accuracy.
-
-## Scope
-
-One organism, one strain, a complete single-contig reference, no community.
-This is the easiest possible case and says nothing yet about the metagenomic
-setting, which is where PTR estimation is actually hard.
-
-## Style
-
-`figures/style.py` fixes the categorical hues per *arm*, assigned in fixed order
-and never cycled, so a figure that drops an arm does not repaint the survivors.
-The palette is validated for colour-vision deficiency (worst adjacent pair
-ΔE 9.1 protan, 22.9 normal vision).
-# sk2bGrow-paper
+**The landmark source is not the winner.** Fig 4 compares landmark source and
+estimator. At matched density the two landmark sources are statistically
+indistinguishable; the coordinate-aware V-fit is what separates the method from
+sorted-rank regression. The multi-enzyme panel contributes wet-lab
+realizability, heterogeneous QC strata and fusion redundancy, not a magical
+deterministic sketch. The old “interaction” narrative has been withdrawn after
+the multi-instance test and the signed-origin fix.

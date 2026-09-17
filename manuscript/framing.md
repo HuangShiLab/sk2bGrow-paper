@@ -1,3 +1,10 @@
+> **STATUS 2026-09-17 — partially superseded.** This file records the earlier
+> framing and claim boundaries. After the sign-truncation fix, paired-end C1
+> regrid, density matching and multi-instance interaction test, the governing
+> claim set is `manuscript/manuscript.md`: the coordinate-aware estimator—not
+> landmark determinism—carries the gain; landmark sources are tied at matched
+> density; the interaction is null at 1× and negative at 2×.
+
 # Framing: what we can claim, against what evidence
 
 Working note for the Introduction and Discussion. Every row carries its source.

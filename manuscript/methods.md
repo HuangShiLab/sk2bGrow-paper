@@ -1,4 +1,4 @@
-> **SUPERSEDED 部分（2026-09-13）**：Table 2 已于 HPC C1 双端实例再生成（arm A 0.5–10×：0.941/0.919/0.959/0.971/0.970），形式交互检验仅 2× 显著为负。本文档中的旧数字与 "interaction" 主张以 manuscript.md 为准。详见 data/repro_check/ 与 data/repro_check/multiseed/INTERACTION_REPORT.md。
+> **SUPERSEDED 部分（2026-09-13）**：Table 2 已于 HPC C1 双端实例再生成（arm A 0.5–10×：0.923/0.912/0.958/0.971/0.970 (2026-09-17 signed fixed-origin)），形式交互检验仅 2× 显著为负。本文档中的旧数字与 "interaction" 主张以 manuscript.md 为准。详见 data/repro_check/ 与 data/repro_check/multiseed/INTERACTION_REPORT.md。
 
 # Methods
 
@@ -178,7 +178,16 @@ With *b*₁ = *b*₂ this is the plain V that CoPTR-Ref shows to be the maximum
 likelihood model, and log₂PTR is the fitted drop from origin to terminus. The
 two-slope form exists for multi-fork replication, where overlapping rounds put a
 genuine kink in the profile at PTR > 2. Which of the two is used is decided by
-**BIC**, and the segmented form is only offered when ≥30 windows are available.
+**BIC** on the weighted residual χ² (matching the weighted fit objective); the
+segmented form is only offered when ≥30 windows are available and the preliminary
+log₂PTR exceeds 2. Sign selection occurs only while searching for the origin,
+where rejecting an uphill solution distinguishes origin from terminus. Once that
+shared origin is fixed, each enzyme's slopes are allowed to be negative: a
+stationary control can yield a small negative gradient, and truncating those
+slopes at zero manufactures a positive control bias. The window standard errors
+are re-expressed as a smooth function of the first-pass fitted profile in a
+second weighted pass, so a window's weight is not correlated with its own
+upward count fluctuation.
 
 Standard errors are scaled by the reduced χ² of the fit. The window standard
 errors of §1.3 describe counting noise only; anchor efficiency noise, residual
@@ -213,8 +222,7 @@ sequencing cost. *I*² is reported alongside.
 **Escalation.** When *Q* rejects, the fixed-effect standard error is known to be
 too small, because it assumes the only scatter is sampling noise. The estimator
 then switches to DerSimonian–Laird random-effects weights 1/(sᵢ² + τ̂²), with τ̂²
-the moment estimator of the between-enzyme variance. **Fig. 1d** shows this
-firing on a real 2× sample (*I*² = 0.71).
+the moment estimator of the between-enzyme variance. Fig. 1d is a fixed-effect example (*I*² = 0.00) chosen to show the strata; random-effects escalation is exercised in the QC audit and reported with fusion model, *Q*, *I*² and τ² for every estimate.
 
 A sample passes QC on estimated coverage, dispersion, the fraction of reference
 windows covered, and EM containment; failures are reported with a reason rather
@@ -303,11 +311,7 @@ log₂PTR must be ≈ 0. This tests a failure mode that correlation against a gr
 panel cannot see, and it costs nothing: a method that reports a large PTR here is
 reading noise as a gradient.
 
-**Coverage titration.** The first 600,000 R1 reads per run were downloaded
-(≈19× of the 4.64 Mb genome); SRA preserves flowcell order, which is random with
-respect to genome position. Each sample was then truncated to nominal
-**0.5×, 1×, 2×, 5× and 10×** (n = ⌈cov·L/150⌉ reads). All 16 media, plus the
-control, are present at every depth.
+**Coverage titration.** Both mates are 150 bp and the committed Zheng grid is paired-end for every arm. For each run the first 600,000 read pairs were retained (≈19× per end), then truncated to nominal **0.5×, 1×, 2×, 5× and 10×** at the pair level. SRA order is not random with respect to quality; a 2× check gave file-order r = 0.974 versus fixed-seed random r = 0.957 (`data/m1_rerun/fact_checks.txt`). All 16 media, plus the control, are present at every depth.
 
 This titration is a **deviation from Pilea, which ran full depth only**. It is
 the axis the paper is about: PTR at metagenomic per-strain depth, not at isolate
@@ -341,7 +345,7 @@ returned 223 of them). Strains are sampled without replacement per cell.
 
 **Deviations from Pilea's grid**, all in the direction of a smaller experiment:
 Pilea used 120 genomes, up to 32 strains, up to 32× and 400 samples. The
-laptop-scale grid does not establish behaviour at 32 strains or 32×.
+laptop-scale grid does not establish behaviour at 32 strains or 32×. Three unfavourable variants on one 16-genome community were also run: 1% substitution errors (bias +0.001 versus control +0.001), a real GC gradient (bias −0.195), and near-neighbour O157:H7 at mismatch 0/1/2 (mean bias −0.068/−0.089/−0.080).
 
 ### 3.3 Reference fragmentation
 
@@ -655,8 +659,10 @@ cells (e.g. the two landmark sources in F1) use a paired bootstrap resampling
 the same media for both arms, and are reported as a difference with its
 bootstrap interval rather than as a hypothesis test. The source × estimator
 interaction of the Results is tested on the Fisher-z scale as
-(z_A − z_B) − (z_E − z_C) under the same paired resampling; it is significant at
-1×, 2× and 10× and not at 5× (data/ci_bootstrap/interaction.tsv). The Zheng
+(z_A − z_B) − (z_E − z_C) under paired resampling. The primary inference uses
+three independent subsampling instances (48 media × instance units): the
+interaction is significantly negative only at 2×, null at 1×/5×/10×, and
+untestable at 0.5× (`data/repro_check/multiseed/INTERACTION_REPORT.md`). The Zheng
 titration, multi-strain simulation, fragmentation protocol and Sun three-arm
 analysis were pre-specified; the F1–F5 robustness experiments are post-hoc
 analyses undertaken after internal review, and are labelled as such at first
@@ -671,9 +677,9 @@ anchors vs a density-matched FracMinHash sketch — from the estimator around
 it. F1 and F2 ask whether accuracy differences survive density matching; F3
 quantifies the misassignment risk of mismatch-tolerant counting; F4 asks
 whether the fragmentation results of §3.3 are landmark-agnostic; F5 costs the
-two sources at GTDB-like scale. Throughout, enzyme arms follow the C1 parity
-convention (`--windows`) and sketch arms the armE convention (no
-`--windows`, §4); a matched pair is only ever compared inside the same
+two sources at GTDB-like scale. The historical flag convention is retained for provenance but is functionally a
+no-op (the current statistics layer does not consume `--windows`; symmetric
+reruns are byte-identical). A matched pair is only ever compared inside the same
 harness, and cross-harness numbers are never quoted against each other.
 
 ### 6.1 Density matching on the Zheng grid (F1)
@@ -820,7 +826,7 @@ matched density.
 ## 7. Computational environment
 
 Apple M3 Max, 16 cores, 48 GB RAM, macOS 14.7; Rust 1.92.0, Python 3.12.4.
-All benchmarks in this paper run on a single laptop. Runs deferred for scale —
+The primary benchmark grid was run on a laptop; the C1 paired-end regrid and the F1–F5 robustness/C5-scale experiments used the internal HPC. Runs deferred for scale —
 full-depth *E. coli*, the 45,529-assembly quality sweep, Pilea's full
 32-strain/32× grid, and the marine metagenome application — are marked as such
 where they appear. The F1–F5 experiments (§6) and the C5 deep-dive runs
