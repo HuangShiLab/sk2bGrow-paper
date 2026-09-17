@@ -392,7 +392,7 @@ def table9():
         ('coordinate enters estimator?',
          'no — sorted ranks',
          'yes — windowed V-fit',
-         'Fig 6 (2x2 attribution)'),
+         'Fig 4 (2x2 attribution)'),
         ('reference determinism',
          'deterministic under the same hash-prefix rule',
          'deterministic by motif enumeration',
@@ -430,7 +430,7 @@ def table9():
         ('fragmented reference',
          'rank regression barely affected (r 0.889->0.827)',
          'gradient destroyed, QC-blind, scaffold-repairable',
-         'Fig 9; F4: collapse identical across landmark types '
+         'Fig 6; F4: collapse identical across landmark types '
          '(slope 0.26-0.38, RMSE x40, winner\'s-curse residue)'),
         ('scaffolding',
          'works — placement is landmark-source-agnostic',

@@ -46,17 +46,13 @@ and the subsampling read counts. `data/results_raw.tsv` carries one row per
 | figure | claim |
 |---|---|
 | `fig1_overview` (Fig 1) | the method, on real output from one 2× sample |
-| `fig2_accuracy_vs_coverage` (Fig 2) | sk2bGrow is at or above Pilea at every coverage; the margin is in the 1–2× band |
-| `fig3_magnitude` (Fig 3) | **both tools are biased at 1×, in opposite directions** — see below |
-| `fig4_negative_control` (Fig 4) | the sorted-regression estimator invents a gradient on a non-growing culture |
-| `fig6_simulation` (Fig 5) | multi-strain communities: recall, accuracy and cost — **read the three panels together** |
-| `fig5_attribution` (Fig 6) | the estimator × landmark-source interaction, at the Pilea operating point and density-matched |
-| `fig7_panel_size` (Fig 7) | 4–8 enzymes suffice; the four sparsest add nothing |
-| `fig6_gc_sweep` (Fig 8) | panel density rises with GC; instrument boundary at GC ≲ 30% × 0.5× |
-| `fig8_fragmentation` (Fig 9) | fragmentation destroys the coordinate; `scaffold` restores the complete-reference result |
-| `fig9_metagenome` (Fig 10) | Sun cohort: cross-method concordance + the exact-dedup ablation |
-| `fig10_mag_qc` (Fig 11) | C5: QC pass rate falls with MAG fragmentation; recall under a common protocol |
-| `fig11_cost_waterfall` (Fig 12) | cost at scale, measured: 89.5–240.8× → mm=1 → containment screen |
+| `fig2_zheng_benchmark` (Fig 2) | Zheng isolate benchmark, four panels: (a) sk2bGrow is at or above Pilea at every coverage — the margin is in the 1–2× band; (b, c) **both tools are biased at 1×, in opposite directions** — see below; (d) the sorted-regression estimator invents a gradient on a non-growing culture |
+| `fig3_simulation` (Fig 3) | multi-strain communities: recall, accuracy and cost — **read the three panels together** |
+| `fig4_attribution` (Fig 4) | the estimator × landmark-source interaction, at the Pilea operating point and density-matched |
+| `fig5_panel_design` (Fig 5) | 4–8 enzymes suffice; the four sparsest add nothing (a–d); panel density rises with GC, instrument boundary at GC ≲ 30% × 0.5× (e, f) |
+| `fig6_fragmentation` (Fig 6) | fragmentation destroys the coordinate; `scaffold` restores the complete-reference result |
+| `fig7_metagenome` (Fig 7) | Sun cohort: cross-method concordance + the exact-dedup ablation |
+| `fig8_mag_qc_cost` (Fig 8) | C5: QC pass rate falls with MAG fragmentation and recall under a common protocol (a, b); cost at scale, measured: 89.5–240.8× → mm=1 → containment screen (c, d) |
 
 ## Multi-strain simulation (Pilea's Fig-3 design, laptop scale)
 
@@ -91,7 +87,7 @@ Neither tool is unbiased at 1×; only by 10× does sk2bGrow track y = x
 (slope 1.06 vs Pilea 0.94). Any abstract sentence built on r alone is
 misleading, and a reviewer will find this panel.
 
-**The deterministic sketch is not what wins.** Fig 6: holding the sketch fixed
+**The deterministic sketch is not what wins.** Fig 4: holding the sketch fixed
 and swapping the estimator moves accuracy far more than the reverse, and under a
 sorted-regression estimator the anchors are *behind* FracMinHash at 1×
 (0.61 vs 0.89). The contribution is the coordinate-aware V-shape fit that the

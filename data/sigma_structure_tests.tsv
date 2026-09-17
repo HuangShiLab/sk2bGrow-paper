@@ -1,0 +1,31 @@
+test	pair	metric	n	value
+A	S01xS06	spearman_species_median	27	0.7616
+A	S01xS06	spearman_pooled	13417	0.7960
+A	S01xS07	spearman_species_median	28	0.7301
+A	S01xS07	spearman_pooled	14056	0.7365
+A	S06xS07	spearman_species_median	31	0.8684
+A	S06xS07	spearman_pooled	15193	0.8643
+B	S01	lag1	pearson	16860	0.0042
+B	S01	lag2	pearson	16575	-0.0082
+B	S01	lag4	pearson	16005	-0.0064
+B	S01	lag8	pearson	14865	-0.0243
+B	S01	lag16	pearson	12076	-0.0006
+B	S01	lag32	pearson	8558	-0.0180
+B	S01	lag64	pearson	5719	0.0068
+B	S01	median_spacing_bp	285	1723
+B	S06	lag1	pearson	26480	0.0014
+B	S06	lag2	pearson	26130	-0.0100
+B	S06	lag4	pearson	25430	-0.0133
+B	S06	lag8	pearson	24030	-0.0204
+B	S06	lag16	pearson	20720	-0.0087
+B	S06	lag32	pearson	16132	0.0028
+B	S06	lag64	pearson	11659	-0.0181
+B	S06	median_spacing_bp	350	1581
+B	S07	lag1	pearson	34683	0.0019
+B	S07	lag2	pearson	34172	0.0002
+B	S07	lag4	pearson	33150	-0.0063
+B	S07	lag8	pearson	31106	-0.0193
+B	S07	lag16	pearson	26132	-0.0060
+B	S07	lag32	pearson	19807	-0.0266
+B	S07	lag64	pearson	13203	0.0036
+B	S07	median_spacing_bp	511	1856

@@ -1,0 +1,13 @@
+placed_contigs	total_contigs	bp_placed_pct	orientation_correct_pct	start_err_median_bp	start_err_p90_bp	rot_corrected_median_bp	within100kb_pct	order_spearman	ptr_r_1.0x	ptr_rmse_1.0x	ptr_r_5.0x	ptr_rmse_5.0x	frag_ref_r_5x	complete_ref_r_5x	genome	arm	mode
+44	100	64.9	0	7.557e+05	1.678e+06	6.697e+05	7	0.4729	0.954	0.704	0.995	0.644	0.999	1	g06_Bacillus_subtilis	rel	enzyme
+45	100	68.1	0	7.672e+05	1.816e+06	6.7e+05	9	0.4822	0.981	0.352	0.988	0.223	0.999	1	g06_Bacillus_subtilis	rel	sketch
+100	100	100	100	0	26	0	100	1	0.997	0.186	1	0.015	0.999	1	g06_Bacillus_subtilis	self	enzyme
+100	100	100	100	0	30	0	100	1	0.998	0.165	1	0.017	0.999	1	g06_Bacillus_subtilis	self	sketch
+81	100	90.1	6.2	1.038e+06	2.087e+06	9.171e+05	2	0.5053	0.996	0.286	1	0.149	0.999	1	g08_Escherichia_coli	rel	enzyme
+77	100	84.6	6.5	1.01e+06	2.085e+06	9.171e+05	3	0.489	0.989	0.27	1	0.106	0.999	0.999	g08_Escherichia_coli	rel	sketch
+98	100	99	100	0	26	0	100	1	0.987	0.18	1	0.027	0.999	1	g08_Escherichia_coli	self	enzyme
+98	100	99	100	0	30	0	100	1	0.998	0.128	0.999	0.033	0.999	0.999	g08_Escherichia_coli	self	sketch
+100	100	100	100	0	26	0	100	1	0.999	0.132	1	0.03	0.997	1	g13_Pseudomonas_aeruginosa	rel	enzyme
+100	100	100	100	0	30	0	100	1	0.996	0.166	1	0.013	0.999	1	g13_Pseudomonas_aeruginosa	rel	sketch
+100	100	100	100	0	26	0	100	1	0.999	0.132	1	0.03	0.997	1	g13_Pseudomonas_aeruginosa	self	enzyme
+100	100	100	100	0	30	0	100	1	0.996	0.166	1	0.013	0.999	1	g13_Pseudomonas_aeruginosa	self	sketch

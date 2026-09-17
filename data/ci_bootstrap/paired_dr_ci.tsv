@@ -1,0 +1,6 @@
+cov	comparison	n	dr	lo	hi	sig
+0.5000	A vs E (FMH+V)	16	0.0580	-0.0267	0.1644	no
+1.0000	A vs Pilea gates-off	16	0.1401	-0.0252	0.4177	no
+2.0000	A vs Pilea gates-off	16	0.1105	0.0258	0.2937	yes
+5.0000	A vs Pilea gates-off	16	-0.0166	-0.0341	-0.0004	yes
+1.0000	A vs E (FMH+V)	16	0.0064	-0.0389	0.0580	no

@@ -1,0 +1,51 @@
+=== date ===
+Sat Sep 12 12:13:50 HKT 2026
+=== git log ===
+275778f Replace the HPC handover with a full research plan
+f8b8820 Settle A5 and A7, narrow A4, and correct its stated mechanism
+56e2a53 Prototype an order-free estimator for fragmented references
+=== git describe ===
+275778f-dirty
+=== git status --short ===
+ M README.md
+ M crates/sk2bgrow-cli/src/cmd/index.rs
+ M crates/sk2bgrow-cli/src/cmd/profile.rs
+ M crates/sk2bgrow-core/src/count.rs
+ M crates/sk2bgrow-core/src/lib.rs
+ M docs/design/04-roadmap.md
+ M python/sk2bgrow/cli.py
+ M python/sk2bgrow/fit.py
+ M python/sk2bgrow/fusion.py
+ M python/sk2bgrow/ztp.py
+ M scripts/smoke.sh
+?? benches/C5_REVIEW.txt
+?? benches/HPC_TASKS_PAIRED_2BRAD.md
+?? benches/HPC_TASKS_SKETCH_MODE.md
+?? benches/qc_audit.py
+?? crates/sk2bgrow-core/examples/
+?? crates/sk2bgrow-core/src/screen.rs
+?? python/sk2bgrow/ztp.py.bak
+?? tests/python/test_fusion_qc.py
+=== git diff --stat ===
+ README.md                              |   8 +-
+ crates/sk2bgrow-cli/src/cmd/index.rs   |  25 +++
+ crates/sk2bgrow-cli/src/cmd/profile.rs |  84 +++++++-
+ crates/sk2bgrow-core/src/count.rs      | 374 +++++++++++++++++++++++++++++++--
+ crates/sk2bgrow-core/src/lib.rs        |   1 +
+ docs/design/04-roadmap.md              |  11 +-
+ python/sk2bgrow/cli.py                 |   2 +-
+ python/sk2bgrow/fit.py                 | 326 +++++++++++++++++++++++++++-
+ python/sk2bgrow/fusion.py              |  48 ++++-
+ python/sk2bgrow/ztp.py                 |   6 +-
+ scripts/smoke.sh                       |   2 +-
+ 11 files changed, 855 insertions(+), 32 deletions(-)
+=== python ===
+3.11.16
+/lustre1/g/aos_shihuang/sk2bgrow-hpc/src/python/sk2bgrow/__init__.py
+
+=== regen depths 1/2/5/10x — Sat Sep 12 21:57:16 HKT 2026 ===
+275778f-dirty
+275778f Replace the HPC handover with a full research plan
+
+=== arm E paired-end regen — Sat Sep 12 22:45:26 HKT 2026 ===
+275778f-dirty

@@ -1,0 +1,86 @@
+medium	srr	cov	log2ptr	est_cov	pass_qc	fusion_model	method	qc_reason	excluded	note	growth_rate
+M6	SRR11558945	0.5	0.9218468525	0.5540310768	False	fixed	v_shape	coverage 0.55 < 1.0; fraction 0.32 < 0.75; containment 0.31 < 0.5	-		1.3549
+M3	SRR11558946	0.5	0.9973606931	0.5479539935	False	fixed	v_shape	coverage 0.55 < 1.0; fraction 0.33 < 0.75; containment 0.31 < 0.5	AlfI:no downhill origin: profile has no replication gradient;BaeI:no downhill origin: profile has no replication gradient;FalI:no downhill origin: profile has no replication gradient		1.4380
+M2	SRR11558949	0.5	1.134508227	0.6468062834	False	fixed	v_shape	coverage 0.65 < 1.0; fraction 0.31 < 0.75; containment 0.30 < 0.5	BaeI:no downhill origin: profile has no replication gradient;FalI:no downhill origin: profile has no replication gradient		1.5100
+RUN_OUT	SRR11558950	0.5	0.3007828351	0.526108221	False	fixed	v_shape	coverage 0.53 < 1.0; fraction 0.33 < 0.75; containment 0.32 < 0.5; only 11/16 enzymes produced a fit	AloI:no downhill origin: profile has no replication gradient;BaeI:no downhill origin: profile has no replication gradient;BcgI:no downhill origin: profile has no replication gradient;FalI:no downhill origin: profile has no replication gradient;PsrI:no downhill origin: profile has no replication gradient		
+M27	SRR11558953	0.5	0.2476609092	0.4778778101	False	fixed	v_shape	coverage 0.48 < 1.0; fraction 0.34 < 0.75; containment 0.33 < 0.5; only 10/16 enzymes produced a fit	AlfI:no downhill origin: profile has no replication gradient;BaeI:no downhill origin: profile has no replication gradient;BplI:no downhill origin: profile has no replication gradient;Bsp24I:no downhill origin: profile has no replication gradient;CspCI:no downhill origin: profile has no replication gradient;HaeIV:no downhill origin: profile has no replication gradient		0.3992
+M25	SRR11558957	0.5	0.5202976373	0.4779300551	False	fixed	v_shape	coverage 0.48 < 1.0; fraction 0.33 < 0.75; containment 0.32 < 0.5; only 12/16 enzymes produced a fit	AlfI:no downhill origin: profile has no replication gradient;AloI:no downhill origin: profile has no replication gradient;BaeI:no downhill origin: profile has no replication gradient;BslFI:no downhill origin: profile has no replication gradient		0.4346
+M24	SRR11558960	0.5	0.4770420185	0.4939538513	False	fixed	v_shape	coverage 0.49 < 1.0; fraction 0.33 < 0.75; containment 0.32 < 0.5	PsrI:no downhill origin: profile has no replication gradient		0.4648
+M22	SRR11558963	0.5	0.4083768863	0.5304950525	False	fixed	v_shape	coverage 0.53 < 1.0; fraction 0.33 < 0.75; containment 0.32 < 0.5	PpiI:no downhill origin: profile has no replication gradient;PsrI:no downhill origin: profile has no replication gradient		0.4892
+M23	SRR11558964	0.5	0.3790087791	0.5361695756	False	fixed	v_shape	coverage 0.54 < 1.0; fraction 0.33 < 0.75; containment 0.32 < 0.5	BaeI:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		0.4770
+M19	SRR11558965	0.5	0.2696305604	0.6850068512	False	fixed	v_shape	coverage 0.69 < 1.0; fraction 0.30 < 0.75; containment 0.29 < 0.5; only 11/16 enzymes produced a fit	AlfI:no downhill origin: profile has no replication gradient;AloI:no downhill origin: profile has no replication gradient;BsaXI:no downhill origin: profile has no replication gradient;FalI:no downhill origin: profile has no replication gradient;PsrI:no downhill origin: profile has no replication gradient		0.5776
+M18	SRR11558969	0.5	0.6668236387	0.5551578236	False	fixed	v_shape	coverage 0.56 < 1.0; fraction 0.33 < 0.75; containment 0.32 < 0.5	CspCI:no downhill origin: profile has no replication gradient;FalI:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		0.7413
+M17	SRR11558970	0.5	0.5814698427	0.6426914932	False	fixed	v_shape	coverage 0.64 < 1.0; fraction 0.32 < 0.75; containment 0.31 < 0.5	BsaXI:no downhill origin: profile has no replication gradient;CspCI:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		0.7440
+M13	SRR11558973	0.5	0.5726185541	0.586530941	False	fixed	v_shape	coverage 0.59 < 1.0; fraction 0.33 < 0.75; containment 0.32 < 0.5	-		0.8612
+M12	SRR11558976	0.5	0.8384251662	0.5913662505	False	fixed	v_shape	coverage 0.59 < 1.0; fraction 0.31 < 0.75; containment 0.30 < 0.5	BsaXI:no downhill origin: profile has no replication gradient		1.0220
+M1	SRR11558977	0.5	1.082544249	0.5186565362	False	fixed	v_shape	coverage 0.52 < 1.0; fraction 0.32 < 0.75; containment 0.31 < 0.5	BsaXI:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		1.7207
+M10	SRR11558980	0.5	0.6720086353	0.5646021472	False	fixed	v_shape	coverage 0.56 < 1.0; fraction 0.33 < 0.75; containment 0.31 < 0.5	FalI:no downhill origin: profile has no replication gradient		1.1500
+M4	SRR11558983	0.5	1.03626522	0.6684035548	False	fixed	v_shape	coverage 0.67 < 1.0; fraction 0.31 < 0.75; containment 0.30 < 0.5	BplI:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		1.3718
+M6	SRR11558945	1	1.031991872	0.9258027096	False	fixed	v_shape	coverage 0.93 < 1.0; fraction 0.53 < 0.75	-		1.3549
+M3	SRR11558946	1	1.206376918	0.9170551063	False	fixed	v_shape	coverage 0.92 < 1.0; fraction 0.52 < 0.75	-		1.4380
+M2	SRR11558949	1	1.341405339	1.087182587	False	fixed	v_shape	fraction 0.49 < 0.75; containment 0.49 < 0.5	-		1.5100
+RUN_OUT	SRR11558950	1	0.1103768387	0.9215073934	False	fixed	v_shape	coverage 0.92 < 1.0; fraction 0.55 < 0.75; only 10/16 enzymes produced a fit	BaeI:no downhill origin: profile has no replication gradient;BplI:no downhill origin: profile has no replication gradient;BslFI:no downhill origin: profile has no replication gradient;CjePI:no downhill origin: profile has no replication gradient;CspCI:no downhill origin: profile has no replication gradient;PsrI:no downhill origin: profile has no replication gradient		
+M27	SRR11558953	1	0.2132287543	0.864418414	False	fixed	v_shape	coverage 0.86 < 1.0; fraction 0.54 < 0.75	AloI:no downhill origin: profile has no replication gradient;HaeIV:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		0.3992
+M25	SRR11558957	1	0.5347385807	0.9152259101	False	fixed	v_shape	coverage 0.92 < 1.0; fraction 0.54 < 0.75	BplI:no downhill origin: profile has no replication gradient		0.4346
+M24	SRR11558960	1	0.4392789642	0.8344453981	False	fixed	v_shape	coverage 0.83 < 1.0; fraction 0.54 < 0.75	AloI:no downhill origin: profile has no replication gradient;BsaXI:no downhill origin: profile has no replication gradient		0.4648
+M22	SRR11558963	1	0.6213970941	0.9194186802	False	fixed	v_shape	coverage 0.92 < 1.0; fraction 0.53 < 0.75	-		0.4892
+M23	SRR11558964	1	0.1727535189	0.8710034134	False	fixed	v_shape	coverage 0.87 < 1.0; fraction 0.54 < 0.75; only 11/16 enzymes produced a fit	AlfI:no downhill origin: profile has no replication gradient;AloI:no downhill origin: profile has no replication gradient;BaeI:no downhill origin: profile has no replication gradient;HaeIV:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		0.4770
+M19	SRR11558965	1	0.3952119795	1.011823739	False	fixed	v_shape	fraction 0.49 < 0.75; containment 0.48 < 0.5	AloI:no downhill origin: profile has no replication gradient;BaeI:no downhill origin: profile has no replication gradient;FalI:no downhill origin: profile has no replication gradient		0.5776
+M18	SRR11558969	1	0.6839642956	0.9173371539	False	fixed	v_shape	coverage 0.92 < 1.0; fraction 0.53 < 0.75	-		0.7413
+M17	SRR11558970	1	0.4390953192	1.002212357	False	fixed	v_shape	fraction 0.51 < 0.75	BplI:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		0.7440
+M13	SRR11558973	1	0.684892465	0.9312003752	False	fixed	v_shape	coverage 0.93 < 1.0; fraction 0.53 < 0.75	-		0.8612
+M12	SRR11558976	1	0.9268609305	0.9693244309	False	fixed	v_shape	coverage 0.97 < 1.0; fraction 0.50 < 0.75	CspCI:no downhill origin: profile has no replication gradient		1.0220
+M1	SRR11558977	1	1.496850605	0.8889698628	False	fixed	v_shape	coverage 0.89 < 1.0; fraction 0.53 < 0.75	-		1.7207
+M10	SRR11558980	1	0.714252942	0.9344047201	False	fixed	v_shape	coverage 0.93 < 1.0; fraction 0.52 < 0.75	CspCI:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		1.1500
+M4	SRR11558983	1	0.8255283107	1.079858143	False	fixed	v_shape	fraction 0.51 < 0.75; containment 0.50 < 0.5	-		1.3718
+M6	SRR11558945	2	1.204423116	1.690874282	True	fixed	v_shape,v_shape_segmented		-		1.3549
+M3	SRR11558946	2	1.342230719	1.682673779	True	fixed	v_shape		-		1.4380
+M2	SRR11558949	2	1.463458762	1.88620429	False	fixed	v_shape,v_shape_segmented	fraction 0.68 < 0.75	-		1.5100
+RUN_OUT	SRR11558950	2	0.1066631754	1.760564854	False	fixed	v_shape	only 10/16 enzymes produced a fit	BcgI:no downhill origin: profile has no replication gradient;CspCI:no downhill origin: profile has no replication gradient;FalI:no downhill origin: profile has no replication gradient;HaeIV:no downhill origin: profile has no replication gradient;Hin4I:no downhill origin: profile has no replication gradient;PpiI:no downhill origin: profile has no replication gradient		
+M27	SRR11558953	2	0.446090733	1.630089295	True	fixed	v_shape		PsrI:no downhill origin: profile has no replication gradient		0.3992
+M25	SRR11558957	2	0.6465893736	1.682446526	True	fixed	v_shape		-		0.4346
+M24	SRR11558960	2	0.7708817332	1.642268496	False	random	v_shape	enzymes disagree (p=0.0023)	-	enzymes disagree (Q=35.2, p=0.00232); largest deviation from BsaXI	0.4648
+M22	SRR11558963	2	0.6968403883	1.760796298	True	fixed	v_shape		-		0.4892
+M23	SRR11558964	2	0.528494435	1.72710254	False	random	v_shape	enzymes disagree (p=0.0077)	-	enzymes disagree (Q=31.4, p=0.00768); largest deviation from Bsp24I	0.4770
+M19	SRR11558965	2	0.6486438515	1.649054875	False	fixed	v_shape	fraction 0.69 < 0.75	PsrI:no downhill origin: profile has no replication gradient		0.5776
+M18	SRR11558969	2	0.7953280386	1.715045208	True	fixed	v_shape		-		0.7413
+M17	SRR11558970	2	0.5843182378	1.808256326	False	fixed	v_shape	fraction 0.74 < 0.75	-		0.7440
+M13	SRR11558973	2	0.8863205932	1.722488126	True	fixed	v_shape		-		0.8612
+M12	SRR11558976	2	1.042856012	1.762298694	False	fixed	v_shape	fraction 0.72 < 0.75	-		1.0220
+M1	SRR11558977	2	1.715323888	1.660511491	True	fixed	v_shape		-		1.7207
+M10	SRR11558980	2	0.9959622999	1.765012349	True	fixed	v_shape		-		1.1500
+M4	SRR11558983	2	1.218972839	1.860766129	False	fixed	v_shape	fraction 0.70 < 0.75	-		1.3718
+M6	SRR11558945	5	1.317018735	4.055030463	True	fixed	v_shape,v_shape_segmented		-		1.3549
+M3	SRR11558946	5	1.504869017	4.052425682	True	fixed	v_shape,v_shape_segmented		-		1.4380
+M2	SRR11558949	5	1.805282035	4.487063667	True	fixed	v_shape		-		1.5100
+RUN_OUT	SRR11558950	5	0.06113622876	4.294880216	False	fixed	v_shape	only 11/16 enzymes produced a fit	AloI:no downhill origin: profile has no replication gradient;Bsp24I:no downhill origin: profile has no replication gradient;HaeIV:no downhill origin: profile has no replication gradient;Hin4I:no downhill origin: profile has no replication gradient;PsrI:no downhill origin: profile has no replication gradient		
+M27	SRR11558953	5	0.5198458516	4.100119929	False	random	v_shape	enzymes disagree (p=0.0089)	-	enzymes disagree (Q=30.9, p=0.00893); largest deviation from FalI	0.3992
+M25	SRR11558957	5	0.6304910441	4.236389243	True	fixed	v_shape		-		0.4346
+M24	SRR11558960	5	0.6336296871	4.096738823	True	fixed	v_shape		-		0.4648
+M22	SRR11558963	5	0.7034565769	4.178829285	True	fixed	v_shape		-		0.4892
+M23	SRR11558964	5	0.5571711359	4.110358088	True	fixed	v_shape		-		0.4770
+M19	SRR11558965	5	0.8546863096	3.81674668	True	fixed	v_shape		-		0.5776
+M18	SRR11558969	5	0.8255553578	4.145572638	True	fixed	v_shape		-		0.7413
+M17	SRR11558970	5	0.7153290387	4.234591438	True	fixed	v_shape		-		0.7440
+M13	SRR11558973	5	1.009291839	4.130957207	True	fixed	v_shape		-		0.8612
+M12	SRR11558976	5	1.260551627	4.196206004	True	fixed	v_shape		-		1.0220
+M1	SRR11558977	5	1.753768896	4.097618779	True	fixed	v_shape		-		1.7207
+M10	SRR11558980	5	1.148118106	4.11296252	True	fixed	v_shape		-		1.1500
+M4	SRR11558983	5	1.394987338	4.354525919	True	fixed	v_shape		-		1.3718
+M6	SRR11558945	10	1.347062992	8.078962652	True	fixed	v_shape		-		1.3549
+M3	SRR11558946	10	1.503594581	8.054714384	True	fixed	v_shape,v_shape_segmented		-		1.4380
+M2	SRR11558949	10	1.802591474	8.458594476	False	random	v_shape	enzymes disagree (p=0.01)	-	enzymes disagree (Q=30.6, p=0.01); largest deviation from BaeI	1.5100
+RUN_OUT	SRR11558950	10	0.06394936736	8.675956692	False	fixed	v_shape	only 11/16 enzymes produced a fit	BcgI:no downhill origin: profile has no replication gradient;BplI:no downhill origin: profile has no replication gradient;Bsp24I:no downhill origin: profile has no replication gradient;CjePI:no downhill origin: profile has no replication gradient;Hin4I:no downhill origin: profile has no replication gradient		
+M27	SRR11558953	10	0.520061394	8.202336756	True	fixed	v_shape		-		0.3992
+M25	SRR11558957	10	0.6438211253	8.351419277	True	fixed	v_shape		-		0.4346
+M24	SRR11558960	10	0.6442468288	8.138518682	True	fixed	v_shape		-		0.4648
+M22	SRR11558963	10	0.7636538015	8.333558592	True	fixed	v_shape		-		0.4892
+M23	SRR11558964	10	0.5637511175	8.192104414	True	fixed	v_shape		-		0.4770
+M19	SRR11558965	10	0.9362687406	7.503633458	True	fixed	v_shape		-		0.5776
+M18	SRR11558969	10	0.8397292979	8.211686482	True	fixed	v_shape		-		0.7413
+M17	SRR11558970	10	0.6810481122	8.457624806	True	fixed	v_shape		-		0.7440
+M13	SRR11558973	10	1.008173394	8.183668524	True	fixed	v_shape		-		0.8612
+M12	SRR11558976	10	1.224278684	8.279563822	True	fixed	v_shape		-		1.0220
+M1	SRR11558977	10	1.81389611	8.06987744	True	fixed	v_shape		-		1.7207
+M10	SRR11558980	10	1.244437173	8.176410504	True	fixed	v_shape,v_shape_segmented		-		1.1500
+M4	SRR11558983	10	1.548475124	8.700351305	True	fixed	v_shape		-		1.3718

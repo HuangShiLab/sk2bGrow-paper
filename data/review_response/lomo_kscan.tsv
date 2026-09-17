@@ -1,0 +1,4 @@
+k	same_set_r_lomo1x	lomo_r_l1x	n_media	note
+4	0.9831	0.9808	16	enzyme ranking re-fit on 15 media, fused estimate evaluated on the held-out medium; plain IVW approximation of the pipeline fusion
+8	0.9829	0.9829	16	same
+16	0.9845	0.9845	16	same; ranking on all 16 (no holdout possible at k=16, shown for reference)

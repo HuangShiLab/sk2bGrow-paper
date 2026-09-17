@@ -1,0 +1,43 @@
+=== Test A: cross-sample correlation of per-anchor log e ===
+(same db -> genome_id comparable across samples; merge on genome/contig/pos)
+
+S01 x S06: 27 shared species (>= 50 anchors)
+  Spearman r per species: median 0.762, weighted mean 0.793, frac r>0.3: 100.00%, frac r<0: 0.00%
+  Pearson  r per species: median 0.742, weighted mean 0.782
+
+S01 x S07: 28 shared species (>= 50 anchors)
+  Spearman r per species: median 0.730, weighted mean 0.734, frac r>0.3: 100.00%, frac r<0: 0.00%
+  Pearson  r per species: median 0.719, weighted mean 0.725
+
+S06 x S07: 31 shared species (>= 50 anchors)
+  Spearman r per species: median 0.868, weighted mean 0.867, frac r>0.3: 100.00%, frac r<0: 0.00%
+  Pearson  r per species: median 0.842, weighted mean 0.844
+
+=== Test B: spatial autocorrelation of log e (lagged Pearson, per-contig centered) ===
+
+S01: median within-contig anchor spacing 1723 bp over 285 contigs
+  lag  1 (~   1.7 kb): r = +0.004  (n=16860)
+  lag  2 (~   3.4 kb): r = -0.008  (n=16575)
+  lag  4 (~   6.9 kb): r = -0.006  (n=16005)
+  lag  8 (~  13.8 kb): r = -0.024  (n=14865)
+  lag 16 (~  27.6 kb): r = -0.001  (n=12076)
+  lag 32 (~  55.1 kb): r = -0.018  (n=8558)
+  lag 64 (~ 110.3 kb): r = +0.007  (n=5719)
+
+S06: median within-contig anchor spacing 1581 bp over 350 contigs
+  lag  1 (~   1.6 kb): r = +0.001  (n=26480)
+  lag  2 (~   3.2 kb): r = -0.010  (n=26130)
+  lag  4 (~   6.3 kb): r = -0.013  (n=25430)
+  lag  8 (~  12.6 kb): r = -0.020  (n=24030)
+  lag 16 (~  25.3 kb): r = -0.009  (n=20720)
+  lag 32 (~  50.6 kb): r = +0.003  (n=16132)
+  lag 64 (~ 101.2 kb): r = -0.018  (n=11659)
+
+S07: median within-contig anchor spacing 1856 bp over 511 contigs
+  lag  1 (~   1.9 kb): r = +0.002  (n=34683)
+  lag  2 (~   3.7 kb): r = +0.000  (n=34172)
+  lag  4 (~   7.4 kb): r = -0.006  (n=33150)
+  lag  8 (~  14.8 kb): r = -0.019  (n=31106)
+  lag 16 (~  29.7 kb): r = -0.006  (n=26132)
+  lag 32 (~  59.4 kb): r = -0.027  (n=19807)
+  lag 64 (~ 118.8 kb): r = +0.004  (n=13203)

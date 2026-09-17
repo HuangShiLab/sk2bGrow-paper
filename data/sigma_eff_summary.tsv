@@ -1,0 +1,7 @@
+arm	sample	n_species	median_sigma_eff	q1	q3	max_sigma_eff	frac_above_0_8
+raw_C	S01	52	1.532	1.419	1.687	2.27	1.0
+raw_C	S06	62	1.519	1.368	1.62	2.112	1.0
+raw_C	S07	116	1.628	1.45	1.76	2.136	1.0
+deduped_C	S01	1	2.165	2.165	2.165	2.165	1.0
+deduped_C	S06	1	1.47	1.47	1.47	1.47	1.0
+deduped_C	S07	0					

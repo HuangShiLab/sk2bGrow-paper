@@ -1,0 +1,28 @@
+sample	srr	depth	arm	n_reported	n_qc_pass	qc_rule
+S01	SRR13371683	5g	sk2bGrow_WGS	329	38	fraction>=0.5 & dispersion<5
+S01	SRR13371683	5g	Pilea_default	8		Pilea internal gates
+S01	SRR13371683	5g	Pilea_gatesoff	680		none
+S01	SRR13371683	10g	sk2bGrow_WGS	388	63	fraction>=0.5 & dispersion<5
+S01	SRR13371683	10g	Pilea_default	15		Pilea internal gates
+S01	SRR13371683	10g	Pilea_gatesoff	735		none
+S06	SRR13371682	5g	sk2bGrow_WGS	364	53	fraction>=0.5 & dispersion<5
+S06	SRR13371682	5g	Pilea_default	14		Pilea internal gates
+S06	SRR13371682	5g	Pilea_gatesoff	799		none
+S06	SRR13371682	10g	sk2bGrow_WGS	465	68	fraction>=0.5 & dispersion<5
+S06	SRR13371682	10g	Pilea_default	25		Pilea internal gates
+S06	SRR13371682	10g	Pilea_gatesoff	832		none
+S07	SRR13371681	5g	sk2bGrow_WGS	373	68	fraction>=0.5 & dispersion<5
+S07	SRR13371681	5g	Pilea_default	22		Pilea internal gates
+S07	SRR13371681	5g	Pilea_gatesoff	745		none
+S07	SRR13371681	10g	sk2bGrow_WGS	477	84	fraction>=0.5 & dispersion<5
+S07	SRR13371681	10g	Pilea_default	32		Pilea internal gates
+S07	SRR13371681	10g	Pilea_gatesoff	769		none
+S01	SRR13371683	full	Pilea_default	67		Pilea internal gates
+S01	SRR13371683	full	sk2bGrow_WGS	808		fraction>=0.5 & dispersion<5
+S01	SRR13371683	full	Pilea_gatesoff	859		none
+S06	SRR13371682	full	Pilea_default	80		Pilea internal gates
+S06	SRR13371682	full	sk2bGrow_WGS	1019		fraction>=0.5 & dispersion<5
+S06	SRR13371682	full	Pilea_gatesoff	917		none
+S07	SRR13371681	full	Pilea_default	87		Pilea internal gates
+S07	SRR13371681	full	sk2bGrow_WGS	959		fraction>=0.5 & dispersion<5
+S07	SRR13371681	full	Pilea_gatesoff	837		none

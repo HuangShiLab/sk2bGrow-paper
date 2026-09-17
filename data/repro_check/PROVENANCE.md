@@ -1,0 +1,7 @@
+# results_raw.tsv 生成路径溯源（0.9132 vs 0.8957）
+
+1. **论文仓 `data/results_raw.tsv` 是 Mac 端运行的聚合产物，不是 HPC C1 的产物。** 依据：该文件 8/24 16:27(+0800) 首次入库，8/25 12:07 由 commit `43232b1`（"Regenerate every benchmark number after the double-counting fix"）连同 `exemplar_M1_2x_*` 一起再生成；其 arm A 的 M1 2× 行与论文仓 `data/exemplar_M1_2x_output.tsv` 逐位一致（log2ptr 1.6876 = 1.687601171，est_cov 1.7035 = 1.703476546）——exemplar 即 Mac 端逐 cell 输出。
+2. **时序上不可能来自 HPC。** HPC C1 的 stats 仅在 8/26 08:01–08:07（SLURM array `3944743`，单次 pass，见 `logs/C1/stats.3944743_*.out`）运行，`c1_results_raw.tsv`（08:15）由其产出；论文表冻结于 8/25 12:07，早约 20 小时。
+3. **analyze_c1.py 的输入与逻辑**：读 `bench/C1/counts/{run}.{depth}x/output.tsv`（arm A_sk2bgrow，45 runs×7 深度）+ pilea 两臂输出，无任何过滤/重算，仅取 `log2(PTR)`/`pass_qc` 写 `c1_results_raw.tsv`。本次在现行产物上重跑（输出经符号链接重定向至 `bench/repro_check/analyze_rerun/`，未触碰原文件），`c1_results_raw.tsv` 与 `c1_summary.tsv` 与已提交版**逐字节一致**（45 runs 0.5× 最大偏差 4.95e-05，仅 %.4f 舍入）。
+4. **差异来源**：同一管线（anchors+V-fit，stats 均为未提交工作树）的两个独立实例——Mac 端 8/25（"double-counting fix" 后）与 HPC 8/26（two-stage decoupled weights + ZTP boundary fixes）。逐 cell log2ptr 差约 0.01–0.06，0.5× r 变为：论文 Mac 端 first-pick n=16 **0.9132** vs HPC first-pick **0.8957**（HPC run-level n=42 为 0.8420）。旁证：论文表含 C_default/C_relaxed 在 0.5–5× 的估计，而 HPC Pilea 在这些深度 recall=0——论文表整套来自另一套运行。
+5. **对 Table 2 的判定**：三个变体 0.8420 / 0.8957 / 0.9132 同处 0.84–0.91 带，远离 0.568；头条结论（0.5× 下 r≈0.9）稳健，论文数字本身可追溯、自洽。建议：投稿前用 HPC C1 已提交产物（或现行代码，r=0.9411）再生成论文 arm A 行并在 README 记录 provenance（commit、日期、机器）。残留未知：Mac 端 count 层是否与 HPC C1 counts 完全一致，无法从 HPC 侧验证；但 HPC 侧链路已证自洽可复现。

@@ -1,0 +1,32 @@
+Task 7 fact checks (2026-09-15, HPC run)
+=======================================
+
+(a) Hin4I 酶定义的最终来源
+---------------------------
+最终定义 = Fast2bRAD-M 的 src/enzymes.rs，转录入 sk2bgrow-core/src/enzyme.rs；
+其模式源自 2bRADExtraction.pl 的 @site 正则 —— 即 Perl 定义（双模式取并集，
+不做跨模式去重）。证据链：
+- docs/enzymes.md 明确 "Source of truth: Fast2bRAD-M/src/enzymes.rs"，并称该表
+  "derives its patterns from the @site regexes in 2bRADExtraction.pl"；
+- enzyme.rs 头注释自述 "Transcribed from Fast2bRAD-M/src/enzymes.rs, which in
+  turn derives its patterns from the @site regexes in 2bRADExtraction.pl"；
+- 三重一致性：Perl / Fast2bRAD-M / sk2bgrow 三个实现经 reverse-complement 闭包
+  单测 + 三基因组（E. coli GCF_000005845.2、B. subtilis GCF_000009045.1、
+  P. putida GCF_000007565.2）实测密度校验，48 格中 46 格在 3% 内复现设计报告；
+- 关键澄清：设计报告的 Hin4I 密度行（1650/2010/1057）在任何约定下都不可复现
+  （比值 0.74/0.69/0.79 非常数；并集 1223/1380/839 是最接近的，差 19-31%），
+  docs/enzymes.md 将其归因于报告数字本身而非酶定义——定义没有问题，不用改。
+结论：论文应引用 Fast2bRAD-M/Perl 谱系作为 Hin4I 定义来源；报告密度表的
+Hin4I 行是文献数据问题，已在 docs/enzymes.md 记录为 unresolved。
+
+(b) flowcell-order 子采样 vs 固定种子随机子采样（arm A，2×，同一批 16 培养基）
+-------------------------------------------------------------------------------
+协议：取 C1 各 run 源 fastq 的文件序前 N 条（N = C1 2× 实际每端 read 数，
+seqkit head），双端同 N；sk2bgrow count + stats（signed-slopes 分支 arm A）。
+结果：flowcell-order 2× 的 Pearson r = 0.9737（slope 1.194，n=16）；
+对照（C1 随机种子 2×，同代码同输入）r = 0.9567。
+一句话：子采样顺序不影响结论——文件序（flowcell 序）子采样与固定种子随机
+子采样的 r 差 0.017 且在随机侧更低，说明 9/12 网格的随机子采样协议不是
+任何结论的载荷-bearing 假设。
+逐 cell 数字：bench/m1_rerun/fact_fc/out/<SRR>.2x/output.tsv（提取脚本输出
+见会话日志；可重跑 m1_fc_rerun.sh 复现）。

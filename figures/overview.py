@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 
 sys.path.insert(0, str(Path(__file__).parent))
-from style import ARM_COLOR, INK, INK2, MUTED, grid
+from style import ARM_COLOR, INK, INK2, MUTED, SURFACE, grid
 
 BLUE, ORANGE = ARM_COLOR['A'], ARM_COLOR['B']
 GLEN = 4_641_652          # NC_000913.3
@@ -47,7 +47,7 @@ def panel_a(ax):
         (0.005, 0.150, 'Reference genomes\n(FASTA / MAG)', PLAIN, False),
         (0.170, 0.185, 'in-silico digest\n16 Type IIB enzymes\n43,735 anchors', NEW, True),
         (0.375, 0.160, 'count reads\ntag scan, ≤2 mismatch\nEM reassignment', PLAIN, False),
-        (0.555, 0.185, 'per-enzyme windows\n100 anchors each\nZTP / ZTNB rate ± SE', NEW, True),
+        (0.555, 0.185, 'per-enzyme windows\n25–100 anchors each\nZTP / ZTNB rate ± SE', NEW, True),
         (0.760, 0.235, 'V-shape fit on coordinates\ninverse-variance fusion\nCochran Q, log₂PTR ± CI', NEW, True),
     ]
     for x, w, t, fc, new in stages:
@@ -118,8 +118,14 @@ def panel_b(ax, w, pe):
     ax.axvline(ori / 1e6, color=INK2, lw=1.0, ls=(0, (4, 3)), zorder=3)
     ax.text(ori / 1e6 - 0.08, ax.get_ylim()[1], 'ori ', fontsize=7, color=INK2, ha='right', va='top')
     ax.set_xlabel('genome coordinate (Mb)'); ax.set_ylabel('log₂ window rate')
-    ax.legend(loc='lower left', handletextpad=0.35, borderpad=0.15, labelspacing=0.25,
-              markerscale=2.2)
+    # The lower left is dense with scatter and the off-scale markers; the lower
+    # right of this panel is empty, so the legend goes there, on an opaque
+    # surface so no point ghosts through it.
+    leg = ax.legend(loc='lower right', handletextpad=0.35, borderpad=0.15,
+                    labelspacing=0.25, markerscale=2.2, frameon=True)
+    leg.get_frame().set_facecolor(SURFACE)
+    leg.get_frame().set_edgecolor('none')
+    leg.get_frame().set_alpha(1.0)
     ax.set_title('coordinates retained: direct V fit', fontsize=8.6, color=INK, pad=4)
     ax.text(-0.24, 1.14, 'b', transform=ax.transAxes, fontsize=11, fontweight='bold', color=INK, va='top')
 

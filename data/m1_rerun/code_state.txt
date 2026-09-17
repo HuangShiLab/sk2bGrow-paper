@@ -1,0 +1,3 @@
+78ccc96
+78ccc96 M1: keep signed slopes at a fixed origin; exclude r2<0 from fusion
+relaunch note Tue Sep 15 00:19:22 HKT 2026: first batch contaminated by branch switches (4c3ed83 code ran for ~15 min window); wiped out_A/B/E and relaunched on ac41937

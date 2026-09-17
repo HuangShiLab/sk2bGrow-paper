@@ -1,0 +1,11 @@
+definition	cov	n	pearson_r	ols_slope
+merged-25kb	0.5	16	0.8277	1.4047
+merged-25kb	1	16	0.8389	1.2266
+merged-25kb	2	16	0.7976	1.0866
+merged-25kb	5	16	0.8324	1.0869
+merged-25kb	10	16	0.8602	1.1128
+adaptive-per-enzyme	0.5	16	0.5165	1.6433
+adaptive-per-enzyme	1	16	0.7753	1.6649
+adaptive-per-enzyme	2	16	0.9253	1.3133
+adaptive-per-enzyme	5	16	0.9472	1.0333
+adaptive-per-enzyme	10	16	0.9378	0.9768
