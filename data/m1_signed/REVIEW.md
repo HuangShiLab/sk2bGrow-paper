@@ -39,6 +39,33 @@ sample and reduces r from 0.9229 to 0.6266; other depths are 0.902/0.957/0.971/
 not adopt positive r2 as a fusion gate. A better low-depth uncertainty model is
 future work.
 
+## GC-correction default decision (2026-09-18)
+
+We do **not** adopt the residual two-pass GC correction as the default for the
+primary 2bRAD benchmark. A controlled HPC diagnostic
+(`gc_correction_diagnostic.tsv`) held the reads and estimator fixed and varied
+only the correction:
+
+| mode | arm | 0.5x r | 1x r |
+|---|---|---:|---:|
+| historical single pass | anchors + V-fit | 0.9229 | 0.9116 |
+| historical single pass | FracMinHash + V-fit | 0.8831 | 0.9121 |
+| no GC correction | anchors + V-fit | 0.9177 | 0.9080 |
+| no GC correction | FracMinHash + V-fit | 0.8635 | 0.9027 |
+| residual two pass | anchors + V-fit | 0.8485 | 0.8785 |
+| residual two pass | FracMinHash + V-fit | 0.9008 | 0.9139 |
+
+The residual pass absorbs part of the position-associated replication gradient
+in the motif-structured anchor panel, especially at 0.5–1x. It is retained as an
+opt-in diagnostic (`--gc-residual-pass`), not a default. The primary benchmark
+uses the historical single-pass GC correction.
+
+After making the single-pass default explicit in code (HPC `review-final`
+commit `929f4c2`), a full A/B/E statistics-only rerun confirmed the primary
+values: anchors + V-fit gives r =
+0.9229/0.9116/0.9577/0.9705/0.9701 at 0.5/1/2/5/10x
+(`hpc_singlepass_grid_summary.tsv`; SLURM job `4076237`).
+
 ## Macstudio versus HPC
 
 * Completed locally on Mac Studio: refusion of committed per-enzyme windows,

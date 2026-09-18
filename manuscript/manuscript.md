@@ -655,6 +655,11 @@ fitted separately and a constant offset is absorbed by that fit's intercept.
 Only GC *slope within an enzyme* matters. Per-enzyme efficiency factors are
 still reported, for QC.
 
+We use this historical single-pass correction as the primary default. A residual
+second pass was tested as a diagnostic but not adopted: because GC is correlated
+with replication position, that pass can absorb part of the ori-ter gradient at
+shallow depth (`data/m1_signed/gc_correction_diagnostic.tsv`).
+
 #### 1.5 Origin placement and V-shape fitting
 
 The origin is a property of the chromosome, not of an enzyme. It is estimated
