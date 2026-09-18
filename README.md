@@ -7,12 +7,21 @@ lives in the separate [`sk2bGrow`](../sk2bGrow) repository.
 
 ```
 *.docx        the two source design documents (algorithm report, architecture)
-manuscript/   outline; the manuscript itself lives here
+manuscript/   outline and `manuscript.md`, the authoritative manuscript
+manuscript/submission/  formatted review draft for journal submission
 data/         committed benchmark outputs (small TSVs) — the only input to figures & tables
 figures/      make_figures.py, make_tables.py, style.py
 figures/out/  generated PNG + PDF (regenerable; safe to delete)
 tables/       generated markdown + TSV (regenerable)
 ```
+
+`manuscript/manuscript.md` is authoritative. It follows the BMC/*Microbiome*
+Research-article order (Background, Methods, Results, Discussion, Conclusions,
+Declarations) and embeds the submission figures and tables. The current review
+draft is
+`manuscript/submission/sk2bGrow_Microbiome_submission_draft.docx`; the
+cover-letter and submission states are recorded in `COVER_LETTER.md` and
+`SUBMISSION_CHECKLIST.md`.
 
 The two Chinese-language design documents are kept here rather than in the code
 repository: they are the provenance of the method and belong with the
