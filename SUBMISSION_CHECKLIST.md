@@ -11,10 +11,10 @@
 
 ## Numerical and consistency checks
 
-- [ ] Verify every abstract number against committed tables.
-- [ ] Verify Results, figure captions, and table captions use the same primary-grid instance counts.
+- [x] Verify every abstract number against committed tables.
+- [x] Verify Results, figure captions, and table captions use the same primary-grid instance counts.
 - [x] Check that C5 cost, recall, and QC analyses state the exact code policy used.
-- [ ] Regenerate all figures and tables after the final C5 update.
+- [x] Regenerate all figures and tables after the final C5 update.
 - [ ] Render manuscript.md to DOCX/PDF and inspect page layout.
 
 ## Manuscript packaging
