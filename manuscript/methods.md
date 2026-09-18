@@ -159,9 +159,13 @@ Only GC *slope within an enzyme* matters. Per-enzyme efficiency factors are
 still reported, for QC.
 
 We use this historical single-pass correction as the primary default. A residual
-second pass was tested as a diagnostic but not adopted: because GC is correlated
-with replication position, that pass can absorb part of the ori-ter gradient at
-shallow depth (`data/m1_signed/gc_correction_diagnostic.tsv`).
+second pass was tested as a diagnostic but not adopted. Holding reads and
+estimator fixed, it changed 0.5×/1× anchor-panel accuracy from r = 0.923/0.912
+to 0.848/0.879 while leaving the density-matched sketch arm essentially
+unchanged (0.883/0.912), the pattern expected when position-linked GC structure
+absorbs part of the ori-ter gradient. The residual mode remains opt-in
+(`--gc-residual-pass`) and is not used in primary benchmarks
+(`data/m1_signed/gc_correction_diagnostic.tsv`).
 
 ### 1.5 Origin placement and V-shape fitting
 
@@ -316,7 +320,7 @@ log₂PTR must be ≈ 0. This tests a failure mode that correlation against a gr
 panel cannot see, and it costs nothing: a method that reports a large PTR here is
 reading noise as a gradient.
 
-**Coverage titration.** Both mates are 150 bp and the committed Zheng grid is paired-end for every arm. For each run the first 600,000 read pairs were retained (≈19× per end), then truncated to nominal **0.5×, 1×, 2×, 5× and 10×** at the pair level. SRA order is not random with respect to quality; a 2× check gave file-order r = 0.974 versus fixed-seed random r = 0.957 (`data/m1_rerun/fact_checks.txt`). All 16 media, plus the control, are present at every depth.
+**Coverage titration.** Both mates are 150 bp and the committed Zheng grid is paired-end for every arm. For each run the first 600,000 read pairs were retained (≈19× per end), then truncated to nominal **0.5×, 1×, 2×, 5× and 10×** at the pair level. SRA order is not random with respect to quality; a 2× check gave file-order r = 0.974 versus fixed-seed random r = 0.957 (`data/m1_rerun/fact_checks.txt`). All 16 media, plus the control, are present at every depth. The committed A/B/E estimates are the 2026-09-18 paired-end statistics rerun with signed fixed-origin fitting and single-pass GC correction; the regenerated summary is `data/m1_signed/hpc_singlepass_grid_summary.tsv`.
 
 This titration is a **deviation from Pilea, which ran full depth only**. It is
 the axis the paper is about: PTR at metagenomic per-strain depth, not at isolate
@@ -831,12 +835,10 @@ matched density.
 ## 7. Computational environment
 
 Apple M3 Max, 16 cores, 48 GB RAM, macOS 14.7; Rust 1.92.0, Python 3.12.4.
-The primary benchmark grid was run on a laptop; the C1 paired-end regrid and the F1–F5 robustness/C5-scale experiments used the internal HPC. Runs deferred for scale —
+The initial benchmark grid was run on a laptop; the final C1 paired-end A/B/E statistics grid and F1–F5/C5-scale experiments used the internal HPC (SLURM; Intel and AMD partitions). The final primary grid used 8 CPU threads on the AMD partition under sk2bGrow review-final commit `929f4c2` (job 4076237). Runs deferred for scale —
 full-depth *E. coli*, the 45,529-assembly quality sweep, Pilea's full
 32-strain/32× grid, and the marine metagenome application — are marked as such
-where they appear. The F1–F5 experiments (§6) and the C5 deep-dive runs
-(§3.6) ran on an internal HPC cluster (SLURM scheduler, Intel partition,
-Lustre storage).
+where they appear. HPC runs used a SLURM cluster with Lustre storage.
 
 ---
 
@@ -846,5 +848,9 @@ sk2bGrow: <https://github.com/HuangShiLab/sk2bGrow>.
 Manuscript, figures and figure code: <https://github.com/HuangShiLab/sk2bGrow-paper>.
 Figures are a pure function of the tables in `data/`; `python3 figures/make_figures.py`
 regenerates all of them with no network access and no recomputation from reads.
+Review-response provenance is in `data/m1_signed/`: the final primary A/B/E grid
+(`hpc_singlepass_grid_results.tsv`), its summary
+(`hpc_singlepass_grid_summary.tsv`), and the rejected residual-GC diagnostic
+(`gc_correction_diagnostic.tsv`).
 Sequencing data: PRJNA615952 (Zheng *E. coli* panel), PRJNA689204 (Sun faecal
 study), PRJNA974210 (rotating biological contactor metagenome).

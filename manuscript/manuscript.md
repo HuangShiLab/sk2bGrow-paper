@@ -47,7 +47,12 @@ regressions of the same points, reported in the direction each comparison
 requires. Two scope caveats apply here and
 throughout the isolate benchmark: every real-data result in this section is one
 strain against a single complete reference, and Pilea at its shipped defaults
-returned no estimate below 10× at any point in the titration.
+returned no estimate below 10× at any point in the titration. All primary
+estimates use the historical single-pass GC correction. A residual second pass
+was tested and rejected: it lowered anchor-panel accuracy at 0.5× and 1× to
+r = 0.848 and 0.879, versus 0.923 and 0.912 under the primary correction,
+consistent with its absorbing part of the position-linked replication gradient
+(Methods §1.4).
 
 #### 2.2 A negative control that Pilea excluded
 
@@ -86,7 +91,7 @@ operating point:
 | 1× | 0.912 | **0.912** | 0.775 | 0.778 |
 | 2× | **0.958** | 0.958 | 0.925 | 0.848 |
 | 5× | 0.971 | **0.990** | 0.947 | 0.988 |
-| 10× | 0.970 | **0.987** | 0.938 | 0.973 |
+| 10× | 0.970 | **0.985** | 0.938 | 0.973 |
 
 Bold marks the nominal maximum per row; at 5× and 10× the top rows are
 statistically tied — the bootstrap CIs of all four estimates overlap (Table 2
@@ -456,7 +461,7 @@ projected, not shipped.
 
 **Bsp24I ⊂ CjePI is a real dependency with no practical effect.** Measured on three genomes, Bsp24I's site set is 100% contained in CjePI's (1,636/1,636, 891/891 and 2,910/2,910 tags), with an additional partial Bsp24I p0 ⊂ CjeI p1 relation (48.4/47.4/50.9%). The panel therefore offers at most ~15 independent strata, not 16, and "~15 independent strata" is an optimistic reading; the fusion does not yet act on this relation (the containment table is declared but unused in the weighting). Re-fusing every sample with the dependency handled moved the estimate by 0.007–0.011 on average and 0.050 at worst, and did not improve the *Q* rejection rate. We report the dependency and do not claim the correction matters.
 
-**An annotated origin is worth ~10% of RMSE below 2× and nothing above it** (0.304 → 0.271 at 0.5×; 0.157 → 0.143 at 1×; identical at 5–10×). It does not explain the low-coverage slope compression: with the origin exactly right, the 0.5× slope is still 0.74. The compression is reported as unresolved. Read against measured λ, the OLS slope of ŷ on λ is 0.59 at 0.5×, 0.83 at 1×, and remains slightly below 1 at depth (0.92 at 5×, 0.95 at 10×); read against the λC-predicted log₂PTR — a non-independent reference (Methods §3.1) — the same slopes come out 1.04 and 1.08 at 5× and 10×, so any over-estimation at depth is a magnitude-consistency statement rather than independent evidence of bias. Candidate mechanisms we tested — outlier trimming, inverse-variance fusion weighting, origin misplacement, and three GC-correction variants — do not account for the shortfall. At 5×/10×, disabling GC correction gives slopes 0.940/0.975, iterative residual refitting gives 0.917/0.936, and applying a stationary run-out curve gives 0.964/1.006 (`data/m1_rerun/gc_tests.tsv`). The run-out curve removes most of the deep-depth slope deficit without changing r materially, but this cross-sample correction is a diagnostic rather than a deployable default: it needs a non-growing library and does not address the 0.5–1× compression.
+**An annotated origin is worth ~10% of RMSE below 2× and nothing above it** (0.304 → 0.271 at 0.5×; 0.157 → 0.143 at 1×; identical at 5–10×). It does not explain the low-coverage slope compression: with the origin exactly right, the 0.5× slope is still 0.74. The compression is reported as unresolved. Read against measured λ, the OLS slope of ŷ on λ is 0.59 at 0.5×, 0.83 at 1×, and remains slightly below 1 at depth (0.92 at 5×, 0.95 at 10×); read against the λC-predicted log₂PTR — a non-independent reference (Methods §3.1) — the same slopes come out 1.04 and 1.08 at 5× and 10×, so any over-estimation at depth is a magnitude-consistency statement rather than independent evidence of bias. Candidate mechanisms we tested — outlier trimming, inverse-variance fusion weighting, origin misplacement, and three GC-correction variants — do not account for the shortfall. At 5×/10×, disabling GC correction gives slopes 0.940/0.975, iterative residual refitting gives 0.917/0.936, and applying a stationary run-out curve gives 0.964/1.006 (`data/m1_rerun/gc_tests.tsv`). The run-out curve removes most of the deep-depth slope deficit without changing r materially, but this cross-sample correction is a diagnostic rather than a deployable default: it needs a non-growing library and does not address the 0.5–1× compression. Separately, a residual second GC pass was rejected as a default because it reduced shallow-depth anchor-panel ranking (`data/m1_signed/gc_correction_diagnostic.tsv`).
 
 **Cochran's *Q* earned its keep, and has a blind spot.** Before the double-counting defect of Methods §1.2 was fixed, *Q* was rejecting in 56–69% of samples (mean *I*² = 0.34–0.42); after the fix, the same samples give *I*² = 0.07–0.28 and *Q* rejects in 6–24%. A design whose QC can detect its own implementation defects is worth the complexity — and this is the honest way to present that, not as a clean-room result. But *Q* tests *agreement between strata*, so it cannot see a failure that is identical across them: on a fragmented reference every enzyme agrees there is no gradient, and 100% of the wrong answers pass. We therefore changed the default: `auto` now refuses a multi-contig manifest rather than silently falling back to sorted-rank regression; a scaffolded coordinate fit or an explicit sorted analysis is required.
 
@@ -656,9 +661,13 @@ Only GC *slope within an enzyme* matters. Per-enzyme efficiency factors are
 still reported, for QC.
 
 We use this historical single-pass correction as the primary default. A residual
-second pass was tested as a diagnostic but not adopted: because GC is correlated
-with replication position, that pass can absorb part of the ori-ter gradient at
-shallow depth (`data/m1_signed/gc_correction_diagnostic.tsv`).
+second pass was tested as a diagnostic but not adopted. Holding reads and
+estimator fixed, it changed 0.5×/1× anchor-panel accuracy from r = 0.923/0.912
+to 0.848/0.879 while leaving the density-matched sketch arm essentially
+unchanged (0.883/0.912), the pattern expected when position-linked GC structure
+absorbs part of the ori-ter gradient. The residual mode remains opt-in
+(`--gc-residual-pass`) and is not used in primary benchmarks
+(`data/m1_signed/gc_correction_diagnostic.tsv`).
 
 #### 1.5 Origin placement and V-shape fitting
 
@@ -831,7 +840,9 @@ truncated to nominal **0.5×, 1×, 2×, 5× and 10×** at the pair level
 we checked the protocol at 2× against fixed-seed random subsampling: file-order
 r = 0.974 versus random-subsample r = 0.957, with the same code and inputs
 (`data/m1_rerun/fact_checks.txt`). All 16 media, plus the control, are present
-at every depth.
+at every depth. The committed A/B/E estimates are the 2026-09-18 paired-end
+statistics rerun with signed fixed-origin fitting and single-pass GC correction;
+the regenerated summary is `data/m1_signed/hpc_singlepass_grid_summary.tsv`.
 
 This titration is a **deviation from Pilea, which ran full depth only**. It is
 the axis the paper is about: PTR at metagenomic per-strain depth, not at isolate
@@ -1385,12 +1396,10 @@ matched density.
 ### 7. Computational environment
 
 Apple M3 Max, 16 cores, 48 GB RAM, macOS 14.7; Rust 1.92.0, Python 3.12.4.
-The primary benchmark grid was run on a laptop; the C1 paired-end regrid and F1–F5/C5-scale experiments used the internal HPC. Runs deferred for scale —
+The initial benchmark grid was run on a laptop; the final C1 paired-end A/B/E statistics grid, F1–F5 and C5-scale experiments used the internal HPC (SLURM; Intel and AMD partitions). The final primary grid used 8 CPU threads on the AMD partition under sk2bGrow review-final commit `929f4c2` (job 4076237). Runs deferred for scale —
 full-depth *E. coli*, the 45,529-assembly quality sweep, Pilea's full
 32-strain/32× grid, and the marine metagenome application — are marked as such
-where they appear. The F1–F5 experiments (§6) and the C5 deep-dive runs
-(§3.6) ran on an internal HPC cluster (SLURM scheduler, Intel partition,
-Lustre storage).
+where they appear. HPC runs used a SLURM cluster with Lustre storage.
 
 ---
 
@@ -1400,6 +1409,10 @@ sk2bGrow: <https://github.com/HuangShiLab/sk2bGrow>.
 Manuscript, figures and figure code: <https://github.com/HuangShiLab/sk2bGrow-paper>.
 Figures are a pure function of the tables in `data/`; `python3 figures/make_figures.py`
 regenerates all of them with no network access and no recomputation from reads.
+Review-response provenance is in `data/m1_signed/`: the final primary A/B/E grid
+(`hpc_singlepass_grid_results.tsv`), its summary
+(`hpc_singlepass_grid_summary.tsv`), and the rejected residual-GC diagnostic
+(`gc_correction_diagnostic.tsv`).
 Sequencing data: PRJNA615952 (Zheng *E. coli* panel), PRJNA689204 (Sun faecal
 study), PRJNA974210 (rotating biological contactor metagenome).
 
