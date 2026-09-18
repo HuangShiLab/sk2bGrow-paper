@@ -31,6 +31,7 @@ legacy sk2bgrow qc_recall	3.8-13.8% (20-72 of 522)	former sorted-fallback statis
 Pilea default reported	5.0-11.1% (26-58 of 522)	overlaps legacy sk2bgrow qc_recall almost exactly
 common denominator	Pilea-default MAGs are a strict subset of sk2bgrow outputs; sk2bgrow QC passes 15-36 of 26-58 on it	c5_common_denominator.tsv
 legacy QC pass vs MAG fragmentation	Spearman rho -0.41 vs n_contigs; -0.34 controlling mean coverage	legacy result; coverage is the strongest single predictor and the two effects are partially entangled
-cost vs Pilea, per sample	89.5-240.8x at mm=2; 4.0-12.8x (median 8.1x) at mm=1	both measured against Pilea defaults; mm=1 loses a median ~4.7% of detected anchors and no genome on all nine samples
+cost vs Pilea, per sample	89.5-240.8x at mm=2; 4.0-12.8x (median 8.1x) at mm=1	both measured against Pilea defaults; mm=1 loses a median 4.4% of detected anchors and no genome on all nine samples
 current auto-policy refusion QC	26 of 4698 observations; 1-6 per sample	current code refuses unsafe sorted-rank fallback on fragmented MAGs
 current QC vs fragmentation	contigs rho -0.21 (-0.18 coverage-partial); completeness rho 0.16 (0.12)	attenuated legacy association; current QC recall is too sparse for the former real-MAG QC validation claim
+explicit sorted-policy refusion QC	108 of 4698 observations; 2-30 per sample	contigs rho 0.04 (0.08 coverage-partial); current code, fallback selected deliberately

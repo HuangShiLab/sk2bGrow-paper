@@ -13,8 +13,10 @@ all changes below isolate the stats-stage policy from read counting and cost.
 - Code commit: `929f4c2` (`/lustre1/g/aos_shihuang/sk2bgrow-hpc/src`)
 - Current-policy refusion array: SLURM `4076617`, 9/9 COMPLETED, exit 0.
 - Current-policy aggregation job: SLURM `4076831`, COMPLETED, exit 0.
-- Explicit sorted-policy sensitivity array: SLURM `4077173` (submitted).
-- Sorted-policy aggregation job: SLURM `4077191`, dependent on `afterok:4077173`.
+- Explicit sorted-policy sensitivity array: SLURM `4077173`; tasks 0–7 completed.
+  Task 8 was retried as SLURM `4077222` after a compute-node communication failure
+  and completed successfully. Sorted-policy aggregation job: SLURM `4077223`,
+  dependent on `afterok:4077222`, completed successfully.
 
 ## Method
 
@@ -49,4 +51,4 @@ silently presented as a current-default result.
 - `hpc_review/c5_current_coverage_control.tsv`: raw and coverage-partial
   Spearman associations with MAG quality.
 - `hpc_agg_4076831.log`: HPC aggregation report.
-
+- Sorted-policy outputs and provenance are in `../c5_refuse_sorted/`.

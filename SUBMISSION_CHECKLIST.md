@@ -7,7 +7,7 @@
 - [x] Matched-density landmark-source comparisons are described as bootstrap non-significance rather than equivalence.
 - [x] Title and framing identify coordinate-aware V-fitting, not landmark determinism, as the source of the shallow-depth gain.
 - [x] Update the C5 section to distinguish legacy C5 outputs from the current-policy refusion.
-- [ ] Add the explicit sorted-estimator C5 sensitivity arm once HPC array 4077173 finishes and is aggregated.
+- [x] Add the explicit sorted-estimator C5 sensitivity arm.
 
 ## Numerical and consistency checks
 
@@ -29,7 +29,7 @@
 ## Code and data reproducibility
 
 - [x] Copy current-policy C5 refusion outputs and aggregate statistics from HPC.
-- [ ] Copy explicit sorted-policy C5 sensitivity outputs from HPC.
+- [x] Copy explicit sorted-policy C5 sensitivity outputs from HPC.
 - [x] Record HPC SLURM job IDs and code commits for the primary Zheng grid and C5 refusion arms.
 - [ ] Reconcile the local, HPC, and GitHub sk2bGrow code branches.
 - [ ] Tag and archive the exact code release.

@@ -394,7 +394,12 @@ attenuated (raw/partial ρ for contig count: −0.21/−0.19; completeness:
 +0.16/+0.12) and only eight MAGs pass QC in at least one sample, so the current
 run does not support the former "QC demonstrably works on real MAGs" claim
 without further validation. Cost is unaffected by the refusion-only experiment.
-Cost, however, flips at this scale: sk2bGrow is 89.5–240.8× slower
+An explicit sorted arm under current code raises QC passes to 108 of 4,698
+(2–30 per sample), still far below the legacy 484; it also does not reproduce the legacy
+fragmentation association (contigs raw/partial ρ = +0.04/+0.08). As intended,
+this is a policy sensitivity rather than a reconstruction of the legacy run:
+relative to legacy C5, its median absolute change in log₂PTR is 1.70 and 514 of
+4,698 QC decisions change. Cost, however, flips at this scale: sk2bGrow is 89.5–240.8× slower
 per sample than Pilea at default on these deep samples (measured per sample,
 `c5_cost_per_sample.tsv`), because the anchor-matching phase is 89.6% of count
 time and scales as reads × reference anchors — both factors two orders of
@@ -499,7 +504,7 @@ projected, not shipped.
 | usable GC range                   | tied with panel; boundary GC <=30% at 0.5x                                                                                                            | same boundary (instrument limit, both modes)                                 | F2 (18 genomes, GC 25.4-72.0%)                                                                                            |
 | divergence geometry               | smooth: one SNP destroys ~26% of a read's 31-mers                                                                                                     | blocky: one SNP kills one site, neighbours intact                            | retention at 0.1% substitutions: 94.6% vs 89.5% (4 enzymes); F4 rel-arm                                                   |
 | mismatch tolerance                | must lock mm=0: mm>=1 opens a rescue channel crediting ~1% (mm1) / ~2% (mm2) of observations to the wrong coordinate, independent of sequencing error | mm<=2 safe: exact-first suppression + motif gate keep misassignment <=1.4e-4 | F3 (near-neighbor census + read-level test)                                                                               |
-| wrong / absent reference          | silent — the gate refuses output                                                                                                                      | loud — the estimate is emitted and wrong                                     | C5: reported_fraction 1.00 (denominator artifact) vs silent gate; common-denominator recall 3.8-13.8% vs 5.0-11.1%        |
+| wrong / absent reference          | silent — the gate refuses output                                                                                                                      | loud — the estimate is emitted and wrong                                     | C5: reported_fraction 1.00 (denominator artifact) vs silent gate; legacy common-denominator recall 3.8-13.8% vs 5.0-11.1%; current auto passes 26/4698 observations |
 | fragmented reference              | rank regression barely affected (r 0.889->0.827)                                                                                                      | gradient destroyed, QC-blind, scaffold-repairable                            | Fig 6; F4: collapse identical across landmark types (slope 0.26-0.38, RMSE x40, winner's-curse residue)                   |
 | scaffolding                       | works — placement is landmark-source-agnostic                                                                                                         | works — self-arm ties the sketch arm exactly                                 | F4: 98-100/100 contigs placed, order Spearman 1.0, both modes; sketch placement is a 1:1 port of scaffold.rs, not shipped |
 | density control                   | scale parameter (content-agnostic)                                                                                                                    | panel composition (biology-aware, per-clade tunable)                         | Table 6 ranking; per-clade panel survey: not measured                                                                     |
@@ -1050,9 +1055,10 @@ reused the retained window-rate tables, filtered to rows with finite positive
 `log2_se`, and reran the current fitting, fusion, report and QC stages; count
 cost and inherited coverage fields were not recomputed. This arm used
 sk2bGrow `review-final` commit `929f4c2` (SLURM array 4076617 and aggregation
-job 4076831). An explicit `method=sorted` arm (SLURM array 4077173 and its
-dependent aggregation job 4077191) quantifies the residual effect of deliberately
-selecting the fallback under current code; because that arm still uses signed
+job 4076831). An explicit `method=sorted` arm used SLURM array 4077173 (tasks 0–7)
+plus single-task retry 4077222, with dependent aggregation job 4077223; it
+quantifies the residual effect of deliberately selecting the fallback under
+current code. Because that arm still uses signed
 fixed-origin output handling and current fusion/QC rules, it is not an exact
 reconstruction of the legacy C5 result.
 

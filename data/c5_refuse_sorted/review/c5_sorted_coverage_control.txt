@@ -1,0 +1,41 @@
+n merged = 522
+
+=== raw vs coverage-partial Spearman (current qc_rate) ===
+      feature  rho_raw   p_raw  rho_partial_cov  p_partial   n
+    n_contigs  0.04309  0.3211          0.07754    0.08118 522
+          n50 0.001197   0.983         -0.03119     0.4875 522
+ Completeness  0.06961   0.105          0.02751     0.5235 522
+Contamination  0.08326 0.05599          0.09314    0.03179 522
+
+=== bivariate Spearman ===
+rho(n_contigs, mean_cov)=-0.252, p=0.0002, n=522
+rho(n50, mean_cov)=+0.250, p=0.0002, n=522
+rho(Completeness, mean_cov)=+0.354, p=0.0002, n=522
+rho(Contamination, mean_cov)=-0.072, p=0.103, n=522
+rho(qc_rate_current, mean_cov)=+0.125, p=0.0046, n=522
+
+=== within coverage quartile: Spearman(qc_rate_current,n_contigs) ===
+Q1: n=131, cov 1.54-2.23, rho=-0.129, p=0.1436
+Q2: n=130, cov 2.23-2.64, rho=+0.103, p=0.2498
+Q3: n=130, cov 2.65-3.42, rho=-0.018, p=0.8462
+Q4: n=131, cov 3.43-33.63, rho=+0.233, p=0.008998
+
+=== mean current qc rate: coverage x contig bin ===
+contig_bin  <=10  11-25  26-50  51-100  101-200  >200
+cov_q                                                
+Q1         0.017  0.014  0.010   0.019    0.005 0.000
+Q2         0.019  0.007  0.010   0.030    0.030 0.048
+Q3         0.012  0.033  0.038   0.026    0.009 0.067
+Q4         0.013  0.023  0.013   0.060    0.061 0.056
+
+=== consistency: median std log2PTR, QC-any vs none ===
+ALL: n_qc=83, median=0.435; n_no_qc=439, median=0.462
+Q1: n_qc=12, median=0.303; n_no_qc=119, median=0.369
+Q2: n_qc=18, median=0.399; n_no_qc=112, median=0.371
+Q3: n_qc=28, median=0.469; n_no_qc=102, median=0.527
+Q4: n_qc=25, median=0.547; n_no_qc=106, median=0.599
+
+OLS: std_log2ptr ~ qc_any + log10(cov)
+  beta_intercept=0.3272, p=1.38e-36
+  beta_qc_any=-0.0649, p=0.0112
+  beta_log_cov=0.3694, p=1.63e-12

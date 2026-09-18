@@ -1,4 +1,8 @@
-> **SUPERSEDED 部分（2026-09-13）**：Table 2 已于 HPC C1 双端实例再生成（arm A 0.5–10×：0.923/0.912/0.958/0.971/0.970 (2026-09-17 signed fixed-origin)），形式交互检验仅 2× 显著为负。本文档中的旧数字与 "interaction" 主张以 manuscript.md 为准。详见 data/repro_check/ 与 data/repro_check/multiseed/INTERACTION_REPORT.md。
+> **SUPERSEDED WORKING DOCUMENT (2026-09-18).** `manuscript/manuscript.md` is
+> the authoritative manuscript and Methods source. This file is retained only
+> as a historical analysis notebook; it contains stale numbers and framing.
+> In particular, the paired-end signed fixed-origin Zheng estimates and the
+> C5 legacy/current policy separation supersede earlier content here.
 
 # Methods
 
@@ -499,9 +503,10 @@ reused the retained window-rate tables, filtered to rows with finite positive
 `log2_se`, and reran the current fitting, fusion, report and QC stages; count
 cost and inherited coverage fields were not recomputed. This arm used
 sk2bGrow `review-final` commit `929f4c2` (SLURM array 4076617 and aggregation
-job 4076831). An explicit `method=sorted` arm (SLURM array 4077173 and its
-dependent aggregation job 4077191) quantifies the residual effect of deliberately
-selecting the fallback under current code; because that arm still uses signed
+job 4076831). An explicit `method=sorted` arm used SLURM array 4077173 (tasks 0–7)
+plus single-task retry 4077222, with dependent aggregation job 4077223; it
+quantifies the residual effect of deliberately selecting the fallback under
+current code. Because that arm still uses signed
 fixed-origin output handling and current fusion/QC rules, it is not an exact
 reconstruction of the legacy C5 result.
 
