@@ -425,8 +425,9 @@ def table9():
         ('wrong / absent reference',
          'silent — the gate refuses output',
          'loud — the estimate is emitted and wrong',
-         'C5: reported_fraction 1.00 (denominator artifact) vs silent gate; '
-         'common-denominator recall 3.8-13.8% vs 5.0-11.1%'),
+         'Legacy C5: reported_fraction 1.00 (denominator artifact) vs silent gate; '
+         'legacy common-denominator recall 3.8-13.8% vs 5.0-11.1%. Current '
+         'auto policy passes only 26/4698 genome-sample observations'),
         ('fragmented reference',
          'rank regression barely affected (r 0.889->0.827)',
          'gradient destroyed, QC-blind, scaffold-repairable',
@@ -531,10 +532,12 @@ def table10():
         blocks.append(('(b, cont.) Per-anchor capture efficiency (route-B '
                        'characterization)', eff))
 
-    # (c) C5 RBC application: recall three ways, QC validity, cost.
+    # (c) C5 RBC application: legacy vs current policy, recall and cost.
     rf = c5 / 'c5_recall_three_ways.tsv'
     cf = c5 / 'c5_common_denominator.tsv'
     qf = c5 / 'c5_coverage_control.tsv'
+    current_dir = DATA / 'c5_refuse_current' / 'hpc_review'
+    sorted_dir = DATA / 'c5_refuse_sorted' / 'review'
     if rf.exists():
         r = pd.read_csv(rf, sep='\t')
         sk = r[r['arm'] == 'sk2bgrow']
@@ -550,37 +553,75 @@ def table10():
             q = pd.read_csv(qf, sep='\t').set_index('feature')
             rho_frag = q.loc['n_contigs', 'rho_raw']
             rho_cov = q.loc['n_contigs', 'rho_partial_cov']
+        current_rows = []
+        if (current_dir / 'c5_current_sample_summary.tsv').exists():
+            cur_sum = pd.read_csv(current_dir / 'c5_current_sample_summary.tsv',
+                                  sep='\t')
+            cur_assoc = pd.read_csv(
+                current_dir / 'c5_current_coverage_control.tsv', sep='\t'
+            ).set_index('feature')
+            current_rows.extend([
+                ('current auto-policy refusion QC',
+                 f"{int(cur_sum['n_qc'].sum())} of "
+                 f"{int(cur_sum['n'].sum())} observations; "
+                 f"{int(cur_sum['n_qc'].min())}-{int(cur_sum['n_qc'].max())} per sample",
+                 'current code refuses unsafe sorted-rank fallback on fragmented MAGs'),
+                ('current QC vs fragmentation',
+                 f"contigs rho {cur_assoc.loc['n_contigs', 'rho_raw']:.2f} "
+                 f"({cur_assoc.loc['n_contigs', 'rho_partial_cov']:.2f} "
+                 "coverage-partial); completeness rho "
+                 f"{cur_assoc.loc['Completeness', 'rho_raw']:.2f} "
+                 f"({cur_assoc.loc['Completeness', 'rho_partial_cov']:.2f})",
+                 'attenuated legacy association; current QC recall is too sparse '
+                 'for the former real-MAG QC validation claim'),
+            ])
+        if (sorted_dir / 'c5_sorted_sample_summary.tsv').exists():
+            sort_sum = pd.read_csv(sorted_dir / 'c5_sorted_sample_summary.tsv',
+                                   sep='\t')
+            sort_assoc = pd.read_csv(
+                sorted_dir / 'c5_sorted_coverage_control.tsv', sep='\t'
+            ).set_index('feature')
+            current_rows.append(
+                ('explicit sorted-policy refusion QC',
+                 f"{int(sort_sum['n_qc'].sum())} of "
+                 f"{int(sort_sum['n'].sum())} observations; "
+                 f"{int(sort_sum['n_qc'].min())}-{int(sort_sum['n_qc'].max())} per sample",
+                 f"contigs rho {sort_assoc.loc['n_contigs', 'rho_raw']:.2f} "
+                 f"({sort_assoc.loc['n_contigs', 'rho_partial_cov']:.2f} "
+                 "coverage-partial); current code, fallback selected deliberately")
+            )
         c5t = pd.DataFrame([
-            ('sk2bgrow reported_fraction',
+            ('legacy sk2bgrow reported_fraction',
              f"{sk['reported_fraction'].min():.2f} ({int(sk['n_rows'].iloc[0])}/"
              f"{int(sk['n_rows'].iloc[0])})",
              'no output gate; a denominator artifact, never a performance claim'),
-            ('sk2bgrow estimate_fraction',
+            ('legacy sk2bgrow estimate_fraction',
              f"{sk['estimate_fraction'].min():.3f}-{sk['estimate_fraction'].max():.3f}",
              '19 rows carry no PTR estimate (coverage NaN, 0 QC pass)'),
-            ('sk2bgrow qc_recall',
+            ('legacy sk2bgrow qc_recall',
              f"{100*sk['qc_recall'].min():.1f}-{100*sk['qc_recall'].max():.1f}% "
              f"({int(sk['n_qc_pass'].min())}-{int(sk['n_qc_pass'].max())} of 522)",
-             'the same-denominator comparator to Pilea default'),
+             'former sorted-fallback statistics, not current-default behavior'),
             ('Pilea default reported',
              f"{100*pil['reported_fraction'].min():.1f}-"
              f"{100*pil['reported_fraction'].max():.1f}% "
              f"({int(pil['n_rows'].min())}-{int(pil['n_rows'].max())} of 522)",
-             'overlaps sk2bgrow qc_recall almost exactly'),
+             'overlaps legacy sk2bgrow qc_recall almost exactly'),
             ('common denominator',
              'Pilea-default MAGs are a strict subset of sk2bgrow outputs'
              + n_common_qc,
              'c5_common_denominator.tsv'),
-            ('QC pass vs MAG fragmentation',
+            ('legacy QC pass vs MAG fragmentation',
              (f"Spearman rho {rho_frag:.2f} vs n_contigs; {rho_cov:.2f} controlling "
               f"mean coverage" if rho_frag is not None else
               'see c5_coverage_control.tsv'),
-             'QC works on real data; coverage is the strongest single predictor '
-             'but the fragmentation effect survives the control'),
+             'legacy result; coverage is the strongest single predictor and the '
+             'two effects are partially entangled'),
             ('cost vs Pilea, per sample',
-             '89.5-240.8x (measured, c5_cost_per_sample.tsv) -> ~10-25x after --max-mismatch 1',
-             'mm=1: lookup 63x faster (collapsed middle seed), 5.3% anchors lost, '
-             '0 genomes lost; C5 REVIEW §3/§4f'),
+             '89.5-240.8x at mm=2; 4.0-12.8x (median 8.1x) at mm=1',
+             'both measured against Pilea defaults; mm=1 loses a median 4.4% '
+             'of detected anchors and no genome on all nine samples'),
+            *current_rows,
         ], columns=['metric', 'value', 'note'])
         blocks.append(('(c) C5 rotating biological contactor (PRJNA974210, 9 '
                        'samples, 522 MAGs)', c5t))
@@ -598,8 +639,12 @@ def table10():
             'counts does not recover the signal (r -0.03-0.41). sigma_eff is '
             'within-batch (3 libraries, one study/one centre; cross-lab '
             'transfer awaits the Hou cohort) and measured on the single enzyme '
-            '(BcgI) present in the Sun libraries. In (c) the 1.00 recall '
-            'headline is reported_fraction (no gate), not accuracy.')
+            '(BcgI) present in the Sun libraries. In (c) C5 recall/QC rows are '
+            'labelled by code policy: legacy rows predate signed fixed-origin '
+            'fitting and the conservative refusal of sorted fallback on '
+            'fragmented references; refusion rows rerun the retained window '
+            'rates with current code. The 1.00 recall headline is '
+            'reported_fraction (no gate), not accuracy.')
     write_blocks('table10_metagenome', blocks,
                  'Table 10. Metagenome results: Sun fecal-cohort concordance, the '
                  'real-2bRAD dedup finding, and the C5 RBC application', note)

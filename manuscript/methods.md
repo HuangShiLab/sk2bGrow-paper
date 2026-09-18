@@ -491,6 +491,20 @@ default-gate output). Where Pilea's gates-off arm crashes (a `min_samples`
 failure on 6 of 9 samples, stably reproducible) it is reported as a property
 of the arm, not censored.
 
+**Legacy/current statistics separation.** The original C5 statistics predate
+signed fixed-origin fitting and the later rule that `method=auto` must refuse a
+sorted-rank fallback on a multi-contig reference. We therefore keep the original
+rows only as a legacy sorted-fallback sensitivity. A current-policy refusion
+reused the retained window-rate tables, filtered to rows with finite positive
+`log2_se`, and reran the current fitting, fusion, report and QC stages; count
+cost and inherited coverage fields were not recomputed. This arm used
+sk2bGrow `review-final` commit `929f4c2` (SLURM array 4076617 and aggregation
+job 4076831). An explicit `method=sorted` arm (SLURM array 4077173 and its
+dependent aggregation job 4077191) quantifies the residual effect of deliberately
+selecting the fallback under current code; because that arm still uses signed
+fixed-origin output handling and current fusion/QC rules, it is not an exact
+reconstruction of the legacy C5 result.
+
 **Cost instrumentation.** Wall-clock and peak RSS per stage from
 `/usr/bin/time -v`; the count stage is further decomposed by phase timing on a
 1 M read-pair subset (database load, index build, match, window write-out).

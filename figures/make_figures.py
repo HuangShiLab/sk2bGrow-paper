@@ -893,13 +893,15 @@ def fig7():
 #: Fig 8's caption: the MAG-QC caption verbatim, then the cost caption with
 #: its panels relettered to c/d.
 CAP8 = (
-    'RBC metagenome (PRJNA974210): 522 MAGs \u00d7 9 samples. a, the '
+    'RBC metagenome (PRJNA974210): 522 MAGs \u00d7 9 samples. Panels a and '
+    'b show the legacy C5 statistics, which predate the current signed '
+    'fixed-origin and conservative fragmented-reference policy. a, the '
     'enzyme-consistency QC passes less often as the reference fragments: mean '
     'QC pass rate falls from 22.5% (\u226410 contigs) to 2\u20137% (>25 contigs);' + NL +
     'Spearman \u03c1 = \u22120.41 across 522 MAGs, still \u22120.34 after controlling for '
-    'mean coverage (both p < 1e\u22124) — the QC genuinely filters fragmented '
+    'mean coverage (both p < 1e\u22124) — legacy QC tracked fragmentation in '
     'references; coverage is the strongest single predictor and the two' + NL +
-    'effects are partially entangled in this MAG population. b, recall under '
+    'effects are partially entangled in this MAG population. b, legacy recall under '
     'three denominators: sk2bGrow\u2019s reported fraction is structurally 1.00 '
     '(it has no output gate) — a denominator artifact, not performance; under '
     'the gate-comparable denominator (QC passes / 522) sk2bGrow reports' + NL +
@@ -917,7 +919,10 @@ CAP8 = (
     '4.4%; 0 genomes lost; unbiased on shared anchors). At GTDB scale (\u226590% of references '
     'absent from a sample) the M4 containment screen adds a 21.1\u00d7 lookup '
     'speedup and drives false positives on absent genomes from 4,048/4,700' + NL +
-    'to 0. d, GTDB projection (136,646 species representatives \u2248 629 Gbp, '
+    'to 0. Under the current auto policy, only 26 of 4,698 '
+    'genome\u00d7sample observations pass QC because unsafe sorted-rank '
+    'fallback is refused on fragmented MAGs (Table 10). d, GTDB projection '
+    '(136,646 species representatives \u2248 629 Gbp, '
     '38.8 B/anchor on disk): enzyme k16 \u2248232 GB, k8 \u2248184 GB, half-density FMH '
     '(scale 200) \u2248124 GB with \u22640.007 r lost at \u22651\u00d7. The often-quoted 752 GB' + NL +
     'is peak resident memory during a build, not disk.'
@@ -957,7 +962,7 @@ def fig8():
     ax_a.set_xlabel('contigs in the MAG', labelpad=26)
     ax_a.set_ylabel('QC pass rate (%)')
     ax_a.set_ylim(0, 27)
-    ax_a.set_title('QC pass rate vs reference fragmentation', loc='left',
+    ax_a.set_title('legacy QC pass rate vs reference fragmentation', loc='left',
                    fontsize=9, color=INK)
     ax_a.text(0.97, 0.95, 'Spearman \u03c1 = \u22120.41 (raw)\n\u22120.34 controlling coverage\n'
                           '(p < 1e\u22124, n = 522 MAGs)',
@@ -977,7 +982,7 @@ def fig8():
     x = np.arange(3); w = 0.34
     for k, (lab, sv, pv) in enumerate(groups):
         ax_b.bar(k - w / 2, sv, width=w, color=ARM_COLOR['A'], zorder=3,
-                 label='sk2bGrow' if k == 0 else None)
+                 label='sk2bGrow (legacy)' if k == 0 else None)
         ax_b.bar(k + w / 2, pv, width=w, color=ARM_COLOR['C_default'], zorder=3,
                  label='Pilea (defaults)' if k == 0 else None)
         ax_b.text(k - w / 2, sv + 0.02, f'{sv:.2f}', ha='center', fontsize=7.2,
@@ -988,7 +993,7 @@ def fig8():
     ax_b.set_ylabel('fraction of 522 MAGs')
     ax_b.set_ylim(0, 1.35)
     ax_b.legend(loc='upper right', fontsize=7, handletextpad=0.5)
-    ax_b.set_title('recall under three denominators', loc='left', fontsize=9,
+    ax_b.set_title('legacy recall under three denominators', loc='left', fontsize=9,
                    color=INK)
     ax_b.text(0.30, 0.50, '1.00 = no output gate,\nnot performance', fontsize=6.6,
               color=MUTED)

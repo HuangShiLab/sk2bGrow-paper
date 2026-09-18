@@ -25,10 +25,12 @@ residual sigma_eff after e_prior, median	0.699	within-batch; window averaging (/
 
 # block: (c) C5 rotating biological contactor (PRJNA974210, 9 samples, 522 MAGs)
 metric	value	note
-sk2bgrow reported_fraction	1.00 (522/522)	no output gate; a denominator artifact, never a performance claim
-sk2bgrow estimate_fraction	0.989-1.000	19 rows carry no PTR estimate (coverage NaN, 0 QC pass)
-sk2bgrow qc_recall	3.8-13.8% (20-72 of 522)	the same-denominator comparator to Pilea default
-Pilea default reported	5.0-11.1% (26-58 of 522)	overlaps sk2bgrow qc_recall almost exactly
+legacy sk2bgrow reported_fraction	1.00 (522/522)	no output gate; a denominator artifact, never a performance claim
+legacy sk2bgrow estimate_fraction	0.989-1.000	19 rows carry no PTR estimate (coverage NaN, 0 QC pass)
+legacy sk2bgrow qc_recall	3.8-13.8% (20-72 of 522)	former sorted-fallback statistics, not current-default behavior
+Pilea default reported	5.0-11.1% (26-58 of 522)	overlaps legacy sk2bgrow qc_recall almost exactly
 common denominator	Pilea-default MAGs are a strict subset of sk2bgrow outputs; sk2bgrow QC passes 15-36 of 26-58 on it	c5_common_denominator.tsv
-QC pass vs MAG fragmentation	Spearman rho -0.41 vs n_contigs; -0.34 controlling mean coverage	QC works on real data; coverage is the strongest single predictor but the fragmentation effect survives the control
-cost vs Pilea, per sample	89.5-240.8x (measured, c5_cost_per_sample.tsv) -> ~10-25x after --max-mismatch 1	mm=1: lookup 63x faster (collapsed middle seed), 5.3% anchors lost, 0 genomes lost; C5 REVIEW §3/§4f
+legacy QC pass vs MAG fragmentation	Spearman rho -0.41 vs n_contigs; -0.34 controlling mean coverage	legacy result; coverage is the strongest single predictor and the two effects are partially entangled
+cost vs Pilea, per sample	89.5-240.8x at mm=2; 4.0-12.8x (median 8.1x) at mm=1	both measured against Pilea defaults; mm=1 loses a median ~4.7% of detected anchors and no genome on all nine samples
+current auto-policy refusion QC	26 of 4698 observations; 1-6 per sample	current code refuses unsafe sorted-rank fallback on fragmented MAGs
+current QC vs fragmentation	contigs rho -0.21 (-0.18 coverage-partial); completeness rho 0.16 (0.12)	attenuated legacy association; current QC recall is too sparse for the former real-MAG QC validation claim

@@ -368,24 +368,33 @@ and negligible after correction, but so far *within-batch reproducible* only:
 cross-laboratory transferability awaits an independent batch (Hou, in
 preparation) (Fig. 7).
 
-#### 7c. MAG-scale application: recall under a common protocol, and a QC that works on real data
+#### 7c. MAG-scale application: cost at scale and a policy-dependent QC recall
 
-On the time-series rotating biological contactor (RBC) biofilm of PRJNA974210 — the dataset of Pilea's own MAG-scale benchmark (522 MAGs × 9 samples) — sk2bGrow's
-QC-pass recall and Pilea's reported recall are overlapping under a common
-denominator: sk2bGrow QC-pass 3.8–13.8% (20–72 of 522 MAGs) versus Pilea
-5.0–11.1% (26–58 of 522), with every Pilea-passed MAG falling inside
-sk2bGrow's output set. The headline raw figure of 522/522 (recall 1.00) is a
-denominator artefact — this path has no output gate — and is never reported
-unqualified; high yield includes wrong answers shipped. The enzyme-consistency
-QC demonstrably filters fragmented references on real data: QC pass rate
-anti-correlates with MAG contig count (ρ = −0.41; ρ = −0.34 controlling mean
-coverage, p < 1e-4), with the relationship *strengthening* inside the
-highest-coverage quartile (ρ = −0.432), so the association is not a power
-artefact of low coverage — coverage is the strongest single predictor
-(ρ = +0.516) and the two effects are partially entangled, which is the real
-structure of this MAG population rather than a scoring artefact. After QC
-filtering, cross-sample consistency of log₂PTR tightens ~4× (median std 0.030
-vs 0.129). Cost, however, flips at this scale: sk2bGrow is 89.5–240.8× slower
+The original RBC counting and cost measurements remain informative, but their
+statistics layer predates the current signed fixed-origin and fragmented-
+reference policy, so the QC recall arm is explicitly split by code state. In
+the **legacy C5 statistics**, sk2bGrow QC-pass recall and Pilea's reported
+recall overlap: 3.8–13.8% (20–72 of 522 MAGs) versus Pilea 5.0–11.1%
+(26–58 of 522). The headline 522/522 reported fraction is a denominator
+artefact — this path has no output gate — and high yield includes wrong
+answers shipped. In that legacy arm, QC pass rate anti-correlates with MAG
+contig count (ρ = −0.41; ρ = −0.34 controlling mean coverage), with coverage
+itself the strongest single predictor (ρ = +0.516). We therefore retain these
+rows only as a historical sensitivity to the former sorted-rank fallback, not
+as current-default behaviour.
+
+Re-fitting the retained window rates under the **current policy** changes the
+QC picture. The `auto` statistics now refuse an unsafe sorted-rank fallback on
+fragmented references rather than silently rescuing a coordinate that is no
+longer present. Across all 522 MAGs × 9 samples, only 26 observations pass QC
+(1–6 per sample; 0.55% of 4,698 genome×sample rows), against 484 in the legacy
+arm. This is not a compute failure but the intended conservative consequence
+of refusing the fallback. The old fragmentation/QC association is correspondingly
+attenuated (raw/partial ρ for contig count: −0.21/−0.19; completeness:
++0.16/+0.12) and only eight MAGs pass QC in at least one sample, so the current
+run does not support the former "QC demonstrably works on real MAGs" claim
+without further validation. Cost is unaffected by the refusion-only experiment.
+Cost, however, flips at this scale: sk2bGrow is 89.5–240.8× slower
 per sample than Pilea at default on these deep samples (measured per sample,
 `c5_cost_per_sample.tsv`), because the anchor-matching phase is 89.6% of count
 time and scales as reads × reference anchors — both factors two orders of
@@ -393,7 +402,7 @@ magnitude larger than the isolate benchmark. Setting `--max-mismatch 1` narrows 
 samples (Methods §3.6): the counting stage runs 20.5–38.8× faster than the
 mm = 2 baseline (median 27.7×; 38–51 min against 16.4–27.2 h per sample) and
 12.1–28.3× end-to-end including the stats stage (median 19.2×), at a median
-~4.7% loss of detected anchors (2.8–10.7% across samples) and *no genome lost
+4.4% loss of detected anchors (2.8–10.7% across samples) and *no genome lost
 in any of the nine samples*. The subset-based extrapolation (1.9–3.1 h)
 underestimated the gain because mm = 2 lookup cost grows superlinearly with
 read depth; measured against Pilea itself, the per-sample gap narrows from
@@ -451,7 +460,7 @@ projected, not shipped.
 
 ## Discussion
 
-**Where the gain comes from — and where it does not.** The attribution experiment (§4) constrains the claim the data support: the coordinate-aware estimator is what carries the low-coverage result, on either landmark source — at 0.5–1× the V-fit beats sorted-rank regression by wide margins on both enzyme anchors and a density-matched FracMinHash sketch. The landmark source itself showed no detectable accuracy difference in this paired analysis: pooling 48 media × subsampling-instance units, anchors and matched-density sketch were not significantly different, including at 0.5×. The estimator × landmark interaction is null at 1× and significantly negative at 2× — there is no evidence the panel amplifies the estimator's value, and some that the sketch benefits more from it. What the multi-enzyme panel contributes instead is structure a hash sketch cannot provide: a landmark set the 2bRAD protocol physically produces (wet-lab realizable, not only computational); motif strata with heterogeneous biases, so cross-enzyme agreement tests systematic error and not just sampling noise — Cochran's Q caught this paper's own double-counting defect, and the enzyme-consistency QC filters fragmented references on real MAG data; and at very low input, fusion redundancy: a single-stratum sketch that finds no downhill origin has no second stratum to rescue it (F1 harness, single-end), while sixteen strata need only a subset of per-enzyme fits to succeed. The honest one-line version: the estimator buys the low-depth accuracy; the panel buys realizability, heterogeneous QC strata, and fusion redundancy.
+**Where the gain comes from — and where it does not.** The attribution experiment (§4) constrains the claim the data support: the coordinate-aware estimator is what carries the low-coverage result, on either landmark source — at 0.5–1× the V-fit beats sorted-rank regression by wide margins on both enzyme anchors and a density-matched FracMinHash sketch. The landmark source itself showed no detectable accuracy difference in this paired analysis: pooling 48 media × subsampling-instance units, anchors and matched-density sketch were not significantly different, including at 0.5×. The estimator × landmark interaction is null at 1× and significantly negative at 2× — there is no evidence the panel amplifies the estimator's value, and some that the sketch benefits more from it. What the multi-enzyme panel contributes instead is structure a hash sketch cannot provide: a landmark set the 2bRAD protocol physically produces (wet-lab realizable, not only computational); motif strata with heterogeneous biases, so cross-enzyme agreement tests systematic error and not just sampling noise — Cochran's Q caught this paper's own double-counting defect; and at very low input, fusion redundancy: a single-stratum sketch that finds no downhill origin has no second stratum to rescue it (F1 harness, single-end), while sixteen strata need only a subset of per-enzyme fits to succeed. The honest one-line version: the estimator buys the low-depth accuracy; the panel buys realizability, heterogeneous QC strata, and fusion redundancy.
 
 **Limits of the biological model.** Several assumptions of the PTR model remain untouched by this paper. The isolate benchmark is one strain per species against a complete reference; real communities mix strains, and within-species accessory-genome variation is contacted by any genome-wide landmark set. Relic (non-replicating) DNA flattens the gradient and biases PTR toward 1; multi-fork replication puts a genuine kink in the profile at PTR > 2 (the two-slope form exists for this but is exercised only weakly here); and plasmids, whose copy number does not follow the chromosome's replication gradient, are counted by any whole-genome landmark scheme. The instrument boundary measured in §5 — GC ≳ 30% at depth ≳ 1×, in both landmark modes — should be read as part of these limits.
 
@@ -465,7 +474,7 @@ projected, not shipped.
 
 **Cochran's *Q* earned its keep, and has a blind spot.** Before the double-counting defect of Methods §1.2 was fixed, *Q* was rejecting in 56–69% of samples (mean *I*² = 0.34–0.42); after the fix, the same samples give *I*² = 0.07–0.28 and *Q* rejects in 6–24%. A design whose QC can detect its own implementation defects is worth the complexity — and this is the honest way to present that, not as a clean-room result. But *Q* tests *agreement between strata*, so it cannot see a failure that is identical across them: on a fragmented reference every enzyme agrees there is no gradient, and 100% of the wrong answers pass. We therefore changed the default: `auto` now refuses a multi-contig manifest rather than silently falling back to sorted-rank regression; a scaffolded coordinate fit or an explicit sorted analysis is required.
 
-**Failure is loud, not silent — and loud is not a compliment.** sk2bGrow has no coverage gate: on the C5 MAG panel it emitted estimates for 522/522 MAGs (recall 1.00), including references the sample may not even contain; Pilea's gate refuses silently. High yield therefore *includes wrong answers shipped*, which is why every yield number in this paper is paired with either that caveat or the QC-pass rate under a common denominator (3.8–13.8% vs Pilea's 5.0–11.1%). The loudness is also what makes the M4 containment pre-screen necessary.
+**Failure is loud, not silent — and loud is not a compliment.** sk2bGrow has no coverage gate: on the C5 MAG panel it emitted estimates for 522/522 MAGs (recall 1.00), including references the sample may not even contain; Pilea's gate refuses silently. High yield therefore *includes wrong answers shipped*. Under the legacy statistics, the common-denominator QC-pass rate was 3.8–13.8% versus Pilea's 5.0–11.1%; under the current conservative `auto` policy only 26 of 4,698 genome×sample observations pass QC. That change is deliberate rather than a failure, but it means the current sparse MAG-scale recall is not yet a validation of real-community QC. The loudness is also what makes the M4 containment pre-screen necessary.
 
 **Two distinct SNP-sensitivity geometries.** One SNP in a 150 bp read destroys 31 of its 120 31-mers (~26%) — FracMinHash containment decays smoothly with divergence. A SNP in a 6 bp recognition motif removes the whole site but leaves neighbours untouched — blocky loss, buffered by the other enzymes. The naive reading ("anchors tolerate divergence better") is not what the measurement says: at 0.1% substitutions, four-enzyme retention is 89.5% against FMH's 94.6%. We report both the mechanism and the number.
 
@@ -1033,6 +1042,20 @@ default-gate output). Where Pilea's gates-off arm crashes (a `min_samples`
 failure on 6 of 9 samples, stably reproducible) it is reported as a property
 of the arm, not censored.
 
+**Legacy/current statistics separation.** The original C5 statistics predate
+signed fixed-origin fitting and the later rule that `method=auto` must refuse a
+sorted-rank fallback on a multi-contig reference. We therefore keep the original
+rows only as a legacy sorted-fallback sensitivity. A current-policy refusion
+reused the retained window-rate tables, filtered to rows with finite positive
+`log2_se`, and reran the current fitting, fusion, report and QC stages; count
+cost and inherited coverage fields were not recomputed. This arm used
+sk2bGrow `review-final` commit `929f4c2` (SLURM array 4076617 and aggregation
+job 4076831). An explicit `method=sorted` arm (SLURM array 4077173 and its
+dependent aggregation job 4077191) quantifies the residual effect of deliberately
+selecting the fallback under current code; because that arm still uses signed
+fixed-origin output handling and current fusion/QC rules, it is not an exact
+reconstruction of the legacy C5 result.
+
 **Cost instrumentation.** Wall-clock and peak RSS per stage from
 `/usr/bin/time -v`; the count stage is further decomposed by phase timing on a
 1 M read-pair subset (database load, index build, match, window write-out).
@@ -1420,11 +1443,11 @@ study), PRJNA974210 (rotating biological contactor metagenome).
 
 1. Korem T, Zeevi D, Suez J, et al. Growth dynamics of gut microbiota in health and disease inferred from single metagenomic samples. *Science*. 2015;349(6252):1101–1106. doi:[10.1126/science.aac4812](https://doi.org/10.1126/science.aac4812)
 2. Brown CT, Olm MR, Thomas BC, Banfield JF. Measurement of bacterial replication rates in microbial communities. *Nature Biotechnology*. 2016;34(12):1256–1263. doi:[10.1038/nbt.3704](https://doi.org/10.1038/nbt.3704)
-3. Joseph TA, Shlemov I, Arratia HA, Pe'er I. Accurate and robust inference of microbial growth dynamics from metagenomic sequencing reveals personalized growth rates. *Genome Research*. 2022. doi:[10.1101/gr.275533.121](https://doi.org/10.1101/gr.275533.121)
-4. Chen Y, et al. Pilea: FracMinHash-based peak-to-trough ratio estimation. *Microbiome*. 2026. doi:[10.1186/s40168-026-02374-0](https://doi.org/10.1186/s40168-026-02374-0)
+3. Joseph TA, Chlenski P, Litman A, Korem T, Pe'er I. Accurate and robust inference of microbial growth dynamics from metagenomic sequencing reveals personalized growth rates. *Genome Research*. 2022;32(3):558–568. doi:[10.1101/gr.275533.121](https://doi.org/10.1101/gr.275533.121)
+4. Chen X, Xu X, Zhang T. Pilea: profiling bacterial growth dynamics from metagenomes with sketching. *Microbiome*. 2026;14(1):128. doi:[10.1186/s40168-026-02374-0](https://doi.org/10.1186/s40168-026-02374-0)
 5. Wang S, Meyer E, McKay JK, Matz MV. 2b-RAD: a simple and flexible method for genome-wide genotyping. *Nature Methods*. 2012;9(8):808–810. doi:[10.1038/nmeth.2023](https://doi.org/10.1038/nmeth.2023)
-6. Hess MK, et al. A restriction enzyme reduced representation sequencing approach for low-cost, high-throughput metagenome profiling. *PLOS ONE*. 2020;15(4):e0231173. doi:[10.1371/journal.pone.0219882](https://doi.org/10.1371/journal.pone.0219882)
-7. Sun Z, et al. Species-resolved sequencing of low-biomass or degraded microbiomes using 2bRAD-M. *Genome Biology*. 2022;23:34. doi:[10.1186/s13059-021-02576-9](https://doi.org/10.1186/s13059-021-02576-9)
+6. Hess MK, Rowe SJ, Van Stijn TC, Henry HM, Hickey SM, Brauning R, Hess AM, Clark SL, McEwan JC, Rowe SJ. A restriction enzyme reduced representation sequencing approach for low-cost, high-throughput metagenome profiling. *PLOS ONE*. 2020;15(4):e0219882. doi:[10.1371/journal.pone.0219882](https://doi.org/10.1371/journal.pone.0219882)
+7. Sun Z, et al. Species-resolved sequencing of low-biomass or degraded microbiomes using 2bRAD-M. *Genome Biology*. 2022;23:36. doi:[10.1186/s13059-021-02576-9](https://doi.org/10.1186/s13059-021-02576-9)
 8. Irber L, Brooks PT, Reiter T, Pierce-Ward NT, Hera MR, Brown CT. Lightweight compositional analysis of metagenomes with FracMinHash and minimum metagenome covers. *bioRxiv*. 2022. doi:[10.1101/2022.01.11.475838](https://doi.org/10.1101/2022.01.11.475838)
 
 ## Figures
