@@ -1,0 +1,38 @@
+n merged = 522
+
+=== raw vs coverage-partial Spearman (current qc_rate) ===
+      feature  rho_raw   p_raw  rho_partial_cov  p_partial   n
+    n_contigs  -0.2128  0.0002          -0.1848     0.0002 522
+          n50   0.1991  0.0002           0.1707  0.0003999 522
+ Completeness   0.1575  0.0002           0.1159   0.006199 522
+Contamination -0.07346 0.09538         -0.06411     0.1458 522
+
+=== bivariate Spearman ===
+rho(n_contigs, mean_cov)=-0.252, p=0.0002, n=522
+rho(n50, mean_cov)=+0.250, p=0.0002, n=522
+rho(Completeness, mean_cov)=+0.354, p=0.0002, n=522
+rho(Contamination, mean_cov)=-0.072, p=0.103, n=522
+rho(qc_rate_current, mean_cov)=+0.142, p=0.0004, n=522
+
+=== within coverage quartile: Spearman(qc_rate_current,n_contigs) ===
+Q1: n=131, cov 1.54-2.23, rho=+nan, p=0.0002
+Q2: n=130, cov 2.23-2.64, rho=-0.151, p=0.013
+Q3: n=130, cov 2.65-3.42, rho=-0.151, p=0.0116
+Q4: n=131, cov 3.43-33.63, rho=-0.362, p=0.0002
+
+=== mean current qc rate: coverage x contig bin ===
+contig_bin  <=10  11-25  26-50  51-100  101-200  >200
+cov_q                                                
+Q1         0.000  0.000  0.000   0.000    0.000 0.000
+Q2         0.056  0.000  0.000   0.000    0.000 0.000
+Q3         0.012  0.000  0.000   0.000    0.000 0.000
+Q4         0.067  0.000  0.000   0.000    0.000 0.000
+
+=== consistency: median std log2PTR, QC-any vs none ===
+ALL: n_qc=8, median=0.217; n_no_qc=0, median=nan
+Q1: n_qc=2, median=0.212; n_no_qc=0, median=nan
+Q2: n_qc=2, median=0.263; n_no_qc=0, median=nan
+Q3: n_qc=2, median=0.137; n_no_qc=0, median=nan
+Q4: n_qc=2, median=0.304; n_no_qc=0, median=nan
+
+OLS omitted: the current refusal policy leaves no within-genome cross-sample variance contrast.

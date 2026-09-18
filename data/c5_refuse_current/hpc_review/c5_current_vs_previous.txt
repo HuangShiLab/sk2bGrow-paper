@@ -1,0 +1,4 @@
+n both=4698, current_only=0, old_only=0
+max abs delta log2PTR=1.94124, median abs delta=0.0709634
+QC disagreements=478 / 4698
+old total QC=484, current total QC=26
