@@ -112,7 +112,7 @@ Three layers, every comparison density-stated (HPC, `data/f1_sketch/`):
   format and running the *unmodified* estimator, so the only difference from
   arm A is which loci are counted (Methods §4).
 
-### 5. How many enzymes are needed, and over what GC range? — **Fig 5** ✅ (panel-size sweep a–d + GC sweep e, f in `fig5_panel_design`)
+### 5. How many enzymes are needed, and over what GC range? — **Fig 6** ✅ (panel-size sweep a–d + GC sweep e, f in `fig6_panel_design`)
 Rank all 16 by standalone accuracy (each `per_enzyme.tsv` is already an
 independent V-shape fit, so the ranking is free — **Table 6**), then sweep
 k ∈ {2,4,8,12,16}. Ranking is dominated by anchor yield, with exceptions: the top six by accuracy
@@ -168,7 +168,7 @@ both landmark modes, at 0.5/1/2/5×:
   confound flagged, not resolved). Stated range: GC ≳ 30%, depth ≳ 1×.
 - Within the stated range (GC ≥ 30%, depth ≥ 1×) all cells r ≥ 0.85 at ≥ 1×; 2×/5× ≥ 0.95/0.98.
 
-### 6. Fragmented references and MAGs — **Fig 6 / Table 8** ✅ `fig6_fragmentation`
+### 6. Fragmented references and MAGs — **Fig 7 / Table 8** ✅ `fig7_fragmentation`
 Pilea's Fig 3 protocol on the Zheng data: complete chromosome vs 100 shuffled
 lognormal contigs vs those contigs re-ordered by `sk2bgrow scaffold`, n = 16
 media per cell, identical reads throughout (43,707 of 43,735 anchors survive the
@@ -245,7 +245,7 @@ FracMinHash landmarks (F4):
 
 ### 7. Real metagenomes 🟡 **[NEW — the biological section, `data/sun_three_arm/`, `data/c5_review/`]**
 
-**7a. Cross-method concordance in a fecal cohort (Sun, PRJNA689204) — **Fig 7 / Table 10**.**
+**7a. Cross-method concordance in a fecal cohort (Sun, PRJNA689204) — **Fig 8 / Table 10**.**
 The first real-community result: sk2bGrow (WGS) vs Pilea at its shipped
 defaults on the same three fecal samples, common-denominator species × sample
 pairs (n = 58/68/78 per sample).
@@ -278,7 +278,7 @@ preparations (BcgI only; single-stratum caveat stated).
   limit: "within-batch reproducible"; Hou (independent batch) pending.
 
 **7c. MAG-scale application and QC validity (RBC reactor, PRJNA974210;
-522 MAGs × 9 samples) — **Fig 8a, b**.**
+522 MAGs × 9 samples) — **Fig 9a, b**.**
 
 - ✅ **Recall under a common protocol:** sk2bGrow QC-pass 3.8–13.8%
   (20–72/522) vs Pilea 5.0–11.1% (26–58/522) — overlapping. The raw
@@ -297,7 +297,7 @@ preparations (BcgI only; single-stratum caveat stated).
   speedup (0.99× wall) and the current default drops 65/522 real MAGs, so its value
   is a projection for database-scale presence rates (< 1%).
 
-### 8. Computational efficiency and scale — **Fig 8c, d** ✅ + 🟡 post-F3/F5
+### 8. Computational efficiency and scale — **Fig 9c, d** ✅ + 🟡 post-F3/F5
 Measured the same way for both tools (`/usr/bin/time -l`, 8 threads, k-mer
 counting inside the timed region). Averaged over all five depths on the 85
 *E. coli* cells: sk2bGrow 8.2 s / 195 MB at k = 16, 6.5 s at k = 8, 3.2 s at
@@ -395,7 +395,7 @@ Bsp24I ⊂ CjePI containment shrinks the effective independence.
 
 **Coordinates make failure modes enumerable.** Wrong reference → the estimate
 is emitted and wrong (C5). Destroyed coordinate → degradation is smooth,
-monotone, detectable by scaffold length, and repairable (Fig 6). FMH's
+monotone, detectable by scaffold length, and repairable (Fig 7). FMH's
 analogous failure (dilution by an unreferenced strain) is silent and has no
 coordinate to inspect. Do not overclaim: this is a difference in the *shape*
 of failure, not in accuracy.
@@ -424,7 +424,7 @@ carries its evidence; unmeasured rows marked 未测):**
 | internal-consistency strata | hash-prefix split possible, shares all biases | ~15 motif strata, heterogeneous biases (motif/GC/methylation) | Cochran's Q; Bsp24I⊂CjePI containment |
 | divergence geometry | smooth (SNP kills ~26 % of a read's 31-mers) | blocky (SNP kills one site, neighbours intact) | retention at 0.1 % subst: 94.6 % vs 89.5 % (4 enzymes) |
 | wrong/absent reference | silent (gate refusal) | loud (estimate emitted, wrong) | C5 recall 1.00; gate ablation §2d |
-| fragmented reference | rank regression barely affected (0.889→0.827) | gradient destroyed identically (landmark-agnostic), residual r partly search artifact, QC-blind, scaffold-repairable with either landmark set | Fig 6; F4 |
+| fragmented reference | rank regression barely affected (0.889→0.827) | gradient destroyed identically (landmark-agnostic), residual r partly search artifact, QC-blind, scaffold-repairable with either landmark set | Fig 7; F4 |
 | mismatch tolerance | mm ≥ 1 opens a rescue channel crediting 1–2% of off-sketch k-mers to wrong coordinates (lock mm = 0) | mm = 2 nearly free (misassignment ≤1.4e-4; mm = 1 safe if budget forces) | F3 |
 | index cost at matched density | ~39 B/landmark (per-genome pipeline; merged index not yet implemented) | ~39 B/anchor, merged index shipped | F5 |
 | density control | scale parameter (content-agnostic; half density ≈ 124 GB at GTDB scale, ≤0.007 r cost ≥1×) | panel composition (biology-aware, per-clade tunable) | F5; Table 6; per-clade survey 未测 |

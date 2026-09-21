@@ -974,7 +974,7 @@ not replace the Zheng or multi-strain read benchmarks. No FASTQ or per-anchor
 intermediates were retained; only aggregate tables were written. The complete
 grid was run as SLURM job 4088324 (24 one-CPU, 2-GiB array tasks; all completed
 in ≤2 min) under review-final commit `d108932`. Per-cell long output, source
-contrasts, Table 11 and Fig. 9 are in `factorial_benchmark/`.
+contrasts, Table 11 and Fig. 5 are in `factorial_benchmark/`.
 
 ---
 
@@ -1152,9 +1152,9 @@ simulator-level warning rather than evidence about Pilea's production code: the
 random-coordinate arm is idealized, and the ambiguity assignment is not fitted to
 a particular mapper. Its value is to show that coordinate methods depend not only
 on having coordinates, but on the assignability of the underlying landmarks. The
-complete cell-level results are in Table 11 and Fig. 9.
+complete cell-level results are in Table 11 and Fig. 5.
 
-*(Fig. 9; Table 11)*
+*(Fig. 5; Table 11)*
 
 ### 5. How many enzymes are needed, and over what GC range?
 
@@ -1218,7 +1218,7 @@ confounded with genome size and is flagged, not resolved. The stated operating
 range is GC ≳ 30% at depth ≳ 1× (all cells at GC ≥ 30% and depth ≥ 1× give r ≥ 0.85; at 2×/5×
 r ≥ 0.95/0.98).
 
-*(Fig. 5)*
+*(Fig. 6)*
 
 ### 6. Fragmented references and MAGs
 
@@ -1249,7 +1249,7 @@ inflated by this artifact. There is no safe contig count, and r cannot find
 one: across 1–100 contigs at 10×, r stays 0.86–0.97 while the slope falls
 0.95 → 0.21 and bias grows to −0.81; at 50 contigs (N50 156 kb, a good draft)
 r reads 0.96 while every estimate is 44% of truth. Degradation is smooth and
-monotone, so the rule is "scaffold anything not closed" (Fig. 6).
+monotone, so the rule is "scaffold anything not closed" (Fig. 7).
 
 **Table 8 (inline).** Fragmentation experiment on the Zheng protocol (n = 16 media per cell, identical reads throughout; 43,707 of 43,735 anchors survive the cut, so only the coordinate changes). Provenance: the complete-reference column is from the earlier laptop-side analysis instance and therefore differs at 1× from the regenerated paired-end grid of Table 2 (r 0.981 vs 0.912); the fragmentation protocol is on the re-run queue behind the estimator decision (Methods §6 provenance note). The load-bearing contrasts in this section are within-experiment — complete vs fragmented vs scaffolded on identical reads — and do not depend on which instance the complete column came from.
 
@@ -1282,7 +1282,7 @@ the panel in the all-computational route; it remains a capability unique to the
 enzyme route when only 2bRAD data exist. One caveat: the shipped `scaffold`
 CLI digests enzyme tags only; the FracMinHash placement used a 1:1 Python port
 of the Rust placement algorithm, validated by the near-perfect self-arm, so
-sketch scaffolding is demonstrated, not shipped (Fig. 6).
+sketch scaffolding is demonstrated, not shipped (Fig. 7).
 
 #### 6.3 The coordinate is sufficient for our estimator, not necessary in principle — and the QC cannot see this failure
 
@@ -1302,7 +1302,7 @@ all sixteen agree that there is no gradient. The default now refuses a
 multi-contig manifest rather than silently falling back to sorted regression;
 explicit `--method sorted` remains available.
 
-*(Fig. 6; Table 8)*
+*(Fig. 7; Table 8)*
 
 ### 7. Real metagenomes
 
@@ -1334,7 +1334,7 @@ species, whereas sk2bGrow retains usable estimates for 3–4× as many species
 (QC-pass 38–68 vs Pilea's 8–22 at 5 Gb; 63–84 vs 15–32 at 10 Gb). At full
 depth we frame the three-sample comparison as concordance validation, not a
 biological discovery; the shallow-depth arm upgrades it to a use-case
-demonstration (Fig. 7; Table 10; `data/sun_shallow/`).
+demonstration (Fig. 8; Table 10; `data/sun_shallow/`).
 
 #### 7b. Real 2bRAD libraries: exact deduplication destroys the PTR signal
 
@@ -1371,7 +1371,7 @@ correctable within-batch effects; the residual (~0.7) is diluted by √99 window
 averaging to ~0.07–0.10 against gradients of 1.0–1.7 — measured, correctable,
 and negligible after correction, but so far *within-batch reproducible* only:
 cross-laboratory transferability awaits an independent batch (Hou, in
-preparation) (Fig. 7).
+preparation) (Fig. 8).
 
 #### 7c. MAG-scale application: cost at scale and a policy-dependent QC recall
 
@@ -1428,7 +1428,7 @@ database-scale presence rates (< 1%). The flip is therefore real and partially
 fixed: mismatch-1 is measured end-to-end, the screen is measured on the
 false-positive side only.
 
-*(Fig. 8; Table 10)*
+*(Fig. 9; Table 10)*
 
 ### 8. Computational efficiency and scale
 
@@ -1466,7 +1466,7 @@ at 72%). One engineering gap is stated honestly: a merged
 `--mode fracminhash` index does not exist yet, so the half-density route is
 projected, not shipped.
 
-*(Fig. 8d)*
+*(Fig. 9d)*
 
 ## Discussion
 
@@ -1520,7 +1520,7 @@ other.
 
 **Strata heterogeneity is the real QC asset.** A hash-prefix split of one FMH sketch could also run a Cochran-style test — but hash strata share every systematic bias of the sketch. The enzyme strata differ in motif, GC and (methylatable) base composition, so cross-enzyme agreement tests bias *heterogeneity*, not just sampling noise. This is also why the measured Bsp24I ⊂ CjePI containment shrinks the effective independence of the strata.
 
-**Coordinates make failure modes enumerable.** A wrong reference → the estimate is emitted and wrong (C5). A destroyed coordinate → degradation is smooth, monotone, detectable from scaffold length, and repairable by scaffolding (Fig. 6). FracMinHash's analogous failure — dilution by an unreferenced strain — is silent and has no coordinate to inspect. We do not overclaim here: this is a difference in the *shape* of failure, not in accuracy.
+**Coordinates make failure modes enumerable.** A wrong reference → the estimate is emitted and wrong (C5). A destroyed coordinate → degradation is smooth, monotone, detectable from scaffold length, and repairable by scaffolding (Fig. 7). FracMinHash's analogous failure — dilution by an unreferenced strain — is silent and has no coordinate to inspect. We do not overclaim here: this is a difference in the *shape* of failure, not in accuracy.
 
 **Why landmarks must be genome-wide.** Single-copy markers (rpoB and the like) cover < 1% of a genome and cannot support a PTR fit at all; the quantity being estimated forces a genome-wide spread of loci, which in turn forces contact with within-species (accessory-genome) variation. No landmark scheme resolves this tension; it is inherent to PTR.
 
@@ -1540,7 +1540,7 @@ other.
 | divergence geometry               | smooth: one SNP destroys ~26% of a read's 31-mers                                                                                                     | blocky: one SNP kills one site, neighbours intact                            | retention at 0.1% substitutions: 94.6% vs 89.5% (4 enzymes); F4 rel-arm                                                   |
 | mismatch tolerance                | must lock mm=0: mm>=1 opens a rescue channel crediting ~1% (mm1) / ~2% (mm2) of observations to the wrong coordinate, independent of sequencing error | mm<=2 safe: exact-first suppression + motif gate keep misassignment <=1.4e-4 | F3 (near-neighbor census + read-level test)                                                                               |
 | wrong / absent reference          | silent — the gate refuses output                                                                                                                      | loud — the estimate is emitted and wrong                                     | C5: reported_fraction 1.00 (denominator artifact) vs silent gate; legacy common-denominator recall 3.8-13.8% vs 5.0-11.1%; current auto passes 26/4698 observations |
-| fragmented reference              | rank regression barely affected (r 0.889->0.827)                                                                                                      | gradient destroyed, QC-blind, scaffold-repairable                            | Fig 6; F4: collapse identical across landmark types (slope 0.26-0.38, RMSE x40, winner's-curse residue)                   |
+| fragmented reference              | rank regression barely affected (r 0.889->0.827)                                                                                                      | gradient destroyed, QC-blind, scaffold-repairable                            | Fig 7; F4: collapse identical across landmark types (slope 0.26-0.38, RMSE x40, winner's-curse residue)                   |
 | scaffolding                       | works — placement is landmark-source-agnostic                                                                                                         | works — self-arm ties the sketch arm exactly                                 | F4: 98-100/100 contigs placed, order Spearman 1.0, both modes; sketch placement is a 1:1 port of scaffold.rs, not shipped |
 | density control                   | scale parameter (content-agnostic)                                                                                                                    | panel composition (biology-aware, per-clade tunable)                         | Table 6 ranking; per-clade panel survey: not measured                                                                     |
 | index cost at matched density     | ~39 B/landmark if engineered into the same index format; merged FMH index (--mode fracminhash) not implemented                                        | ~38.7-38.9 B/anchor; merged 300-genome DB builds 10M anchors in 86 s         | F5                                                                                                                        |
@@ -1591,7 +1591,7 @@ Review-response provenance is in `data/m1_signed/`: the final primary A/B/E grid
 (`hpc_singlepass_grid_results.tsv`), its summary
 (`hpc_singlepass_grid_summary.tsv`), and the rejected residual-GC diagnostic
 (`gc_correction_diagnostic.tsv`).
-Count-level factorial inputs, aggregate tables, simulator and Figure 9 code are
+Count-level factorial inputs, aggregate tables, simulator and Figure 5 code are
 in `factorial_benchmark/`.
 Sequencing data: PRJNA615952 (Zheng *E. coli* panel), PRJNA689204 (Sun faecal
 study), PRJNA974210 (rotating biological contactor metagenome).
@@ -1638,18 +1638,15 @@ Not applicable.
 
 ![**Fig. 4.** Landmark-source attribution](../figures/out/fig4_attribution.png){width=6.5in}
 
-![**Fig. 5.** Panel-size sweep and GC range](../figures/out/fig5_panel_design.png){width=6.5in}
+![**Fig. 5.** Count-level factorial decomposition of estimator, depth and shared-anchor ambiguity](../figures/out/fig5_factorial_mechanism.png){width=6.5in}
 
-![**Fig. 6.** Fragmentation and scaffolding](../figures/out/fig6_fragmentation.png){width=6.5in}
+![**Fig. 6.** Panel-size sweep and GC range](../figures/out/fig6_panel_design.png){width=6.5in}
 
-![**Fig. 7.** Fecal-cohort concordance](../figures/out/fig7_metagenome.png){width=6.5in}
+![**Fig. 7.** Fragmentation and scaffolding](../figures/out/fig7_fragmentation.png){width=6.5in}
 
-![**Fig. 8.** MAG-scale QC and cost](../figures/out/fig8_mag_qc_cost.png){width=6.5in}
+![**Fig. 8.** Fecal-cohort concordance](../figures/out/fig8_metagenome.png){width=6.5in}
 
-![**Fig. 9.** Count-level factorial decomposition of estimator, depth and shared-anchor ambiguity](../figures/out/fig9_factorial_mechanism.png){width=6.5in}
-
-Source PDFs and reproducible figure code are in `figures/`.
-
+![**Fig. 9.** MAG-scale QC and cost](../figures/out/fig9_mag_qc_cost.png){width=6.5in}
 
 ## Tables
 
@@ -1880,7 +1877,7 @@ The 100-contig reference holds 43,707 of the complete genome's 43,735 anchors, s
 | divergence geometry               | smooth: one SNP destroys ~26% of a read's 31-mers                                                                                                     | blocky: one SNP kills one site, neighbours intact                            | retention at 0.1% substitutions: 94.6% vs 89.5% (4 enzymes); F4 rel-arm                                                                                                                              |
 | mismatch tolerance                | must lock mm=0: mm>=1 opens a rescue channel crediting ~1% (mm1) / ~2% (mm2) of observations to the wrong coordinate, independent of sequencing error | mm<=2 safe: exact-first suppression + motif gate keep misassignment <=1.4e-4 | F3 (near-neighbor census + read-level test)                                                                                                                                                          |
 | wrong / absent reference          | silent — the gate refuses output                                                                                                                      | loud — the estimate is emitted and wrong                                     | Legacy C5: reported_fraction 1.00 (denominator artifact) vs silent gate; legacy common-denominator recall 3.8-13.8% vs 5.0-11.1%. Current auto policy passes only 26/4698 genome-sample observations |
-| fragmented reference              | rank regression barely affected (r 0.889->0.827)                                                                                                      | gradient destroyed, QC-blind, scaffold-repairable                            | Fig 6; F4: collapse identical across landmark types (slope 0.26-0.38, RMSE x40, winner's-curse residue)                                                                                              |
+| fragmented reference              | rank regression barely affected (r 0.889->0.827)                                                                                                      | gradient destroyed, QC-blind, scaffold-repairable                            | Fig 7; F4: collapse identical across landmark types (slope 0.26-0.38, RMSE x40, winner's-curse residue)                                                                                              |
 | scaffolding                       | works — placement is landmark-source-agnostic                                                                                                         | works — self-arm ties the sketch arm exactly                                 | F4: 98-100/100 contigs placed, order Spearman 1.0, both modes; sketch placement is a 1:1 port of scaffold.rs, not shipped                                                                            |
 | density control                   | scale parameter (content-agnostic)                                                                                                                    | panel composition (biology-aware, per-clade tunable)                         | Table 6 ranking; per-clade panel survey: not measured                                                                                                                                                |
 | index cost at matched density     | ~39 B/landmark if engineered into the same index format; merged FMH index (--mode fracminhash) not implemented                                        | ~38.7-38.9 B/anchor; merged 300-genome DB builds 10M anchors in 86 s         | F5                                                                                                                                                                                                   |

@@ -10,7 +10,7 @@ lives in the separate [`sk2bGrow`](../sk2bGrow) repository.
 manuscript/   outline and `manuscript.md`, the authoritative manuscript
 manuscript/submission/  formatted review draft for journal submission
 data/         committed benchmark outputs (small TSVs) — the only input to figures & tables
-factorial_benchmark/  count-level factorial simulator, aggregate outputs and Fig. 9/Table 11 code
+factorial_benchmark/  count-level factorial simulator, aggregate outputs and Fig. 5/Table 11 code
 figures/      make_figures.py, make_tables.py, style.py
 figures/out/  generated PNG + PDF (regenerable; safe to delete)
 tables/       generated markdown + TSV (regenerable)
@@ -62,12 +62,11 @@ and the subsampling read counts. `data/results_raw.tsv` carries one row per
 | `fig2_zheng_benchmark` (Fig 2) | Zheng isolate benchmark, four panels: (a) sk2bGrow is at or above Pilea at every coverage — the margin is in the 1–2× band; (b, c) **both tools are biased at 1×, in opposite directions** — see below; (d) the sorted-regression estimator invents a gradient on a non-growing culture |
 | `fig3_simulation` (Fig 3) | multi-strain communities: recall, accuracy and cost — **read the three panels together** |
 | `fig4_attribution` (Fig 4) | the estimator × landmark-source interaction, at the Pilea operating point and density-matched |
-| `fig5_panel_design` (Fig 5) | 4–8 enzymes suffice; the four sparsest add nothing (a–d); panel density rises with GC, instrument boundary at GC ≲ 30% × 0.5× (e, f) |
-| `fig6_fragmentation` (Fig 6) | fragmentation destroys the coordinate; `scaffold` restores the complete-reference result |
-| `fig7_metagenome` (Fig 7) | Sun cohort: cross-method concordance + the exact-dedup ablation |
-| `fig8_mag_qc_cost` (Fig 8) | C5: QC pass rate falls with MAG fragmentation and recall under a common protocol (a, b); cost at scale, measured: 89.5–240.8× → mm=1 → containment screen (c, d) |
-| `fig9_factorial_mechanism` (Fig 9) | count-level factorial: coordinate V-fit versus sorted rank at private anchors (a); shared-anchor ambiguity grows with depth (b); source placement matters only once anchors are ambiguous (c) |
-
+| `fig5_factorial_mechanism` (Fig 5) | count-level factorial: coordinate V-fit versus sorted rank at private anchors (a); shared-anchor ambiguity grows with depth (b); source placement matters only once anchors are ambiguous (c) |
+| `fig6_panel_design` (Fig 6) | 4–8 enzymes suffice; the four sparsest add nothing (a–d); panel density rises with GC, instrument boundary at GC ≲ 30% × 0.5× (e, f) |
+| `fig7_fragmentation` (Fig 7) | fragmentation destroys the coordinate; `scaffold` restores the complete-reference result |
+| `fig8_metagenome` (Fig 8) | Sun cohort: cross-method concordance + the exact-dedup ablation |
+| `fig9_mag_qc_cost` (Fig 9) | C5: QC pass rate falls with MAG fragmentation and recall under a common protocol (a, b); cost at scale, measured: 89.5–240.8× → mm=1 → containment screen (c, d) |
 
 ## Multi-strain simulation (Pilea's Fig-3 design, laptop scale)
 

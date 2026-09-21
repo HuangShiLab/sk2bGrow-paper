@@ -3,7 +3,7 @@
 
     python3 factorial_benchmark/make_factorial_outputs.py
 
-Reads only factorial_benchmark/factorial_long.tsv; writes Table 11 and Fig. 9.
+Reads only factorial_benchmark/factorial_long.tsv; writes Table 11 and Fig. 5.
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from style import apply, grid  # noqa: E402
 
 LONG = ROOT / "factorial_benchmark" / "factorial_long.tsv"
 OUT_TABLE = ROOT / "tables" / "table11_factorial_count_level"
-FIG_STEM = ROOT / "figures" / "out" / "fig9_factorial_mechanism"
+FIG_STEM = ROOT / "figures" / "out" / "fig5_factorial_mechanism"
 
 ESTIMATOR_LABEL = {
     "coordinate_vfit": "Coordinate V-fit",

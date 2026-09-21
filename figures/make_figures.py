@@ -437,7 +437,7 @@ def fig4():
     save(fig, 'fig4_attribution')
 
 
-#: Fig 5 caption: panels e/f keep the GC-sweep text with their new letters.
+#: Fig 6 caption: panels e/f keep the GC-sweep text with their new letters.
 CAP5 = (
     'Eighteen real genomes spanning GC 25.4\u201372.0%, simulated reads, planted '
     'log\u2082PTR 0.5\u20132.0 (n = 8 cells per point). e, Enzyme-panel landmark density '
@@ -454,7 +454,7 @@ CAP5 = (
 )
 
 
-# --- Fig 5: panel design — size vs accuracy/cost, and the panel across GC ---
+# --- Fig 6: panel design — size vs accuracy/cost, and the panel across GC ---
 def fig5():
     """Panel size against accuracy and cost (a–d).
 
@@ -534,7 +534,7 @@ def fig5():
     ax_p.text(1.0, 1.02, 'hollow = no estimate returned',
               transform=ax_p.transAxes, fontsize=6.4, color=MUTED,
               va='bottom', ha='right')
-    ax_p.set_title('sk2bGrow vs Pilea, same cells\n(single genome; the ordering flips at MAG scale — Fig. 8)',
+    ax_p.set_title('sk2bGrow vs Pilea, same cells\n(single genome; the ordering flips at MAG scale — Fig. 9)',
                    fontsize=8.4, color=INK, pad=56)
 
     # e: panel density vs GC ---------------------------------------------------
@@ -592,10 +592,10 @@ def fig5():
     fig.text(0.0, -0.02, CAP5, fontsize=7, color=MUTED, va='top')
     fig.subplots_adjust(left=0.09, right=0.985, top=0.945, bottom=0.075,
                         wspace=0.40, hspace=0.65)
-    save(fig, 'fig5_panel_design')
+    save(fig, 'fig6_panel_design')
 
 
-#: Fig 6's caption, kept out of the function so the hard line breaks that keep
+#: Fig 7's caption, kept out of the function so the hard line breaks that keep
 #: savefig's tight bbox from widening the canvas stay visible.
 CAP6 = (
     'The same reads throughout, and 43,707 of the complete genome\'s 43,735 '
@@ -632,7 +632,7 @@ CAP6 = (
 )
 
 
-# --- Fig 6: does the method survive a fragmented reference? ------------------
+# --- Fig 7: does the method survive a fragmented reference? ------------------
 def fig6():
     """The MAG case. Panel a is accuracy against coverage per reference
     condition; panel b is estimated against predicted magnitude at 10x, which is
@@ -786,10 +786,10 @@ def fig6():
 
     fig.subplots_adjust(left=0.095, right=0.99, top=0.94, bottom=0.115,
                         wspace=0.28, hspace=0.36)
-    save(fig, 'fig6_fragmentation')
+    save(fig, 'fig7_fragmentation')
 
 
-#: Fig 7's caption.
+#: Fig 8's caption.
 CAP7 = (
     'Sun PRJNA689204 stool communities, three samples of \u2248125\u2013135 Gb each. a, '
     'Bland\u2013Altman summary of sk2bGrow-WGS (B) against Pilea at its shipped '
@@ -808,7 +808,7 @@ CAP7 = (
 )
 
 
-# --- Fig 7: metagenome agreement — BA summary + dedup ablation --------------
+# --- Fig 8: metagenome agreement — BA summary + dedup ablation --------------
 def fig7():
     ag = pd.read_csv(ROOT / 'data' / 'sun_three_arm' / 'p2_review_agreement.tsv',
                      sep='\t')
@@ -887,10 +887,10 @@ def fig7():
     fig.text(0.0, -0.05, CAP7, fontsize=7, color=MUTED, va='top')
     fig.subplots_adjust(left=0.075, right=0.985, top=0.88, bottom=0.15,
                         wspace=0.34)
-    save(fig, 'fig7_metagenome')
+    save(fig, 'fig8_metagenome')
 
 
-#: Fig 8's caption: the MAG-QC caption verbatim, then the cost caption with
+#: Fig 9's caption: the MAG-QC caption verbatim, then the cost caption with
 #: its panels relettered to c/d.
 CAP8 = (
     'RBC metagenome (PRJNA974210): 522 MAGs \u00d7 9 samples. Panels a and '
@@ -929,7 +929,7 @@ CAP8 = (
 )
 
 
-# --- Fig 8: MAG QC — fragmentation filter + recall, and the cost of scaling --
+# --- Fig 9: MAG QC — fragmentation filter + recall, and the cost of scaling --
 def fig8():
     """RBC metagenome MAG QC (a, b) and the cost narrative for scaling past
     single-genome benchmarks (c, d)."""
@@ -1063,7 +1063,7 @@ def fig8():
     fig.text(0.0, -0.02, CAP8, fontsize=7, color=MUTED, va='top')
     fig.subplots_adjust(left=0.10, right=0.985, top=0.93, bottom=0.115,
                         wspace=0.32, hspace=0.42)
-    save(fig, 'fig8_mag_qc_cost')
+    save(fig, 'fig9_mag_qc_cost')
 
 
 if __name__ == '__main__':
