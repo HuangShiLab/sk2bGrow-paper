@@ -1,0 +1,24 @@
+**Table 11. Count-level factorial decomposition of estimator, depth and shared-anchor ambiguity.**
+
+Values are means over 4/8/16/32-strain communities, even/10:1/100:1 abundance ratios and 10 replicates, shown for the regular coordinate arm. The random FracMinHash-like arm and paired source contrasts are in `factorial_benchmark/factorial_long.tsv` and `factorial_benchmark/factorial_source_contrasts.tsv`. Bias and RMSE are in log2(PTR) units.
+
+| estimator              | shared_anchors   | depth   |   Mean bias (log2) |   Mean RMSE (log2) |   Mean Pearson r |
+|:-----------------------|:-----------------|:--------|-------------------:|-------------------:|-----------------:|
+| Coordinate V-fit       | 0%               | 0.5×    |             -0.022 |              0.115 |            0.973 |
+| Coordinate V-fit       | 0%               | 1×      |             -0.014 |              0.072 |            0.990 |
+| Coordinate V-fit       | 0%               | 8×      |              0.001 |              0.018 |            0.999 |
+| Coordinate V-fit       | 5%               | 0.5×    |             -0.022 |              0.110 |            0.978 |
+| Coordinate V-fit       | 5%               | 1×      |             -0.012 |              0.080 |            0.989 |
+| Coordinate V-fit       | 5%               | 8×      |             -0.000 |              0.039 |            0.998 |
+| Coordinate V-fit       | 15%              | 0.5×    |             -0.022 |              0.133 |            0.971 |
+| Coordinate V-fit       | 15%              | 1×      |             -0.012 |              0.100 |            0.983 |
+| Coordinate V-fit       | 15%              | 8×      |             -0.001 |              0.063 |            0.994 |
+| Sorted-rank regression | 0%               | 0.5×    |              0.464 |              0.635 |            0.737 |
+| Sorted-rank regression | 0%               | 1×      |              0.319 |              0.504 |            0.824 |
+| Sorted-rank regression | 0%               | 8×      |              0.052 |              0.119 |            0.978 |
+| Sorted-rank regression | 5%               | 0.5×    |              0.571 |              0.727 |            0.714 |
+| Sorted-rank regression | 5%               | 1×      |              0.400 |              0.574 |            0.778 |
+| Sorted-rank regression | 5%               | 8×      |              0.132 |              0.196 |            0.962 |
+| Sorted-rank regression | 15%              | 0.5×    |              0.709 |              0.833 |            0.729 |
+| Sorted-rank regression | 15%              | 1×      |              0.540 |              0.671 |            0.803 |
+| Sorted-rank regression | 15%              | 8×      |              0.234 |              0.278 |            0.962 |

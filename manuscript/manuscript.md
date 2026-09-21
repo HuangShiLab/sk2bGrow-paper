@@ -783,14 +783,15 @@ earlier laptop-side instance is archived at
 
 ---
 
-### 6. Landmark-source and robustness experiments (F1–F5)
+### 6. Landmark-source and robustness experiments (F1–F6)
 
-All five experiments isolate the **landmark source** — deterministic 2bRAD
+All six experiments isolate or decompose the **landmark source** — deterministic 2bRAD
 anchors vs a density-matched FracMinHash sketch — from the estimator around
 it. F1 and F2 ask whether accuracy differences survive density matching; F3
 quantifies the misassignment risk of mismatch-tolerant counting; F4 asks
 whether the fragmentation results of §3.3 are landmark-agnostic; F5 costs the
-two sources at GTDB-like scale. Throughout, a matched pair is only ever
+two sources at GTDB-like scale; F6 is a post-hoc count-level factorial that
+separates estimator, depth, ambiguity and coordinate placement. Throughout, a matched pair is only ever
 compared inside the same harness, and cross-harness numbers are never quoted
 against each other. The historical parity-flag asymmetry between enzyme arms
 (`--windows`) and sketch arms (not) was tested in a symmetric rerun and found
@@ -939,12 +940,48 @@ k16/k8, FMH matched, FMH s200) × 4 depths (0.5–5×) × 8 truth replicates.
 index; per-sample profile wall-clock/RSS; half-density accuracy against
 matched density.
 
+#### 6.6 Count-level factorial decomposition of depth and ambiguity (F6, post hoc)
+
+**Purpose.** Separate four effects that are confounded in an end-to-end
+comparison — estimator, sequencing depth, multi-strain anchor ambiguity, and
+landmark-coordinate placement — without changing the read-level benchmark used
+for the primary attribution analysis.
+
+**Simulator.** Each sample is a count-level community on a 3-Mb circular
+chromosome with 5-kb windows and 5,000 landmarks per genome. True log₂PTR values
+are drawn independently from U[0, 2], and counts follow the same V-shaped
+origin-to-terminus model as Pilea's simulation (origin at 0, terminus at 1.5 Mb).
+Abundance conditions are even, 10:1 or 100:1 ratios with unit geometric mean; the
+ratio rank is permuted in every replicate. The grid crosses 4/8/16/32 strains,
+0.5/1/2/4/8× per-strain depth, 0/5/15 % shared anchors, three abundance ratios,
+two landmark-coordinate arms and two estimators, with 10 replicates per cell
+(54,000 strain-level estimates per estimator). The coordinate arm uses regular
+landmark positions; the sketch arm uses an equal-density random landmark set.
+
+**Ambiguity model.** Private anchors are assigned to the strain that generated
+them. A shared anchor is observable only as a pooled count, which is assigned to
+one strain with probability proportional to that strain's latent expected
+contribution. This is deliberately conservative: it represents one plausible
+consequence of shared sequence/hash evidence rather than asserting that any
+particular mapping pipeline makes this exact error. Window rates are normalized
+by landmark exposure so that the random arm is not penalized merely for unequal
+anchors per window. Coordinate fits use delta-method standard errors; the same
+window rates are passed to the sorted-rank estimator.
+
+**Scope and outputs.** The simulator does not model sequencing error, GC bias,
+fragmentation, database screening or Pilea's shipped gates, and therefore does
+not replace the Zheng or multi-strain read benchmarks. No FASTQ or per-anchor
+intermediates were retained; only aggregate tables were written. The complete
+grid was run as SLURM job 4088324 (24 one-CPU, 2-GiB array tasks; all completed
+in ≤2 min) under review-final commit `d108932`. Per-cell long output, source
+contrasts, Table 11 and Fig. 9 are in `factorial_benchmark/`.
+
 ---
 
 ### 7. Computational environment
 
 Apple M3 Max, 16 cores, 48 GB RAM, macOS 14.7; Rust 1.92.0, Python 3.12.4.
-The initial benchmark grid was run on a laptop; the final C1 paired-end A/B/E statistics grid, F1–F5 and C5-scale experiments used the internal HPC (SLURM; Intel and AMD partitions). The final primary grid used 8 CPU threads on the AMD partition under sk2bGrow review-final commit `929f4c2` (job 4076237). Runs deferred for scale —
+The initial benchmark grid was run on a laptop; the final C1 paired-end A/B/E statistics grid, F1–F6 and C5-scale experiments used the internal HPC (SLURM; Intel and AMD partitions). The final primary grid used 8 CPU threads on the AMD partition under sk2bGrow review-final commit `929f4c2` (job 4076237). Runs deferred for scale —
 full-depth *E. coli*, the 45,529-assembly quality sweep, Pilea's full
 32-strain/32× grid, and the marine metagenome application — are marked as such
 where they appear. HPC runs used a SLURM cluster with Lustre storage.
@@ -1083,6 +1120,41 @@ succeed. A property-by-property comparison of the two landmark sources,
 with each row carrying its evidence, is given in Table 9.
 
 *(Fig. 4)*
+
+#### 4.1 Count-level factorial analysis: depth and ambiguity are separable
+
+A post-hoc count-level factorial (Methods §6.6) asks whether the shallow-depth
+mechanism and the multi-strain failure mode can be separated. In the private-
+anchor control, the coordinate fit was the dominant explanation for accuracy:
+pooling both landmark arms, its mean RMSE at 0.5× was 0.115 log₂ units, compared
+with 0.641 for sorted-rank regression, and increasing depth to 8× reduced the
+coordinate-fit RMSE to 0.018. This is the same direction as the read-level
+attribution experiment, but under a grid that extends to 32 strains and a
+100:1 abundance ratio.
+
+Shared evidence changed the problem. With 15 % of anchors shared across strains,
+coordinate V-fit was already biased by −0.741 log₂ units at 0.5×, and the bias
+deepened to −1.315 at 8× (RMSE 0.821 and 1.406). Thus increasing depth reduced
+counting noise in the private-anchor control but did not remove — and in this
+ambiguity model amplified — assignment error. Abundance imbalance affected the
+two estimators differently: coordinate V-fit's mean RMSE rose from 0.504 to 0.593
+log₂ units from even to 100:1, while sorted-rank regression rose from 0.304 to
+0.624. The factorial therefore treats depth and ambiguity as distinct axes
+rather than collapsing both into a generic "multi-strain is harder" statement.
+
+The landmark-placement interaction was conditional on ambiguity. With no shared
+anchors and equal density, the regular-coordinate and random-coordinate arms were
+equivalent (paired RMSE differences: +0.002 for coordinate V-fit and −0.014 for
+sorted rank). At 8× and 15 % shared anchors, however, coordinate V-fit had mean
+RMSE 0.063 on the regular arm but 2.748 on the random arm, whereas sorted rank
+was comparatively insensitive (0.278 versus 0.228). We interpret this as a
+simulator-level warning rather than evidence about Pilea's production code: the
+random-coordinate arm is idealized, and the ambiguity assignment is not fitted to
+a particular mapper. Its value is to show that coordinate methods depend not only
+on having coordinates, but on the assignability of the underlying landmarks. The
+complete cell-level results are in Table 11 and Fig. 9.
+
+*(Fig. 9; Table 11)*
 
 ### 5. How many enzymes are needed, and over what GC range?
 
@@ -1400,6 +1472,36 @@ projected, not shipped.
 
 **Where the gain comes from — and where it does not.** The attribution experiment (Results §4) constrains the claim the data support: the coordinate-aware estimator is what carries the low-coverage result, on either landmark source — at 0.5–1× the V-fit beats sorted-rank regression by wide margins on both enzyme anchors and a density-matched FracMinHash sketch. The landmark source itself showed no detectable accuracy difference in this paired analysis: pooling 48 media × subsampling-instance units, anchors and matched-density sketch were not significantly different, including at 0.5×. The estimator × landmark interaction is null at 1× and significantly negative at 2× — there is no evidence the panel amplifies the estimator's value, and some that the sketch benefits more from it. What the multi-enzyme panel contributes instead is structure a hash sketch cannot provide: a landmark set the 2bRAD protocol physically produces (wet-lab realizable, not only computational); motif strata with heterogeneous biases, so cross-enzyme agreement tests systematic error and not just sampling noise — Cochran's Q caught this paper's own double-counting defect; and at very low input, fusion redundancy: a single-stratum sketch that finds no downhill origin has no second stratum to rescue it (F1 harness, single-end), while sixteen strata need only a subset of per-enzyme fits to succeed. The honest one-line version: the estimator buys the low-depth accuracy; the panel buys realizability, heterogeneous QC strata, and fusion redundancy.
 
+**Depth is one axis; assignability is another.** The count-level factorial
+(Results §4.1) sharpens this distinction without changing its conservative
+framing. In the private-anchor control, coordinate fitting improved steadily
+with depth, whereas sorted-rank regression remained much less accurate over the
+whole tested range. When anchors were shared among strains, however, depth no
+longer behaved as a simple cure: the coordinate fit's negative bias increased
+with depth under the shared-anchor assignment model. This explains why a claim
+that sk2bGrow "wins at low depth" and a concern that multi-species PTR is
+confounded by shared evidence are not competing statements. The first is about
+extracting a coordinate gradient from few observations; the second is about
+whether each observation can be attributed to the correct reference. An
+end-to-end comparison can therefore be shallow-depth-favourable and still fail
+or degrade in a dense community. The factorial result does not prove that Pilea's
+production pipeline suffers from this exact assignment mechanism, but it makes
+the mechanism testable and argues for reporting the fraction of shared or
+ambiguous landmarks alongside depth and recall.
+
+**Ambiguity should become an explicit QC axis, not a post-hoc explanation.** The
+practical implication is not that 2bRAD is universally superior. A coordinate
+fit is powerful only when coordinate-bearing observations are assignable; a
+sketch may tolerate some forms of divergence better, as F3 suggests, but can lose
+the coordinate structure needed for V-fitting. Future implementations should
+report unique/shared anchor fractions and per-reference unique coverage, compare
+fits before and after downweighting ambiguous loci, and reserve EM-style
+assignment for references whose shared-anchor structure has been measured. Until
+such a read-level experiment is available, the factorial analysis supports a
+diagnostic distinction — shallow-depth extraction versus multi-reference
+assignment — but not a general claim that one landmark chemistry outperforms the
+other.
+
 **Limits of the biological model.** Several assumptions of the PTR model remain untouched by this paper. The isolate benchmark is one strain per species against a complete reference; real communities mix strains, and within-species accessory-genome variation is contacted by any genome-wide landmark set. Relic (non-replicating) DNA flattens the gradient and biases PTR toward 1; multi-fork replication puts a genuine kink in the profile at PTR > 2 (the two-slope form exists for this but is exercised only weakly here); and plasmids, whose copy number does not follow the chromosome's replication gradient, are counted by any whole-genome landmark scheme. The instrument boundary measured in Results §5 — GC ≳ 30% at depth ≳ 1×, in both landmark modes — should be read as part of these limits.
 
 **The panel should probably be ~8 enzymes, not 16.** The four sparsest enzymes contribute no accuracy and double the negative-control (run-out) bias (Results §5). The recommendation holds across the measured GC range, and a two-enzyme panel already carries 17,055 anchors — comparable to Pilea's 18,261 sketch k-mers — so the like-for-like comparison is favourable at every panel size.
@@ -1481,12 +1583,16 @@ Not applicable.
 
 sk2bGrow: <https://github.com/HuangShiLab/sk2bGrow>.
 Manuscript, figures and figure code: <https://github.com/HuangShiLab/sk2bGrow-paper>.
-Figures are a pure function of the tables in `data/`; `python3 figures/make_figures.py`
-regenerates all of them with no network access and no recomputation from reads.
+Figures are a pure function of the tables in `data/` and
+`factorial_benchmark/factorial_long.tsv`; `python3 figures/make_figures.py` and
+`python3 factorial_benchmark/make_factorial_outputs.py` regenerate them with no
+network access and no recomputation from reads.
 Review-response provenance is in `data/m1_signed/`: the final primary A/B/E grid
 (`hpc_singlepass_grid_results.tsv`), its summary
 (`hpc_singlepass_grid_summary.tsv`), and the rejected residual-GC diagnostic
 (`gc_correction_diagnostic.tsv`).
+Count-level factorial inputs, aggregate tables, simulator and Figure 9 code are
+in `factorial_benchmark/`.
 Sequencing data: PRJNA615952 (Zheng *E. coli* panel), PRJNA689204 (Sun faecal
 study), PRJNA974210 (rotating biological contactor metagenome).
 
@@ -1539,6 +1645,8 @@ Not applicable.
 ![**Fig. 7.** Fecal-cohort concordance](../figures/out/fig7_metagenome.png){width=6.5in}
 
 ![**Fig. 8.** MAG-scale QC and cost](../figures/out/fig8_mag_qc_cost.png){width=6.5in}
+
+![**Fig. 9.** Count-level factorial decomposition of estimator, depth and shared-anchor ambiguity](../figures/out/fig9_factorial_mechanism.png){width=6.5in}
 
 Source PDFs and reproducible figure code are in `figures/`.
 
@@ -1831,3 +1939,28 @@ Rows marked "not measured" have no data in this study and must not be read as nu
 | explicit sorted-policy refusion QC  | 108 of 4698 observations; 2-30 per sample                                                           | contigs rho 0.04 (0.08 coverage-partial); current code, fallback selected deliberately                               |
 
 Agreement coefficients are over species x sample units. In (a) the comparator is Pilea at its shipped gates; the observed ranges span only ~1.4 log2, so the low CCC (0.25-0.37) is dynamic-range deflation, not broken concordance; the gates-off rows (r ~0) are the control showing Pilea's gate does real work. In (b) exact read-level deduplication before counting flattens the PTR dynamic range (deduped r 0.30-0.60 vs raw 0.45-0.80); the cap-dedup sensitivity sweep found no robust intermediate (cap=2 is best in S07, worst in S06), so the process recommendation is to not exactly dedup 2bRAD libraries before counting; a GLM on deduped counts does not recover the signal (r -0.03-0.41). sigma_eff is within-batch (3 libraries, one study/one centre; cross-lab transfer awaits the Hou cohort) and measured on the single enzyme (BcgI) present in the Sun libraries. In (c) C5 recall/QC rows are labelled by code policy: legacy rows predate signed fixed-origin fitting and the conservative refusal of sorted fallback on fragmented references; refusion rows rerun the retained window rates with current code. The 1.00 recall headline is reported_fraction (no gate), not accuracy.
+
+**Table 11. Count-level factorial decomposition of estimator, depth and shared-anchor ambiguity.**
+
+Values are means over 4/8/16/32-strain communities, even/10:1/100:1 abundance ratios and 10 replicates, shown for the regular coordinate arm. The random FracMinHash-like arm and paired source contrasts are in `factorial_benchmark/factorial_long.tsv` and `factorial_benchmark/factorial_source_contrasts.tsv`. Bias and RMSE are in log2(PTR) units.
+
+| estimator              | shared_anchors   | depth   |   Mean bias (log2) |   Mean RMSE (log2) |   Mean Pearson r |
+|:-----------------------|:-----------------|:--------|-------------------:|-------------------:|-----------------:|
+| Coordinate V-fit       | 0%               | 0.5×    |             -0.022 |              0.115 |            0.973 |
+| Coordinate V-fit       | 0%               | 1×      |             -0.014 |              0.072 |            0.990 |
+| Coordinate V-fit       | 0%               | 8×      |              0.001 |              0.018 |            0.999 |
+| Coordinate V-fit       | 5%               | 0.5×    |             -0.022 |              0.110 |            0.978 |
+| Coordinate V-fit       | 5%               | 1×      |             -0.012 |              0.080 |            0.989 |
+| Coordinate V-fit       | 5%               | 8×      |             -0.000 |              0.039 |            0.998 |
+| Coordinate V-fit       | 15%              | 0.5×    |             -0.022 |              0.133 |            0.971 |
+| Coordinate V-fit       | 15%              | 1×      |             -0.012 |              0.100 |            0.983 |
+| Coordinate V-fit       | 15%              | 8×      |             -0.001 |              0.063 |            0.994 |
+| Sorted-rank regression | 0%               | 0.5×    |              0.464 |              0.635 |            0.737 |
+| Sorted-rank regression | 0%               | 1×      |              0.319 |              0.504 |            0.824 |
+| Sorted-rank regression | 0%               | 8×      |              0.052 |              0.119 |            0.978 |
+| Sorted-rank regression | 5%               | 0.5×    |              0.571 |              0.727 |            0.714 |
+| Sorted-rank regression | 5%               | 1×      |              0.400 |              0.574 |            0.778 |
+| Sorted-rank regression | 5%               | 8×      |              0.132 |              0.196 |            0.962 |
+| Sorted-rank regression | 15%              | 0.5×    |              0.709 |              0.833 |            0.729 |
+| Sorted-rank regression | 15%              | 1×      |              0.540 |              0.671 |            0.803 |
+| Sorted-rank regression | 15%              | 8×      |              0.234 |              0.278 |            0.962 |

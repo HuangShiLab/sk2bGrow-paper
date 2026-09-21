@@ -10,6 +10,7 @@ lives in the separate [`sk2bGrow`](../sk2bGrow) repository.
 manuscript/   outline and `manuscript.md`, the authoritative manuscript
 manuscript/submission/  formatted review draft for journal submission
 data/         committed benchmark outputs (small TSVs) — the only input to figures & tables
+factorial_benchmark/  count-level factorial simulator, aggregate outputs and Fig. 9/Table 11 code
 figures/      make_figures.py, make_tables.py, style.py
 figures/out/  generated PNG + PDF (regenerable; safe to delete)
 tables/       generated markdown + TSV (regenerable)
@@ -31,12 +32,14 @@ manuscript, not with the installable tool.
 
 ```bash
 python3 figures/make_figures.py
+python3 factorial_benchmark/make_factorial_outputs.py
 ```
 
-Reads only `data/*.tsv`. No network, no recomputation — the figures are a pure
+Reads only committed TSVs. No network, no recomputation — the figures are a pure
 function of the committed data, so a reviewer can reproduce every panel without
 rerunning the benchmark or installing the tool. To regenerate the *data*, see
-`benches/zheng2020/` in the code repo.
+`benches/zheng2020/` in the code repo; the factorial simulator is in
+`factorial_benchmark/DESIGN.md`.
 
 ## Provenance
 
@@ -63,6 +66,7 @@ and the subsampling read counts. `data/results_raw.tsv` carries one row per
 | `fig6_fragmentation` (Fig 6) | fragmentation destroys the coordinate; `scaffold` restores the complete-reference result |
 | `fig7_metagenome` (Fig 7) | Sun cohort: cross-method concordance + the exact-dedup ablation |
 | `fig8_mag_qc_cost` (Fig 8) | C5: QC pass rate falls with MAG fragmentation and recall under a common protocol (a, b); cost at scale, measured: 89.5–240.8× → mm=1 → containment screen (c, d) |
+| `fig9_factorial_mechanism` (Fig 9) | count-level factorial: coordinate V-fit versus sorted rank at private anchors (a); shared-anchor ambiguity grows with depth (b); source placement matters only once anchors are ambiguous (c) |
 
 
 ## Multi-strain simulation (Pilea's Fig-3 design, laptop scale)
