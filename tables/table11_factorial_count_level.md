@@ -9,7 +9,7 @@ Values are means over 4/8/16/32-strain communities, even/10:1/100:1 abundance ra
 | Coordinate V-fit       | 0%               | 8×      |              0.001 |              0.018 |            0.999 |
 | Coordinate V-fit       | 5%               | 0.5×    |             -0.022 |              0.110 |            0.978 |
 | Coordinate V-fit       | 5%               | 1×      |             -0.012 |              0.080 |            0.989 |
-| Coordinate V-fit       | 5%               | 8×      |             -0.000 |              0.039 |            0.998 |
+| Coordinate V-fit       | 5%               | 8×      |              0.000 |              0.039 |            0.998 |
 | Coordinate V-fit       | 15%              | 0.5×    |             -0.022 |              0.133 |            0.971 |
 | Coordinate V-fit       | 15%              | 1×      |             -0.012 |              0.100 |            0.983 |
 | Coordinate V-fit       | 15%              | 8×      |             -0.001 |              0.063 |            0.994 |

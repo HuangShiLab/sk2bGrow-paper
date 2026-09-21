@@ -79,6 +79,8 @@ def write_table(agg: pd.DataFrame) -> None:
     show["estimator"] = show["estimator"].map(ESTIMATOR_LABEL)
     show["shared_anchors"] = (show["shared_fraction"] * 100).round(0).astype(int).astype(str) + "%"
     show["depth"] = show["depth"].map({0.5: "0.5×", 1.0: "1×", 8.0: "8×"})
+    # Avoid a signed-zero artifact when rounding near-zero means.
+    show.loc[show["bias"].abs() < 5e-4, "bias"] = 0.0
     show = show[
         ["estimator", "shared_anchors", "depth", "bias", "rmse", "correlation"]
     ].rename(

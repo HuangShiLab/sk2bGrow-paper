@@ -17,6 +17,7 @@
 - [x] Residual two-pass GC correction is excluded from the primary benchmark and retained only as a diagnostic.
 - [x] Matched-density landmark-source comparisons are described as bootstrap non-significance rather than equivalence.
 - [x] Title and framing identify coordinate-aware V-fitting, not landmark determinism, as the source of the shallow-depth gain.
+- [x] Count-level factorial is labelled post hoc and is not represented as read-level validation.
 - [x] C5 legacy outputs are distinguished from current-policy refusion.
 - [x] Explicit sorted-estimator C5 sensitivity arm is reported.
 
