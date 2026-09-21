@@ -1,0 +1,2 @@
+comparison	genomes_k16	genomes_k8	genomes_lost	genomes_gained	total_count_ratio	median_genome_count_ratio	pearson_log10_total	k16_db_anchors	k8_db_anchors	k16_wall_s	k8_wall_s	k16_rss_gb	k8_rss_gb
+M4_k8_mm1_vs_M4_k16_mm1	522	522	0	0	0.765782	0.764449	0.997197	24109804	18820392	111.25	766.71	2.49291	10.0869

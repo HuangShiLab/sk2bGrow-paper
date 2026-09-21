@@ -1,0 +1,2 @@
+comparison	n_matched_genomes	n_finite_current	n_finite_fast	n_both_finite	n_qc_current	n_qc_fast	n_qc_both	pearson_log2ptr_both_finite	median_abs_log2ptr_diff_both_finite	median_abs_log2ptr_diff_both_qc	qc_agreement
+k8_mm1_fast_vs_k16_mm2_current_policy	522	8	8	8	4	3	3	0.291474	0.0923978	0.0194289	0.998084

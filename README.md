@@ -116,3 +116,11 @@ sorted-rank regression. The multi-enzyme panel contributes wet-lab
 realizability, heterogeneous QC strata and fusion redundancy, not a magical
 deterministic sketch. The old “interaction” narrative has been withdrawn after
 the multi-instance test and the signed-origin fix.
+
+## C5 fast-mode benchmark
+
+`data/c5_fast_bench/` contains the post-hoc combined deployment benchmark on one
+full-depth C5 sample: top-8 enzymes + mismatch 1 reduces wall time from 21.17 h
+to 1.26 h at 8 threads, while current-policy QC calls remain near-identical
+(3 vs 4 QC-pass genomes; median absolute log2 PTR difference 0.0194 on shared
+QC calls).

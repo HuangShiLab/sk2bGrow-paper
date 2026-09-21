@@ -1,0 +1,3 @@
+arm	enzymes	mismatch	screen	threads	wall_s	wall_h	peak_rss_gb	speedup_vs_k16_current	ratio_to_pilea_defaults
+k16_mm2_current	16	2	no	8	76218.63	21.1718	15.3719	1.000	221.914
+k8_mm1_fast	8	1	no	8	4551.00	1.2642	10.3765	16.748	13.250

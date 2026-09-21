@@ -981,7 +981,7 @@ contrasts, Table 11 and Fig. 5 are in `factorial_benchmark/`.
 ### 7. Computational environment
 
 Apple M3 Max, 16 cores, 48 GB RAM, macOS 14.7; Rust 1.92.0, Python 3.12.4.
-The initial benchmark grid was run on a laptop; the final C1 paired-end A/B/E statistics grid, F1–F6 and C5-scale experiments used the internal HPC (SLURM; Intel and AMD partitions). The final primary grid used 8 CPU threads on the AMD partition under sk2bGrow review-final commit `929f4c2` (job 4076237). Runs deferred for scale —
+The initial benchmark grid was run on a laptop; the final C1 paired-end A/B/E statistics grid, F1–F6 and C5-scale experiments used the internal HPC (SLURM; Intel and AMD partitions). The final primary grid used 8 CPU threads on the AMD partition under sk2bGrow review-final commit `929f4c2` (job 4076237). The post-hoc C5 fast-mode benchmark used 8 CPU threads under review-final commit `d108932` (job 4095386). Runs deferred for scale —
 full-depth *E. coli*, the 45,529-assembly quality sweep, Pilea's full
 32-strain/32× grid, and the marine metagenome application — are marked as such
 where they appear. HPC runs used a SLURM cluster with Lustre storage.
@@ -1428,6 +1428,22 @@ database-scale presence rates (< 1%). The flip is therefore real and partially
 fixed: mismatch-1 is measured end-to-end, the screen is measured on the
 false-positive side only.
 
+To test these levers together, one full-depth C5 sample (SRR28338156;
+67,423,986 reads) was rerun with the top-8 enzyme panel and mismatch 1 under the
+current fragmented-reference policy. Combined with the smaller anchor set,
+mismatch 1 reduced sk2bGrow wall time from 21.17 h to 1.26 h (**16.75×**) at 8
+threads and lowered peak RSS from 15.37 GB to 10.38 GB. It remained 13.25×
+slower than Pilea defaults on the same sample. Under the same conservative QC
+policy, both arms returned eight finite PTRs; current k16/mismatch-2 passed four
+genomes and fast k8/mismatch-1 passed three, with all three fast calls also
+passing in the current arm. Their median absolute log₂PTR difference was
+0.0194. On a matched 1M-pair subset, the k8 panel retained 76.6% of assigned
+anchor mass, with no detectable genome lost and log₁₀ count-total correlation
+0.997. This is a one-sample deployment benchmark rather than a new primary grid,
+but it supports k8/mismatch-1 as the default starting point for shotgun
+MAG-scale runs. Real 2bRAD libraries should still use mismatch 0 unless a new
+mismatch sensitivity analysis is performed on route-B reads.
+
 *(Fig. 9; Table 10)*
 
 ### 8. Computational efficiency and scale
@@ -1595,6 +1611,8 @@ Review-response provenance is in `data/m1_signed/`: the final primary A/B/E grid
 (`gc_correction_diagnostic.tsv`).
 Count-level factorial inputs, aggregate tables, simulator and Figure 5 code are
 in `factorial_benchmark/`.
+C5 fast-mode benchmark summaries and the per-genome output for sample
+SRR28338156 are in `data/c5_fast_bench/`.
 Sequencing data: PRJNA615952 (Zheng *E. coli* panel), PRJNA689204 (Sun faecal
 study), PRJNA974210 (rotating biological contactor metagenome).
 
@@ -1963,3 +1981,19 @@ Values are means over 4/8/16/32-strain communities, even/10:1/100:1 abundance ra
 | Sorted-rank regression | 15%              | 0.5×    |              0.709 |              0.833 |            0.729 |
 | Sorted-rank regression | 15%              | 1×      |              0.540 |              0.671 |            0.803 |
 | Sorted-rank regression | 15%              | 8×      |              0.234 |              0.278 |            0.962 |
+**Table 12. C5 fast-mode benchmark: 8 enzymes and mismatch 1 on one full-depth sample.**
+
+| arm | enzymes | mismatch | screen | threads | wall_s | wall_h | peak_rss_gb | n_finite_ptr | n_qc_pass | median_abs_log2ptr_common_qc |
+|:---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| k16_mm2_current | 16 | 2 | no | 8 | 76218.63 | 21.1718 | 15.3719 | 8 | 4 | NA |
+| k8_mm1_fast | 8 | 1 | no | 8 | 4551.00 | 1.2642 | 10.3765 | 8 | 3 | 0.019429 |
+
+Current policy is the C5 refusion arm under the conservative fragmented-reference rule. The fast arm uses the top-8 ranked enzymes and mismatch 1 without a containment screen. `median_abs_log2ptr_common_qc` is the median absolute log2 PTR difference for the three genomes that pass QC in both arms. SLURM job 4095386; sample SRR28338156; 67,423,986 reads.
+**Table 12. C5 fast-mode benchmark: 8 enzymes and mismatch 1 on one full-depth sample.**
+
+| arm | enzymes | mismatch | screen | threads | wall_s | wall_h | peak_rss_gb | n_finite_ptr | n_qc_pass | median_abs_log2ptr_common_qc |
+|:---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| k16_mm2_current | 16 | 2 | no | 8 | 76218.63 | 21.1718 | 15.3719 | 8 | 4 | NA |
+| k8_mm1_fast | 8 | 1 | no | 8 | 4551.00 | 1.2642 | 10.3765 | 8 | 3 | 0.019429 |
+
+Current policy is the C5 refusion arm under the conservative fragmented-reference rule. The fast arm uses the top-8 ranked enzymes and mismatch 1 without a containment screen. `median_abs_log2ptr_common_qc` is the median absolute log2 PTR difference for the three genomes that pass QC in both arms. SLURM job 4095386; sample SRR28338156; 67,423,986 reads.
