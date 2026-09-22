@@ -12,7 +12,7 @@
 
 **Target journal:** *Microbiome*
 
-**Revision provenance:** Review revision 2026-09-18. The primary Zheng grid uses signed fixed-origin fitting and single-pass GC correction; residual two-pass GC correction is diagnostic only.
+**Revision provenance:** Internal review revision 2026-09-22. The primary Zheng grid uses signed fixed-origin fitting and single-pass GC correction; residual two-pass GC correction remains diagnostic only. This revision adds the count-level factorial analysis (F6) and the post-hoc C5 k8/mismatch-1 deployment benchmark.
 
 
 ## Abstract
@@ -1440,11 +1440,12 @@ passing in the current arm. Their median absolute log₂PTR difference was
 0.0194. On a matched 1M-pair subset, the k8 panel retained 76.6% of assigned
 anchor mass, with no detectable genome lost and log₁₀ count-total correlation
 0.997. This is a one-sample deployment benchmark rather than a new primary grid,
-but it supports k8/mismatch-1 as the default starting point for shotgun
-MAG-scale runs. Real 2bRAD libraries should still use mismatch 0 unless a new
+but it supports k8/mismatch-1 as a candidate default for shotgun MAG-scale runs;
+confirmation across all nine C5 samples is still appropriate before changing the
+shipped default. Real 2bRAD libraries should still use mismatch 0 unless a new
 mismatch sensitivity analysis is performed on route-B reads.
 
-*(Fig. 9; Table 10)*
+*(Table 12; Fig. 9)*
 
 ### 8. Computational efficiency and scale
 
@@ -1981,14 +1982,6 @@ Values are means over 4/8/16/32-strain communities, even/10:1/100:1 abundance ra
 | Sorted-rank regression | 15%              | 0.5×    |              0.709 |              0.833 |            0.729 |
 | Sorted-rank regression | 15%              | 1×      |              0.540 |              0.671 |            0.803 |
 | Sorted-rank regression | 15%              | 8×      |              0.234 |              0.278 |            0.962 |
-**Table 12. C5 fast-mode benchmark: 8 enzymes and mismatch 1 on one full-depth sample.**
-
-| arm | enzymes | mismatch | screen | threads | wall_s | wall_h | peak_rss_gb | n_finite_ptr | n_qc_pass | median_abs_log2ptr_common_qc |
-|:---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| k16_mm2_current | 16 | 2 | no | 8 | 76218.63 | 21.1718 | 15.3719 | 8 | 4 | NA |
-| k8_mm1_fast | 8 | 1 | no | 8 | 4551.00 | 1.2642 | 10.3765 | 8 | 3 | 0.019429 |
-
-Current policy is the C5 refusion arm under the conservative fragmented-reference rule. The fast arm uses the top-8 ranked enzymes and mismatch 1 without a containment screen. `median_abs_log2ptr_common_qc` is the median absolute log2 PTR difference for the three genomes that pass QC in both arms. SLURM job 4095386; sample SRR28338156; 67,423,986 reads.
 **Table 12. C5 fast-mode benchmark: 8 enzymes and mismatch 1 on one full-depth sample.**
 
 | arm | enzymes | mismatch | screen | threads | wall_s | wall_h | peak_rss_gb | n_finite_ptr | n_qc_pass | median_abs_log2ptr_common_qc |
