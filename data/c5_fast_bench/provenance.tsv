@@ -1,0 +1,7 @@
+artifact	hpc_path_or_stage	job_or_source	command_summary
+k16_mm2_current_count	wall_s=74262; peak_rss_gb=15.371876	original C5 grid; retained time file	sk2bgrow profile SRR28338156_R1.fastq.gz SRR28338156_R2.fastq.gz -d C5/db --no-stats --threads 8
+k16_mm2_current_stats	wall_s=1956.63; peak_rss_gb=15.0115625	current-policy C5 refusion	python -m sk2bgrow.cli profile retained counts --db C5/db --output current output --use-rust-windows --count-model ztp
+k8_mm1_fast_end_to_end	wall_s=4551; peak_rss_gb=10.376476	SLURM 4095386	sk2bgrow profile paired FASTQs -d C5_fast_bench/db_k8scr --python sk2bgrow-env-python --threads 8 --max-mismatch 1
+k8_database	18,820,392 anchors; 683 MB anchors.bin; 717 MB with screen	index stage	sk2bgrow index C5/refs --enzymes CjePI,CjeI,AlfI,Hin4I,HaeIV,BcgI,Bsp24I,BsaXI --screen-scale 2000 --threads 8
+screen_equivalence	`screen_equivalence_summary.tsv`; 29,672,386 anchor rows	original C5 screen A/B counts	chunked merge of unrestricted and screened count TSVs on genome_id, contig_id and position
+factorial	Fig. 5; Table 11	SLURM array 4088324; aggregation 4088334	count-level factorial simulator and aggregate_factorial.py

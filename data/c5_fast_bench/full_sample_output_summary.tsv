@@ -1,3 +1,3 @@
-arm	enzymes	mismatch	screen	n_rows	n_finite_ptr	n_qc_pass	median_log2ptr_qc
-k16_mm2_current	16	2	no	522	8	4	NA
-k8_mm1_fast	8	1	no	522	8	3	NA
+arm	n_rows	n_finite_ptr	n_qc_pass	median_log2ptr_qc	median_coverage_qc
+k16_mm2_current	522	8	4	0.126238	4.39693
+k8_mm1_fast	522	8	3	0.148049	5.77605

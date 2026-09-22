@@ -12,12 +12,11 @@
 
 **Target journal:** *Microbiome*
 
-**Revision provenance:** Internal review revision 2026-09-22. The primary Zheng grid uses signed fixed-origin fitting and single-pass GC correction; residual two-pass GC correction remains diagnostic only. This revision adds the count-level factorial analysis (F6) and the post-hoc C5 k8/mismatch-1 deployment benchmark.
 
 
 ## Abstract
 
-Peak-to-trough ratio (PTR) inference from metagenomes is a culture-independent proxy for bacterial growth rates, but the current sketch-based estimator requires a depth that metagenomic per-strain coverage rarely reaches, and its shipped coverage gates return no estimate at all below ~10×. We present sk2bGrow, which counts Type IIB restriction-enzyme (2bRAD) anchors — motif-defined loci whose genome coordinates are known a priori and identical across samples — and fits the replication gradient with a coordinate-aware windowed V-fit. On the Zheng *E. coli* growth-rate panel, sk2bGrow returned usable PTR estimates at 1–2× sequencing depth, where Pilea's shipped defaults return nothing, with r = 0.92 at 1× and 0.96 at 2× against measured growth rates (n = 16). The accuracy comes from the coordinate-aware estimator, not the landmark source — at matched density, the two landmark sources were not significantly different in the paired bootstrap at any depth — while the multi-enzyme panel contributes what a hash sketch cannot: a wet-lab-realizable landmark set and consistency strata whose heterogeneous biases exposed our own counting defect. A post-hoc count-level factorial further separates shallow-depth extraction from multi-reference assignment: coordinate fitting was accurate for private anchors, whereas shared-anchor ambiguity introduced a depth-amplified negative bias. The estimates are not unbiased — the fitted slope compresses the dynamic range at low coverage, and the compression mechanism remains unresolved. On three fecal metagenomes, sk2bGrow and Pilea agreed (bias +0.22–+0.25 log2; n = 58–78 species×sample pairs per sample). As a process-level finding, exact deduplication of 2bRAD libraries before counting destroys the PTR signal — a PCR copy-number artefact we localize per anchor. sk2bGrow is 89.5–240.8× slower than Pilea at MAG-panel scale; mismatch-1 counting narrows the gap to roughly one order of magnitude (measured end-to-end on all nine samples: 20.5–38.8× faster counting than the mismatch-2 baseline, no genome lost), and a containment pre-screen — measured to clear the absent-reference false-positive floor, and required at database scale where an unrestricted index would emit estimates for absent references — completes the fix.
+Peak-to-trough ratio (PTR) inference from metagenomes is a culture-independent proxy for bacterial growth rates, but current sketch-based methods require a depth that per-strain metagenomic coverage rarely reaches, and shipped coverage gates return no estimate below approximately 10×. We present sk2bGrow, which counts Type IIB restriction-enzyme (2bRAD) anchors with known genomic coordinates and fits the replication gradient using a coordinate-aware windowed V-fit. On the Zheng *Escherichia coli* growth-rate panel, sk2bGrow returned estimates at 1–2× sequencing depth, where Pilea's shipped defaults returned none, with r = 0.92 at 1× and 0.96 at 2× against measured growth rates. Controlled attribution showed that this shallow-depth gain came from coordinate-aware fitting rather than landmark source. A post-hoc count-level factorial further separated shallow-depth extraction from shared-anchor ambiguity, although it was mechanistic and did not model sequencing error, GC bias, or production mapping. PTR estimates were compressed at low depth, and the mechanism remains unresolved. In three fecal metagenomes, sk2bGrow and Pilea agreed (bias +0.22–+0.25 log2), while exact deduplication of real 2bRAD libraries destroyed the PTR signal. For MAG-scale shotgun data, a k8/mismatch-1 fast mode reduced one full-depth C5 sample from 21.17 h to 1.26 h (16.75×), with three versus four current-policy QC calls; confirmation across all nine samples is still needed. Pilea remained 13.25× faster on that sample. These results support coordinate-aware 2bRAD-style fitting for shallow-depth microbiome data while defining its validation limits.
 
 ## Keywords
 
@@ -975,6 +974,10 @@ intermediates were retained; only aggregate tables were written. The complete
 grid was run as SLURM job 4088324 (24 one-CPU, 2-GiB array tasks; all completed
 in ≤2 min) under review-final commit `d108932`. Per-cell long output, source
 contrasts, Table 11 and Fig. 5 are in `factorial_benchmark/`.
+Factorial summaries in the text are weighted by the number of genome-level
+estimates in each cell. We also report 95% intervals from 10,000 cell-level
+bootstrap resamples; these quantify variability across factorial cells and do
+not substitute for read-level validation.
 
 ---
 
@@ -1125,29 +1128,32 @@ with each row carrying its evidence, is given in Table 9.
 
 A post-hoc count-level factorial (Methods §6.6) asks whether the shallow-depth
 mechanism and the multi-strain failure mode can be separated. In the private-
-anchor control, the coordinate fit was the dominant explanation for accuracy:
-pooling both landmark arms, its mean RMSE at 0.5× was 0.115 log₂ units, compared
-with 0.641 for sorted-rank regression, and increasing depth to 8× reduced the
-coordinate-fit RMSE to 0.018. This is the same direction as the read-level
-attribution experiment, but under a grid that extends to 32 strains and a
-100:1 abundance ratio.
+anchor control, the coordinate fit was the dominant explanation for accuracy.
+Pooling both landmark arms and weighting by the number of genome-level
+estimates, its mean RMSE at 0.5× was 0.122 log₂ units, compared with 0.622 for
+sorted-rank regression; at 8× the corresponding RMSE values were 0.018 and
+0.138. This is the same direction as the read-level attribution experiment, but
+under a grid that extends to 32 strains and a 100:1 abundance ratio.
 
 Shared evidence changed the problem. With 15 % of anchors shared across strains,
-coordinate V-fit was already biased by −0.741 log₂ units at 0.5×, and the bias
-deepened to −1.315 at 8× (RMSE 0.821 and 1.406). Thus increasing depth reduced
-counting noise in the private-anchor control but did not remove — and in this
-ambiguity model amplified — assignment error. Abundance imbalance affected the
-two estimators differently: coordinate V-fit's mean RMSE rose from 0.504 to 0.593
-log₂ units from even to 100:1, while sorted-rank regression rose from 0.304 to
-0.624. The factorial therefore treats depth and ambiguity as distinct axes
-rather than collapsing both into a generic "multi-strain is harder" statement.
+coordinate V-fit was biased by −0.963 log₂ units at 0.5× (bootstrap cell-level
+95% interval −1.489 to −0.404), and the bias deepened to −1.723 at 8×
+(−2.680 to −0.743); RMSE increased from 1.431 to 2.571 log₂ units. These are
+n-weighted pooled summaries, not production-pipeline predictions. Thus
+increasing depth reduced counting noise in the private-anchor control but did
+not remove — and in this ambiguity model amplified — assignment error.
+Abundance imbalance affected the two estimators differently: coordinate V-fit's
+mean RMSE rose from 0.504 to 0.593 log₂ units from even to 100:1, while
+sorted-rank regression rose from 0.304 to 0.624. The factorial therefore treats
+depth and ambiguity as distinct axes rather than collapsing both into a generic
+"multi-strain is harder" statement.
 
 The landmark-placement interaction was conditional on ambiguity. With no shared
 anchors and equal density, the regular-coordinate and random-coordinate arms were
-equivalent (paired RMSE differences: +0.002 for coordinate V-fit and −0.014 for
-sorted rank). At 8× and 15 % shared anchors, however, coordinate V-fit had mean
-RMSE 0.063 on the regular arm but 2.748 on the random arm, whereas sorted rank
-was comparatively insensitive (0.278 versus 0.228). We interpret this as a
+equivalent (n-weighted paired RMSE differences: +0.001 for coordinate V-fit and
+−0.018 for sorted rank). At 8× and 15 % shared anchors, however, coordinate
+V-fit had mean RMSE 0.068 on the regular arm but 3.636 on the random arm, whereas
+sorted rank was comparatively insensitive (0.240 versus 0.232). We interpret this as a
 simulator-level warning rather than evidence about Pilea's production code: the
 random-coordinate arm is idealized, and the ambiguity assignment is not fitted to
 a particular mapper. Its value is to show that coordinate methods depend not only
@@ -1427,6 +1433,13 @@ for; the projected ~21-fold shrink of the indexed anchor set applies to
 database-scale presence rates (< 1%). The flip is therefore real and partially
 fixed: mismatch-1 is measured end-to-end, the screen is measured on the
 false-positive side only.
+A direct C5 screen-equivalence audit shows why the screen cannot yet be treated
+as per-anchor neutral. On a matched 1M-pair subset it retained 99.44% of nonzero
+anchors and 99.35% of total count mass, but it lost 14,182 nonzero anchors,
+gained 4,096, and changed counts for 412 of 522 genomes; the median nonzero-anchor
+count ratio was 1, while the minimum was 0.2. It also dropped 65 low-abundance
+real MAGs. The screen therefore remains a database-scale false-positive control,
+not a default for this 522-MAG benchmark.
 
 To test these levers together, one full-depth C5 sample (SRR28338156;
 67,423,986 reads) was rerun with the top-8 enzyme panel and mismatch 1 under the
@@ -1437,15 +1450,21 @@ slower than Pilea defaults on the same sample. Under the same conservative QC
 policy, both arms returned eight finite PTRs; current k16/mismatch-2 passed four
 genomes and fast k8/mismatch-1 passed three, with all three fast calls also
 passing in the current arm. Their median absolute log₂PTR difference was
-0.0194. On a matched 1M-pair subset, the k8 panel retained 76.6% of assigned
-anchor mass, with no detectable genome lost and log₁₀ count-total correlation
-0.997. This is a one-sample deployment benchmark rather than a new primary grid,
-but it supports k8/mismatch-1 as a candidate default for shotgun MAG-scale runs;
-confirmation across all nine C5 samples is still appropriate before changing the
-shipped default. Real 2bRAD libraries should still use mismatch 0 unless a new
-mismatch sensitivity analysis is performed on route-B reads.
+0.0194; across all eight finite calls it was 0.0924 and the Pearson correlation
+was 0.291. The 21.17-h current-policy runtime comprises the original
+k16/mismatch-2 count stage (20.63 h) plus the retained-window refit (0.54 h);
+the 1.26-h fast runtime is end-to-end. On a matched 1M-pair subset,
+k8/mismatch-1 reduced count time from 111.25 s to 45.14 s, but statistics took
+longer (721.57 s versus 683.01 s), so end-to-end time was similar (766.71 s
+versus 794.26 s). The k8 panel retained 76.6% of assigned anchor mass, with no
+detectable genome lost and log₁₀ count-total correlation 0.997. This is a
+one-sample deployment case study rather than a new primary grid; it supports
+k8/mismatch-1 as a candidate fast configuration, but confirmation across all
+nine C5 samples is required before changing the shipped default. Real 2bRAD
+libraries should still use mismatch 0 unless a new mismatch sensitivity analysis
+is performed on route-B reads.
 
-*(Table 12; Fig. 9)*
+*(Table 12; Fig. 9; `data/mm1_e2e/mm1_full_sample_cost.tsv`)*
 
 ### 8. Computational efficiency and scale
 
@@ -1960,7 +1979,7 @@ Agreement coefficients are over species x sample units. In (a) the comparator is
 
 **Table 11. Count-level factorial decomposition of estimator, depth and shared-anchor ambiguity.**
 
-Values are means over 4/8/16/32-strain communities, even/10:1/100:1 abundance ratios and 10 replicates, shown for the regular coordinate arm. The random FracMinHash-like arm and paired source contrasts are in `factorial_benchmark/factorial_long.tsv` and `factorial_benchmark/factorial_source_contrasts.tsv`. Bias and RMSE are in log2(PTR) units.
+Values are n-weighted means over 4/8/16/32-strain communities, even/10:1/100:1 abundance ratios and 10 replicates, shown for the regular coordinate arm. The random FracMinHash-like arm, paired source contrasts and bootstrap intervals are in `factorial_benchmark/factorial_long.tsv`, `tables/table11_pooled_sources_summary_ci.tsv` and `tables/table11_by_source_summary_ci.tsv`. Bias and RMSE are in log2(PTR) units.
 
 | estimator              | shared_anchors   | depth   |   Mean bias (log2) |   Mean RMSE (log2) |   Mean Pearson r |
 |:-----------------------|:-----------------|:--------|-------------------:|-------------------:|-----------------:|
@@ -1982,11 +2001,11 @@ Values are means over 4/8/16/32-strain communities, even/10:1/100:1 abundance ra
 | Sorted-rank regression | 15%              | 0.5×    |              0.709 |              0.833 |            0.729 |
 | Sorted-rank regression | 15%              | 1×      |              0.540 |              0.671 |            0.803 |
 | Sorted-rank regression | 15%              | 8×      |              0.234 |              0.278 |            0.962 |
-**Table 12. C5 fast-mode benchmark: 8 enzymes and mismatch 1 on one full-depth sample.**
+**Table 12. C5 deployment benchmark: current 16-enzyme/mismatch-2 policy versus 8-enzyme/mismatch-1 fast mode.**
 
-| arm | enzymes | mismatch | screen | threads | wall_s | wall_h | peak_rss_gb | n_finite_ptr | n_qc_pass | median_abs_log2ptr_common_qc |
-|:---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| k16_mm2_current | 16 | 2 | no | 8 | 76218.63 | 21.1718 | 15.3719 | 8 | 4 | NA |
-| k8_mm1_fast | 8 | 1 | no | 8 | 4551.00 | 1.2642 | 10.3765 | 8 | 3 | 0.019429 |
+| arm | enzymes | mismatch | screen | threads | wall_s | wall_h | peak_rss_gb | n_finite_ptr | n_qc_pass | median_log2ptr_qc | median_abs_log2ptr_common_qc |
+|:---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| k16_mm2_current | 16 | 2 | no | 8 | 76218.63 | 21.1718 | 15.3719 | 8 | 4 | 0.126238 | NA |
+| k8_mm1_fast | 8 | 1 | no | 8 | 4551.00 | 1.2642 | 10.3765 | 8 | 3 | 0.148049 | 0.019429 |
 
-Current policy is the C5 refusion arm under the conservative fragmented-reference rule. The fast arm uses the top-8 ranked enzymes and mismatch 1 without a containment screen. `median_abs_log2ptr_common_qc` is the median absolute log2 PTR difference for the three genomes that pass QC in both arms. SLURM job 4095386; sample SRR28338156; 67,423,986 reads.
+Current policy is the C5 refusion arm under the conservative fragmented-reference rule; its runtime combines the original k16/mismatch-2 count stage with the retained-window refit. The fast arm is end-to-end and uses the top-8 ranked enzymes and mismatch 1 without a containment screen. `median_abs_log2ptr_common_qc` is the median absolute log2 PTR difference for the three genomes that pass QC in both arms. Across all eight finite calls, Pearson r was 0.291 and median absolute difference was 0.0924. SLURM job 4095386; sample SRR28338156; 67,423,986 reads.

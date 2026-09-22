@@ -85,8 +85,7 @@ the most significant scholarly gap.
    manuscript contains exactly one Table 12 block.
 2. Figure numbering is now 1–9 in narrative order and all image files exist.
 3. Table numbering is now 1–12; all tables are declared in the Tables section.
-4. The abstract is ~331 words; check the current *Microbiome* limit during final
-   formatting.
+4. The original abstract was ~331 words; it has been tightened to ~227 words.
 5. The manuscript is ~24,200 words including tables. This may be acceptable for
    a methods paper but should be tightened before final submission.
 6. The title page, affiliations, ORCID, corresponding author, funding, and
