@@ -21,8 +21,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats
-from sklearn.base import clone
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
@@ -113,36 +111,6 @@ def feature_preprocess(x_train: pd.DataFrame, x_test: pd.DataFrame, min_prev: fl
     log_test = np.sign(test_imp) * np.log1p(np.abs(test_imp))
     sc = StandardScaler()
     return sc.fit_transform(log_train), sc.transform(log_test), list(x_train.columns)
-
-
-def cv_evaluate(x: pd.DataFrame, y: pd.Series, folds: np.ndarray, n_trees: int, seed: int) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
-    classes = list(y.cat.categories)
-    pos = classes.index("ecc")
-    pred = pd.Series(index=y.index, dtype=object)
-    prob = pd.Series(index=y.index, dtype=float)
-    importances = []
-    for fold in sorted(np.unique(folds)):
-        test = folds == fold
-        model = RandomForestClassifier(
-            n_estimators=n_trees,
-            class_weight="balanced_subsample",
-            random_state=seed + fold,
-            n_jobs=-1,
-        )
-        model.fit(x.loc[~test], y.loc[~test])
-        pred.loc[test] = model.predict(x.loc[test])
-        prob.loc[test] = model.predict_proba(x.loc[test])[:, pos]
-        importances.append(pd.Series(model.feature_importances_, index=x.columns))
-    yy = (y == "ecc").astype(int)
-    metrics = {
-        "auroc": roc_auc_score(yy, prob),
-        "auprc": average_precision_score(yy, prob),
-        "balanced_accuracy": balanced_accuracy_score(y, pred),
-        "macro_f1": f1_score(y, pred, average="macro"),
-    }
-    imp = pd.concat(importances, axis=1).mean(axis=1).sort_values(ascending=False)
-    out = pd.DataFrame({"sample": y.index, "y_true": y.astype(str), "y_pred": pred.astype(str), "prob_ecc": prob})
-    return out, imp, metrics
 
 
 def permutation_delta(y: pd.Series, prob_a: pd.Series, prob_b: pd.Series, n_perm: int, seed: int) -> tuple[float, float]:
