@@ -46,11 +46,14 @@ def read_published(path: Path) -> tuple[pd.DataFrame, pd.Series]:
 
 def read_ptr_summary(path: Path) -> pd.DataFrame:
     d = pd.read_csv(path, sep="\t", low_memory=False)
-    d = d[d["pass_qc"] == True].copy()  # noqa: E712
+    # Route-A QC is intentionally not used as a feature filter.  The pilot showed
+    # that a gut-biased UHGG reference can yield finite but QC-failed PTRs.
+    # Feature prevalence and internal CV guard against unstable features.
     d["genome"] = d["genome"].astype(str)
     for col in ["PTR", "log2(PTR)", "coverage", "n_anchors", "n_windows", "se", "ori_confidence"]:
         if col not in d:
             d[col] = np.nan
+    d = d[pd.to_numeric(d["log2(PTR)"], errors="coerce").notna()].copy()
     return d
 
 
@@ -67,6 +70,21 @@ def make_ptr_features(summaries: dict[str, Path], samples: list[str], max_specie
         d["sample"] = sample
         frames.append(d)
     long = pd.concat(frames, ignore_index=True)
+    if "taxonomy" in long.columns:
+        extracted = long["taxonomy"].astype(str).str.extract(r"(s__[^;]+)")
+        long["species"] = extracted[0].fillna(long["genome"])
+    else:
+        long["species"] = long["genome"]
+
+    long = (
+        long.groupby(["sample", "species"], as_index=False)
+        .agg({
+            "log2(PTR)": "median",
+            "n_anchors": "max",
+            "coverage": "median",
+        })
+        .rename(columns={"species": "genome"})
+    )
     counts = long.groupby("genome")["sample"].nunique()
     keep = counts[counts >= max_species_per_sample].index
     long = long[long["genome"].isin(keep)].copy()
@@ -144,7 +162,8 @@ def main() -> None:
         import glob
         summaries = {}
         for p in map(Path, glob.glob(args.summaries_glob)):
-            summaries[p.parent.parent.name] = p
+            sample = p.name.removesuffix(".output.tsv")
+            summaries[sample] = p
         ptr, missing = make_ptr_features(summaries, list(x0.index), args.ptr_min_prevalence)
         arms = {
             "A_published": x0,
