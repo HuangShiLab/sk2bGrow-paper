@@ -80,7 +80,7 @@ def make_ptr_features(summaries: dict[str, Path], samples: list[str], max_specie
         long.groupby(["sample", "species"], as_index=False)
         .agg({
             "log2(PTR)": "median",
-            "n_anchors": "max",
+            "n_anchors": "sum",
             "coverage": "median",
         })
         .rename(columns={"species": "genome"})
@@ -100,7 +100,12 @@ def make_ptr_features(summaries: dict[str, Path], samples: list[str], max_specie
     support = support.reindex(samples).fillna(0)
     coverage = coverage.reindex(samples).fillna(0)
     values = values.reindex(samples)
-    return pd.concat([values, support, coverage], axis=1), values.isna().astype(int)
+    values = values.loc[:, ~values.columns.duplicated()]
+    support = support.loc[:, ~support.columns.duplicated()]
+    coverage = coverage.loc[:, ~coverage.columns.duplicated()]
+    missing = values.isna().astype(int)
+    missing = missing.loc[:, ~missing.columns.duplicated()]
+    return pd.concat([values, support, coverage], axis=1), missing
 
 
 def feature_preprocess(x_train: pd.DataFrame, x_test: pd.DataFrame, min_prev: float, rng_seed: int) -> tuple[np.ndarray, np.ndarray, list[str]]:
@@ -111,7 +116,6 @@ def feature_preprocess(x_train: pd.DataFrame, x_test: pd.DataFrame, min_prev: fl
     x_train = x_train.loc[:, keep]
     x_test = x_test.loc[:, keep]
 
-    ptr_cols = x_train.columns.str.contains("__")
     # PTR values and support/coverage are continuous, but have different scales;
     # all are standardized after median imputation.
     positive = x_train.to_numpy(dtype=float)
@@ -123,12 +127,20 @@ def feature_preprocess(x_train: pd.DataFrame, x_test: pd.DataFrame, min_prev: fl
     # indicator columns were added upstream; median imputation only handles
     # sporadic missingness in retained support features.
     imp = SimpleImputer(strategy="median")
+    cols = list(x_train.columns)
     train_imp = imp.fit_transform(train_values)
     test_imp = imp.transform(test_values)
+    if train_imp.shape[1] != len(cols):
+        # SimpleImputer drops all-missing columns; the matching missing
+        # indicators preserve their information downstream.
+        keep_positions = [j for j, name in enumerate(cols) if not name.startswith("missing__")]
+        cols = [cols[j] for j in keep_positions]
+        train_imp = train_imp[:, keep_positions]
+        test_imp = test_imp[:, keep_positions]
     log_train = np.sign(train_imp) * np.log1p(np.abs(train_imp))
     log_test = np.sign(test_imp) * np.log1p(np.abs(test_imp))
     sc = StandardScaler()
-    return sc.fit_transform(log_train), sc.transform(log_test), list(x_train.columns)
+    return sc.fit_transform(log_train), sc.transform(log_test), cols
 
 
 def permutation_delta(y: pd.Series, prob_a: pd.Series, prob_b: pd.Series, n_perm: int, seed: int) -> tuple[float, float]:
@@ -185,10 +197,6 @@ def main() -> None:
             fold_array[test] = fold
         rep_probs = {}
         for arm, raw in arms.items():
-            x = raw.copy()
-            for col in raw.columns:
-                if raw[col].dtype == object:
-                    x[col] = raw[col].astype(float)
             # Matrix placeholder; preprocessing is fold-specific below.
             pred, imp, metric = _cv_one(raw, y, fold_array, args.min_prevalence, args.n_trees, seed)
             metric.update({"arm": arm, "repeat": rep, "n_features": raw.shape[1]})
@@ -216,6 +224,7 @@ def main() -> None:
 
 
 def _cv_one(raw: pd.DataFrame, y: pd.Series, folds: np.ndarray, min_prev: float, n_trees: int, seed: int):
+    raw = raw.loc[:, ~raw.columns.duplicated()]
     classes = list(y.cat.categories)
     pos = classes.index("ecc")
     pred = pd.Series(index=y.index, dtype=object)
@@ -239,7 +248,8 @@ def _cv_one(raw: pd.DataFrame, y: pd.Series, folds: np.ndarray, min_prev: float,
         "balanced_accuracy": balanced_accuracy_score(y, pred),
         "macro_f1": f1_score(y, pred, average="macro"),
     }
-    imp = pd.concat(importances, axis=1).mean(axis=1).sort_values(ascending=False)
+    imp_series = pd.concat(importances, axis=1)
+    imp = imp_series.groupby(level=0).mean().iloc[:, 0].sort_values(ascending=False)
     out = pd.DataFrame({"sample": y.index, "y_true": y.astype(str), "y_pred": pred.astype(str), "prob_ecc": prob})
     return out, imp, metrics
 
