@@ -1,4 +1,0 @@
-dataset	n_samples	mean_finite_ptr	median_finite_ptr	mean_robust_ptr	median_robust_ptr
-CRA019236	63	51.095238095238095	47.0	26.682539682539684	24.0
-PRJNA1005427	20	11.65	12.0	8.8	9.0
-PRJNA946904	22	11.772727272727273	12.0	9.454545454545455	10.0
