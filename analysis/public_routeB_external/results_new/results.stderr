@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/Users/macstudio/Projects/sk2bGrow-paper/scripts/public_routeB_summarize.py", line 181, in <module>
+    if __name__=='__main__': main()
+  File "/Users/macstudio/Projects/sk2bGrow-paper/scripts/public_routeB_summarize.py", line 179, in main
+    p=paired_milk(d,a.outdir); p.to_csv(a.outdir/'breast_milk_T4_vs_T2_paired.tsv',sep='\t',index=False)
+  File "/Users/macstudio/Projects/sk2bGrow-paper/scripts/public_routeB_summarize.py", line 162, in paired_milk
+    return r.sort_values('q')
+  File "/Users/macstudio/Library/Python/3.9/lib/python/site-packages/pandas/core/frame.py", line 7211, in sort_values
+    k = self._get_label_or_level_values(by[0], axis=axis)
+  File "/Users/macstudio/Library/Python/3.9/lib/python/site-packages/pandas/core/generic.py", line 1914, in _get_label_or_level_values
+    raise KeyError(key)
+KeyError: 'q'

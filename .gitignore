@@ -4,3 +4,8 @@ __pycache__/
 
 # Word lock files (created while a .docx is open)
 ~$*
+
+# Large rendering artifacts are reproducible from public_routeB_story.py
+figures/public_routeB_story/public_routeB_story.tiff
+figures/public_routeB_story/public_routeB_story.preview.png
+figures/public_routeB_story/public_routeB_story.collision-audit.pdf
