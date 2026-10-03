@@ -1,0 +1,28 @@
+# Rust / Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Large benchmark data and intermediates
+benches/work/
+benches/*/work/
+benches/genomes/
+benches/mixedstrain_20261001/db/
+benches/mixedstrain_20261001/res/
+benches/mixedstrain_20261001/archive_auto_refused/
+*.fna
+*.fa
+*.fasta
+*.fastq
+*.fq
+*.fastq.gz
+*.fq.gz
+*.fna.gz
+
+# Office artifacts
+~$*
+*.docx
+!docs/paper/microbiome_submission/*.docx
+.DS_Store
+docs/paper/microbiome_submission/~$*.docx
