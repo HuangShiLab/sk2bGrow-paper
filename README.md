@@ -14,6 +14,7 @@ factorial_benchmark/  count-level factorial simulator, aggregate outputs and Fig
 figures/      make_figures.py, make_tables.py, style.py
 figures/out/  generated PNG + PDF (regenerable; safe to delete)
 tables/       generated markdown + TSV (regenerable)
+imports/20261003_sk2bgrow_current/  isolated snapshot imported from the 2026-10-03 sk2bGrow split
 ```
 
 `manuscript/manuscript.md` is authoritative. It follows the BMC/*Microbiome*
@@ -23,6 +24,12 @@ draft is
 `manuscript/submission/sk2bGrow_Microbiome_submission_draft.docx`; the
 cover-letter and submission states are recorded in `COVER_LETTER.md` and
 `SUBMISSION_CHECKLIST.md`.
+
+The 2026-10-03 snapshot under
+`imports/20261003_sk2bgrow_current/` is a provenance-preserved import of the
+refreshed manuscript and benchmark assets from the implementation repository.
+It is intentionally isolated and is not the authoritative submission text; use
+it for comparison and selective integration.
 
 The two Chinese-language design documents are kept here rather than in the code
 repository: they are the provenance of the method and belong with the
