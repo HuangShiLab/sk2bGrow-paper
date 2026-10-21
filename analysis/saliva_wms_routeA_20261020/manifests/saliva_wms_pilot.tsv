@@ -1,0 +1,2 @@
+sample_id	fastq	output_dir
+saliva_WMS__S9_7	/lustre1/g/aos_shihuang/sk2bgrow-hpc/bench/real_routeB_20261012/raw_saliva_wms/saliva_WMS__S9_7/saliva_WMS__S9_7_R1.fastq.gz;/lustre1/g/aos_shihuang/sk2bgrow-hpc/bench/real_routeB_20261012/raw_saliva_wms/saliva_WMS__S9_7/saliva_WMS__S9_7_R2.fastq.gz	/lustre1/g/aos_shihuang/sk2bgrow-hpc/bench/real_routeB_20261012/analysis/saliva_wms/per_sample/saliva_WMS__S9_7

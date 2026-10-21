@@ -16,7 +16,7 @@
 
 ## Abstract
 
-Peak-to-trough ratio (PTR) inference from metagenomes is a culture-independent proxy for bacterial growth rates, but current sketch-based methods require a depth that per-strain metagenomic coverage rarely reaches, and shipped coverage gates return no estimate below approximately 10×. We present sk2bGrow, which counts Type IIB restriction-enzyme (2bRAD) anchors with known genomic coordinates and fits the replication gradient using a coordinate-aware windowed V-fit. On the Zheng *Escherichia coli* growth-rate panel, sk2bGrow returned estimates at 1–2× sequencing depth, where Pilea's shipped defaults returned none, with r = 0.92 at 1× and 0.96 at 2× against measured growth rates. Controlled attribution showed that this shallow-depth gain came from coordinate-aware fitting rather than landmark source. A post-hoc count-level factorial further separated shallow-depth extraction from shared-anchor ambiguity, although it was mechanistic and did not model sequencing error, GC bias, or production mapping. PTR estimates were compressed at low depth, and the mechanism remains unresolved. In three fecal metagenomes, sk2bGrow and Pilea agreed (bias +0.22–+0.25 log2), while exact deduplication of real 2bRAD libraries destroyed the PTR signal. For MAG-scale shotgun data, a k8/mismatch-1 fast mode reduced one full-depth C5 sample from 21.17 h to 1.26 h (16.75×), with three versus four current-policy QC calls; confirmation across all nine samples is still needed. Pilea remained 13.25× faster on that sample. These results support coordinate-aware 2bRAD-style fitting for shallow-depth microbiome data while defining its validation limits.
+Peak-to-trough ratio (PTR) inference from metagenomes is a culture-independent proxy for bacterial growth rates, but current sketch-based methods require a depth that per-strain metagenomic coverage rarely reaches, and shipped coverage gates return no estimate below approximately 10×. We present sk2bGrow, which counts Type IIB restriction-enzyme (2bRAD) anchors with known genomic coordinates and fits the replication gradient using a coordinate-aware windowed V-fit. On the Zheng *Escherichia coli* growth-rate panel, sk2bGrow returned estimates at 1–2× sequencing depth, where Pilea's shipped defaults returned none, with r = 0.92 at 1× and 0.96 at 2× against measured growth rates. Controlled attribution showed that this shallow-depth gain came from coordinate-aware fitting rather than landmark source. A post-hoc count-level factorial further separated shallow-depth extraction from shared-anchor ambiguity, although it was mechanistic and did not model sequencing error, GC bias, or production mapping. PTR estimates were compressed at low depth, and the mechanism remains unresolved. In three fecal metagenomes, sk2bGrow and Pilea agreed (bias +0.22–+0.25 log2), while exact deduplication of real 2bRAD libraries destroyed the PTR signal. In an independent matched saliva shotgun/2bRAD-M time course (32 samples), route-B estimates showed moderate exploratory rank concordance with shotgun estimates (Spearman ρ = 0.40), although strict-QC overlap remained sparse. For MAG-scale shotgun data, a k8/mismatch-1 fast mode reduced one full-depth C5 sample from 21.17 h to 1.26 h (16.75×), with three versus four current-policy QC calls; confirmation across all nine samples is still needed. Pilea remained 13.25× faster on that sample. These results support coordinate-aware 2bRAD-style fitting for shallow-depth microbiome data while defining its validation limits.
 
 ## Keywords
 
@@ -499,10 +499,12 @@ invariant to affine transformation.
 **Source.** BioProject PRJNA689204 — deep shotgun sequencing of three human
 stool samples (SRR13371683, SRR13371682, SRR13371681; 2 × 150 bp,
 125–135 Gb per sample, ≈394 Gb in total) with bench-generated 2bRAD libraries
-(BcgI) prepared from the same samples. This is the paper's only real route-B
-data, and it bounds what the dataset can show: with a single enzyme, the
+(BcgI) prepared from the same samples. This was the initial real route-B
+dataset and it bounds what that comparison can show: with a single enzyme, the
 cross-enzyme fusion, Cochran's *Q* and the panel-level QC of §1.6 are not
-testable on it.
+testable on it. A second internal matched saliva WMS/2bRAD-M time course is
+analysed in §7b2; it also uses a single BcgI enzyme and therefore does not test
+the multi-enzyme panel.
 
 **Observation unit.** Species × sample; reads are attributed to species-level
 references with the EM step of §1.2. For the Pilea arm the abundance floor is
@@ -1379,6 +1381,43 @@ and negligible after correction, but so far *within-batch reproducible* only:
 cross-laboratory transferability awaits an independent batch (Hou, in
 preparation) (Fig. 8).
 
+#### 7b2. Matched saliva WMS/2bRAD-M time course
+
+To test whether the route-B signal is reproducible in an independent real
+library type and body site, we analysed a longitudinal saliva cohort of eight
+participants sampled four times in one day (9 AM, 11 AM, 1 PM and 5 PM;
+32 matched samples). Each sample had shotgun metagenomic sequencing and a
+BcgI 2bRAD-M library. The WMS data (1.3 TiB compressed paired FASTQ) were
+profiled with route A against the same 970-genome GTDB species-representative
+BcgI anchor database used above (`--mode wms --max-mismatch 2`, 100 anchors per
+window, no GC correction). The matched 2bRAD-M libraries were profiled with
+route B and exact tag matching (`--max-mismatch 0`) under the same
+no-GC-correction GLM fitting policy. Samples were matched by participant and
+time point; the leading code in `S11_1`, for example, is the 11 AM time point
+and the trailing code is participant 1.
+
+Both assays produced broad but sparse growth-state information. Across the 970
+species-representative references, WMS GLM fitting returned 13,123 finite
+log₂PTR estimates and 9,112 exploratory robust estimates; matched 2bRAD
+returned 14,040 finite and 8,785 exploratory robust estimates. All 32
+participant-time samples had at least one estimate in both assays. Among shared
+finite species-time observations, WMS and 2bRAD log₂PTR estimates were
+moderately concordant (n = 11,343; Pearson r = 0.460; Spearman ρ = 0.436).
+Restricting both members of a pair to the exploratory robust filter gave
+similar rank concordance with a smaller absolute discrepancy (n = 6,434;
+Pearson r = 0.418; Spearman ρ = 0.403; median absolute difference 0.361 log₂;
+Table 14). The shipped coordinate/sorted auto policy on WMS was much weaker
+(both-robust n = 820; Pearson r = 0.135; Spearman ρ = 0.152).
+
+This analysis extends route B beyond the three stool libraries to a repeated-
+measure oral cohort with an orthogonal WMS arm. It does not, however, establish
+absolute PTR accuracy: there is no direct growth-rate measurement, only two
+sequences from the same biological samples. The strict-QC intersection was
+also small (two species-time pairs), and both assays used the single BcgI
+enzyme rather than the 16-enzyme panel. The result therefore supports
+exploratory real-library rank concordance in saliva, not absolute PTR
+calibration or multi-enzyme panel validation.
+
 #### 7c. MAG-scale application: cost at scale and a policy-dependent QC recall
 
 The original RBC counting and cost measurements remain informative, but their
@@ -1592,7 +1631,7 @@ sk2bGrow shows that PTR estimation remains feasible at shallow sequencing depth 
 
 The practical role of 2bRAD is therefore best viewed as enabling a low-cost, coordinate-anchored assay rather than providing universal accuracy superiority over sketch-based profiling. Its fixed, motif-defined loci make the estimator experimentally realizable; multiple enzyme strata provide cross-enzyme QC, fusion redundancy, and a diagnostic that exposed our own double-counting defect; and the exact-deduplication result gives a concrete library-preparation rule. These properties distinguish 2bRAD from a purely computational landmark sample and motivate its use in prospective shallow-depth growth studies.
 
-The benchmark also defines the limits of deployment. Low-coverage estimates have compressed dynamic range, and GC, fragmented references, strain mixtures, absent references, and MAG-scale runtime require explicit safeguards. Current conservative QC therefore trades yield for reliability. Within these limits, sk2bGrow provides a reproducible shallow-depth growth-inference module for longitudinal microbiome studies; in disease cohorts, derived PTR dynamics may complement taxonomic abundance features in conventional prediction models, but this application requires direct validation in oral and gut datasets.
+The benchmark also defines the limits of deployment. Low-coverage estimates have compressed dynamic range, and GC, fragmented references, strain mixtures, absent references, and MAG-scale runtime require explicit safeguards. Current conservative QC therefore trades yield for reliability. Within these limits, sk2bGrow provides a reproducible shallow-depth growth-inference module for longitudinal microbiome studies. An initial matched saliva WMS/2bRAD-M time course shows moderate exploratory rank concordance in an oral cohort, but strict-QC overlap and direct growth-rate calibration remain limited; derived PTR dynamics may therefore complement taxonomic abundance features in conventional prediction models only after further prospective and multi-enzyme validation.
 
 The count-level factorial adds one further deployment principle: sequencing depth cannot repair ambiguous landmark assignment. Multi-strain applications should therefore report shared-anchor fractions and per-reference unique coverage alongside depth and recall, and should treat coordinate fitting, assignment of shared evidence, and computational cost as separately auditable steps rather than collapsing them into a single end-to-end accuracy number.
 
@@ -1667,6 +1706,21 @@ Not applicable.
 6. Hess MK, Rowe SJ, Van Stijn TC, Henry HM, Hickey SM, Brauning R, Hess AM, Clark SL, McEwan JC, Rowe SJ. A restriction enzyme reduced representation sequencing approach for low-cost, high-throughput metagenome profiling. *PLOS ONE*. 2020;15(4):e0219882. doi:[10.1371/journal.pone.0219882](https://doi.org/10.1371/journal.pone.0219882)
 7. Sun Z, et al. Species-resolved sequencing of low-biomass or degraded microbiomes using 2bRAD-M. *Genome Biology*. 2022;23:36. doi:[10.1186/s13059-021-02576-9](https://doi.org/10.1186/s13059-021-02576-9)
 8. Irber L, Brooks PT, Reiter T, Pierce-Ward NT, Hera MR, Brown CT. Lightweight compositional analysis of metagenomes with FracMinHash and minimum metagenome covers. *bioRxiv*. 2022. doi:[10.1101/2022.01.11.475838](https://doi.org/10.1101/2022.01.11.475838)
+
+**Table 14. Matched saliva WMS/2bRAD-M time-course concordance.**
+
+| WMS fitting | Comparison | Species-time pairs | Pearson r | Spearman ρ | Median abs. Δ log₂PTR |
+|:---|:---|---:|---:|---:|---:|
+| auto | shared finite estimates | 1,549 | -0.021 | 0.055 | 0.639 |
+| auto | both exploratory robust | 820 | 0.135 | 0.152 | 0.363 |
+| glm | shared finite estimates | 11,343 | 0.460 | 0.436 | 0.556 |
+| glm | both exploratory robust | 6,434 | 0.418 | 0.403 | 0.361 |
+| glm | both strict QC | 2 | — | — | — |
+
+WMS-auto uses the shipped coordinate/sorted fallback policy; WMS-GLM and 2bRAD
+use the coordinate-aware Poisson-GLM fit on the same BcgI anchor database.
+"Both exploratory robust" is a pre-specified yield filter and is not a claim of
+absolute PTR accuracy.
 
 ## Figures
 
